@@ -1,0 +1,12 @@
+# This command generates a task list from a PRD and Tech Spec.
+
+command = "/prd-tasks"
+description = "Generates a task list from a PRD and Tech Spec for a given feature."
+
+prompt  = """
+Using the persona defined in `docs/ai_guidance/personas/prd-tasks-creator.md`, please create a complete task list for the feature.
+
+Feature Slug: {{args}}
+"""
+
+args_hint = "<feature-slug>"

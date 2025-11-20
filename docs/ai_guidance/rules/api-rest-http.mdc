@@ -1,0 +1,110 @@
+---
+alwaysApply: false
+---
+
+## API over Spring Boot
+
+### Routing and Middleware
+
+- Use **Spring Web (Spring MVC)** for HTTP routing and controllers.
+- Configure CORS using `@CrossOrigin` annotations or a `WebMvcConfigurer` bean.
+
+### Request/Response
+
+- Prefer JSON payloads; use DTOs (Data Transfer Objects) for validation and mapping.
+- Return `ResponseEntity<T>` to control status codes and headers.
+
+### Pagination
+
+- Use `Pageable` objects from Spring Data for pagination parameters (`page`, `size`, `sort`).
+- Return `Page<T>` objects in responses, which include data and pagination details.
+
+```json
+{
+  "content": [],
+  "pageable": {
+    "sort": { "sorted": false, "unsorted": true, "empty": true },
+    "offset": 0,
+    "pageNumber": 0,
+    "pageSize": 20,
+    "paged": true,
+    "unpaged": false
+  },
+  "totalPages": 10,
+  "totalElements": 198,
+  "last": false,
+  "size": 20,
+  "number": 0,
+  "sort": { "sorted": false, "unsorted": true, "empty": true },
+  "numberOfElements": 20,
+  "first": true,
+  "empty": false
+}
+```
+
+### Field Selection (Partial Response)
+
+- Use libraries like Jackson's `@JsonView` or custom DTOs to implement field selection.
+
+## External API Communication
+
+### HTTP Client
+
+- Use **`RestTemplate`** (blocking) or **`WebClient`** (non-blocking) for HTTP communication.
+- Implement timeouts and retries using libraries like Resilience4J or Spring Retry.
+- Log requests and responses at appropriate levels (see logging rules).
+
+### Example (WebClient with timeout)
+
+```java
+import org.springframework.web.reactive.function.client.WebClient;
+import java.time.Duration;
+
+// ...
+
+WebClient webClient = WebClient.create("https://api.external.com");
+
+try {
+    String response = webClient.get()
+        .uri("/data")
+        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+        .retrieve()
+        .bodyToMono(String.class)
+        .timeout(Duration.ofSeconds(5))
+        .block();
+    // ... use data
+} catch (Exception e) {
+    // Handle exceptions, including timeouts
+}
+```
+
+## Best Practices
+
+### Versioning
+
+- Use URI versioning (e.g., `/api/v1/...`).
+- Maintain backward compatibility.
+
+### Error Responses
+
+- Use `@ControllerAdvice` and `ExceptionHandler` to create a consistent error response format.
+
+```json
+{
+  "timestamp": "2025-08-27T10:30:00.000+00:00",
+  "status": 404,
+  "error": "Not Found",
+  "message": "User with specified ID does not exist",
+  "path": "/api/v1/users/123"
+}
+```
+
+### Rate Limiting
+
+- Use libraries like Resilience4J or Bucket4j for rate limiting.
+- Return standard headers (`X-RateLimit-*`) when applicable.
+
+### CORS
+
+- Configure CORS explicitly per environment in your `WebMvcConfigurer`.
+- Avoid wildcard origins in production.

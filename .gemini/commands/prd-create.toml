@@ -1,0 +1,16 @@
+# This command creates a new Product Requirements Document (PRD).
+
+# A brief description of what the command does.
+description = "Creates a new Product Requirements Document (PRD) for a feature."
+
+# The prompt template to be executed.
+# It instructs the AI to use the prd-creator persona.
+# The {args} placeholder will be replaced by any text following the command.
+prompt  = """
+Using the persona defined in `docs/ai_guidance/personas/prd-creator.md`, please create a new Product Requirements Document.
+
+Feature Description: {{args}}
+"""
+
+# Optional: A hint for the user about what to type after the command.
+args_hint = "<feature description>"

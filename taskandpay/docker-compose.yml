@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      # Configurações para conectar ao emulador do Firestore
+      SPRING_CLOUD_GCP_FIRESTORE_HOST: firestore-emulator:8080
+      SPRING_CLOUD_GCP_FIRESTORE_PROJECT_ID: test-project
+      SPRING_CLOUD_GCP_FIRESTORE_EMULATOR_ENABLED: "true"
+      # Configurações para conectar ao emulador do Pub/Sub
+      SPRING_CLOUD_GCP_PUBSUB_EMULATOR_HOST: pubsub-emulator:8085
+      SPRING_CLOUD_GCP_PUBSUB_PROJECT_ID: test-project
+    depends_on:
+      - firestore-emulator
+      - pubsub-emulator
+    networks:
+      - app-network
+
+  firestore-emulator:
+    image: google/cloud-sdk:latest
+    command: gcloud emulators firestore start --host-port=0.0.0.0:8080 --project=test-project
+    ports:
+      - "8081:8080" # Mapeia a porta do emulador para uma porta diferente no host para evitar conflitos
+    networks:
+      - app-network
+
+  pubsub-emulator:
+    image: google/cloud-sdk:latest
+    command: gcloud emulators pubsub start --host-port=0.0.0.0:8085 --project=test-project
+    ports:
+      - "8085:8085"
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge

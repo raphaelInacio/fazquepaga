@@ -1,0 +1,11 @@
+# This command creates a new Technical Specification (Tech Spec) from a PRD.
+
+description = "Creates a new Technical Specification (Tech Spec) from a PRD."
+
+prompt  = """
+Using the persona defined in `docs/ai_guidance/personas/techspec-creator.md`, please create a new Technical Specification for the feature.
+
+Feature Slug: {{args}}
+"""
+
+args_hint = "<feature-slug>"

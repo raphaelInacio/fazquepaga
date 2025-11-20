@@ -1,0 +1,71 @@
+---
+alwaysApply: false
+---
+
+# SQL Database Standards (Spring Boot)
+
+## Database Access
+
+- Use **Spring Data JPA** as the primary data access abstraction.
+- Use **Hibernate** as the underlying JPA provider (default in Spring Boot).
+- Configure database connections in `application.properties` or `application.yml`.
+
+## Naming Conventions
+
+### Tables and Columns
+
+- Use `snake_case` for table and column names.
+- Table names should be plural (e.g., `users`, `customer_orders`).
+- Column names should be descriptive.
+
+```java
+@Entity
+@Table(name = "customer_orders")
+public class CustomerOrder {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(name = "order_date")
+    private LocalDateTime orderDate;
+}
+```
+
+### Primary and Foreign Keys
+
+- Primary key columns should be named `id`.
+- Foreign key columns should follow the pattern `<table_name_singular>_id` (e.g., `user_id`, `order_id`).
+
+## SQL Query Standards
+
+- For simple queries, use the query methods provided by Spring Data JPA repositories.
+- For complex queries, use the `@Query` annotation with JPQL or native SQL.
+- Avoid `SELECT *` in native queries; specify columns explicitly.
+
+## Data Types
+
+- Use appropriate Java types that map to SQL types (e.g., `Long` for BIGINT, `String` for VARCHAR/TEXT, `LocalDateTime` for TIMESTAMP).
+
+## Performance
+
+- Index columns that are frequently used in `WHERE` clauses, joins, and `ORDER BY` clauses.
+- Be mindful of the N+1 select problem. Use `JOIN FETCH` in JPQL queries or `@EntityGraph` to load related entities eagerly when needed.
+
+## Security
+
+- Use Spring Data JPA's parameterized queries (e.g., query methods, `@Query` with parameters) to prevent SQL injection.
+- Never build queries by concatenating strings with raw user input.
+
+## Table Design
+
+### Required Columns
+
+- It's a good practice to have auditing columns in your tables. Spring Data JPA Auditing (`@CreatedDate`, `@LastModifiedDate`) can automatically populate these.
+- `created_at TIMESTAMPTZ NOT NULL`
+- `updated_at TIMESTAMPTZ NOT NULL`
+
+## Migrations
+
+- Use **Flyway** or **Liquibase** for managing database schema migrations.
+- Integrate the migration tool with the Spring Boot application so that migrations run automatically on startup.
+- Each schema change must be a new, versioned migration script.
