@@ -4,9 +4,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.ai.chat.ChatClient;
-import org.springframework.ai.chat.ChatResponse;
-import org.springframework.ai.chat.Generation;
+import org.springframework.ai.chat.messages.AssistantMessage;
+import org.springframework.ai.chat.model.ChatModel;
+import org.springframework.ai.chat.model.ChatResponse;
+import org.springframework.ai.chat.model.Generation;
 import org.springframework.ai.chat.prompt.Prompt;
 
 import java.util.List;
@@ -19,7 +20,7 @@ import static org.mockito.Mockito.when;
 class AiServicesTest {
 
     @Mock
-    private ChatClient chatClient;
+    private ChatModel chatModel;
 
     private AiSuggestionService suggestionService;
     private AiValidatorImpl aiValidator;
@@ -27,16 +28,16 @@ class AiServicesTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        suggestionService = new AiSuggestionService(chatClient);
-        aiValidator = new AiValidatorImpl(chatClient);
+        suggestionService = new AiSuggestionService(chatModel);
+        aiValidator = new AiValidatorImpl(chatModel);
     }
 
     @Test
     void shouldReturnSuggestions() {
         String suggestionText = "task 1, task 2, task 3";
-        Generation generation = new Generation(suggestionText);
+        Generation generation = new Generation(new AssistantMessage(suggestionText));
         ChatResponse chatResponse = new ChatResponse(List.of(generation));
-        when(chatClient.call(any(Prompt.class))).thenReturn(chatResponse);
+        when(chatModel.call(any(Prompt.class))).thenReturn(chatResponse);
 
         List<String> suggestions = suggestionService.getSuggestions(10);
 
@@ -46,9 +47,9 @@ class AiServicesTest {
 
     @Test
     void shouldReturnTrueForValidImage() {
-        Generation generation = new Generation("yes");
+        Generation generation = new Generation(new AssistantMessage("yes"));
         ChatResponse chatResponse = new ChatResponse(List.of(generation));
-        when(chatClient.call(any(Prompt.class))).thenReturn(chatResponse);
+        when(chatModel.call(any(Prompt.class))).thenReturn(chatResponse);
 
         boolean isValid = aiValidator.validateTaskCompletionImage(new byte[0], "a task");
 

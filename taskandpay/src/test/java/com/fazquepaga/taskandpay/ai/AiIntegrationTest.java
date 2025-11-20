@@ -5,7 +5,6 @@ import com.fazquepaga.taskandpay.tasks.Task;
 import com.fazquepaga.taskandpay.whatsapp.events.ProofSubmittedEvent;
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.core.NoCredentialsProvider;
-import com.google.cloud.spring.data.firestore.FirestoreTemplate;
 import com.google.cloud.spring.pubsub.core.PubSubTemplate;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -22,14 +21,13 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-import org.springframework.ai.chat.ChatClient;
-import org.springframework.ai.chat.ChatResponse;
-import org.springframework.ai.chat.Generation;
+import org.springframework.ai.chat.messages.AssistantMessage;
+import org.springframework.ai.chat.model.ChatModel;
+import org.springframework.ai.chat.model.ChatResponse;
+import org.springframework.ai.chat.model.Generation;
 import org.springframework.ai.chat.prompt.Prompt;
-import com.fazquepaga.taskandpay.tasks.TaskRepository;
 import com.google.cloud.firestore.Firestore;
 import org.springframework.beans.factory.annotation.Value;
-import reactor.core.publisher.Mono;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -45,18 +43,14 @@ import static org.mockito.Mockito.when;
 public class AiIntegrationTest {
 
     @Container
-    private static final FirestoreEmulatorContainer firestoreEmulator =
-            new FirestoreEmulatorContainer(
-                    DockerImageName.parse("gcr.io/google.com/cloudsdktool/google-cloud-cli:latest")
-                            .asCompatibleSubstituteFor("google/cloud-sdk")
-            );
+    private static final FirestoreEmulatorContainer firestoreEmulator = new FirestoreEmulatorContainer(
+            DockerImageName.parse("gcr.io/google.com/cloudsdktool/google-cloud-cli:latest")
+                    .asCompatibleSubstituteFor("google/cloud-sdk"));
 
     @Container
-    private static final PubSubEmulatorContainer pubsubEmulator =
-            new PubSubEmulatorContainer(
-                    DockerImageName.parse("gcr.io/google.com/cloudsdktool/google-cloud-cli:latest")
-                            .asCompatibleSubstituteFor("google/cloud-sdk")
-            );
+    private static final PubSubEmulatorContainer pubsubEmulator = new PubSubEmulatorContainer(
+            DockerImageName.parse("gcr.io/google.com/cloudsdktool/google-cloud-cli:latest")
+                    .asCompatibleSubstituteFor("google/cloud-sdk"));
 
     @DynamicPropertySource
     static void emulatorsProperties(DynamicPropertyRegistry registry) {
@@ -79,7 +73,7 @@ public class AiIntegrationTest {
     private Firestore firestore;
 
     @MockBean
-    private ChatClient chatClient;
+    private ChatModel chatModel;
 
     @Value("${pubsub.topic-name}")
     private String topicName;
@@ -97,17 +91,17 @@ public class AiIntegrationTest {
     @Test
     void testProofValidationFlow() throws Exception {
         // 1. Mock the AI response
-        Generation generation = new Generation("yes");
+        Generation generation = new Generation(new AssistantMessage("yes"));
         ChatResponse chatResponse = new ChatResponse(List.of(generation));
-        when(chatClient.call(any(Prompt.class))).thenReturn(chatResponse);
+        when(chatModel.call(any(Prompt.class))).thenReturn(chatResponse);
 
         // 2. Create user and task in Firestore
         User child = User.builder().id("child1").name("Test Child").build();
-        Task task = Task.builder().id("task1").description("Clean room").requiresProof(true).status(Task.TaskStatus.PENDING).build();
-        
+        Task task = Task.builder().id("task1").description("Clean room").requiresProof(true)
+                .status(Task.TaskStatus.PENDING).build();
+
         firestore.collection("users").document("child1").set(child).get();
         firestore.collection("users").document("child1").collection("tasks").document("task1").set(task).get();
-
 
         // 3. Publish event to Pub/Sub
         ProofSubmittedEvent event = new ProofSubmittedEvent("child1", "task1", "http://example.com/image.jpg");
@@ -117,7 +111,8 @@ public class AiIntegrationTest {
         TimeUnit.SECONDS.sleep(5);
 
         // 5. Verify the task was updated in Firestore
-        com.google.cloud.firestore.DocumentSnapshot updatedTaskDoc = firestore.collection("users").document("child1").collection("tasks").document("task1").get().get();
+        com.google.cloud.firestore.DocumentSnapshot updatedTaskDoc = firestore.collection("users").document("child1")
+                .collection("tasks").document("task1").get().get();
         Task updatedTask = updatedTaskDoc.toObject(Task.class);
 
         assertTrue(updatedTask.getAiValidated());
