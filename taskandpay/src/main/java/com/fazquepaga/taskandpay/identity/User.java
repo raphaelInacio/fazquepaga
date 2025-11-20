@@ -21,6 +21,7 @@ public class User {
     private String parentId; // Links a child to a parent
     private String phoneNumber; // Used for children for WhatsApp identification
     private java.math.BigDecimal monthlyAllowance;
+    private Integer age; // Used for children
 
     public enum Role {
         PARENT,

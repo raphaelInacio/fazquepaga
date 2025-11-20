@@ -25,6 +25,7 @@ public class Task {
     private Instant createdAt;
     private Integer dayOfWeek; // 1 (Mon) to 7 (Sun) for WEEKLY
     private Instant scheduledDate; // For ONE_TIME
+    private Boolean aiValidated;
 
     public enum TaskType {
         DAILY,
@@ -41,6 +42,7 @@ public class Task {
     public enum TaskStatus {
         PENDING,
         COMPLETED,
+        PENDING_APPROVAL,
         APPROVED
     }
 }

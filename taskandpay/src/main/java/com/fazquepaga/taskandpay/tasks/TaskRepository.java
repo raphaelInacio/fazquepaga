@@ -34,7 +34,20 @@ public class TaskRepository {
         }
     }
 
-    public ApiFuture<QuerySnapshot> findTasksByUserId(String userId) {
-        return getTasksCollection(userId).get();
+        public ApiFuture<QuerySnapshot> findTasksByUserId(String userId) {
+
+            return getTasksCollection(userId).get();
+
+        }
+
+    
+
+        public ApiFuture<com.google.cloud.firestore.DocumentSnapshot> findById(String userId, String taskId) {
+
+            return getTasksCollection(userId).document(taskId).get();
+
+        }
+
     }
-}
+
+    
