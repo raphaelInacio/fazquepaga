@@ -9,6 +9,7 @@ import com.google.cloud.firestore.WriteResult;
 import org.springframework.stereotype.Repository;
 
 import java.util.concurrent.ExecutionException;
+import java.util.List;
 
 @Repository
 public class UserRepository {
@@ -52,27 +53,43 @@ public class UserRepository {
 
     
 
-        public User findByPhoneNumber(String phoneNumber) throws ExecutionException, InterruptedException {
+            public User findByPhoneNumber(String phoneNumber) throws ExecutionException, InterruptedException {
 
-            // This is not an efficient query and will not scale.
+    
 
-            // A real implementation would need a secondary index on the phoneNumber field.
+                // This query requires a custom index on the 'phoneNumber' field in Firestore.
 
-            for (DocumentSnapshot doc : usersCollection.get().get().getDocuments()) {
+    
 
-                User user = doc.toObject(User.class);
+                // Without it, the query will fail.
 
-                if (user != null && phoneNumber.equals(user.getPhoneNumber())) {
+    
 
-                    return user;
+                ApiFuture<com.google.cloud.firestore.QuerySnapshot> future = usersCollection.whereEqualTo("phoneNumber", phoneNumber).limit(1).get();
+
+    
+
+                List<com.google.cloud.firestore.QueryDocumentSnapshot> documents = future.get().getDocuments();
+
+    
+
+                if (!documents.isEmpty()) {
+
+    
+
+                    return documents.get(0).toObject(User.class);
+
+    
 
                 }
 
+    
+
+                return null;
+
+    
+
             }
-
-            return null;
-
-        }
 
     }
 

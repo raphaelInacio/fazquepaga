@@ -52,7 +52,10 @@ public class WhatsAppIntegrationTest {
 
     @Container
     private static final PubSubEmulatorContainer pubsubEmulator =
-            new PubSubEmulatorContainer("gcr.io/google.com/cloudsdktool/google-cloud-cli:latest");
+            new PubSubEmulatorContainer(
+                    DockerImageName.parse("gcr.io/google.com/cloudsdktool/google-cloud-cli:latest")
+                            .asCompatibleSubstituteFor("google/cloud-sdk")
+            );
 
     @DynamicPropertySource
     static void emulatorsProperties(DynamicPropertyRegistry registry) {

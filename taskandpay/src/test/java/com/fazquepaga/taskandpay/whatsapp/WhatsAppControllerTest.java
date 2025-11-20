@@ -10,7 +10,9 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Map;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -26,12 +28,17 @@ class WhatsAppControllerTest {
     @MockBean
     private WhatsAppService whatsAppService;
 
+    @MockBean
+    private TwilioRequestValidator requestValidator;
+
     @Test
     void shouldCallWebhookHandler() throws Exception {
         Map<String, String> payload = Map.of(
                 "Body", "test message",
                 "From", "whatsapp:+1234567890"
         );
+
+        when(requestValidator.validate(any(), any())).thenReturn(true);
 
         mockMvc.perform(post("/api/v1/whatsapp/webhook")
                         .contentType(MediaType.APPLICATION_JSON)

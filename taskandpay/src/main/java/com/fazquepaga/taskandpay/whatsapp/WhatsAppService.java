@@ -11,8 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.util.concurrent.ListenableFuture;
-
+import java.util.concurrent.CompletableFuture;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -94,12 +93,15 @@ public class WhatsAppService {
                 logger.info("Found pending task '{}' for child '{}'. Publishing proof event.", task.getDescription(), child.getName());
 
                 ProofSubmittedEvent event = new ProofSubmittedEvent(child.getId(), task.getId(), imageUrl);
-                ListenableFuture<String> future = pubSubTemplate.publish(topicName, event);
+                CompletableFuture<String> future = pubSubTemplate.publish(topicName, event);
 
-                future.addCallback(
-                        result -> logger.info("Successfully published message with ID: {}", result),
-                        ex -> logger.error("Failed to publish message", ex)
-                );
+                future.whenComplete((result, ex) -> {
+                    if (ex != null) {
+                        logger.error("Failed to publish message", ex);
+                    } else {
+                        logger.info("Successfully published message with ID: {}", result);
+                    }
+                });
 
             } else {
                 logger.info("Received image from child '{}' but no pending tasks requiring proof were found.", child.getName());

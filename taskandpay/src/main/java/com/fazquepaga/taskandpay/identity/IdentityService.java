@@ -4,6 +4,8 @@ import com.fazquepaga.taskandpay.identity.dto.CreateChildRequest;
 
 import com.fazquepaga.taskandpay.identity.dto.CreateParentRequest;
 
+import org.springframework.stereotype.Service;
+
 import java.util.Map;
 
 import java.util.UUID;

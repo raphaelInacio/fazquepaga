@@ -1,5 +1,5 @@
 ---
-status: pending
+status: completed
 ---
 
 # Tarefa 6.0: Configuração da Pipeline de CI/CD
@@ -20,14 +20,14 @@ Esta tarefa consiste em configurar a pipeline de Integração e Implantação Co
 
 ## Subtarefas
 
-- [ ] 6.1 Criar o diretório `.github/workflows/` e adicionar um arquivo YAML para a pipeline (ex: `main.yml`).
-- [ ] 6.2 Configurar a pipeline para fazer o checkout do código e configurar o ambiente Java (JDK).
-- [ ] 6.3 Adicionar uma etapa que inicia os emuladores do Firestore e Pub/Sub como serviços, para que fiquem disponíveis para os testes.
-- [ ] 6.4 Adicionar o passo para executar os testes de integração e gerar o relatório de cobertura (usando Jacoco, por exemplo).
-- [ ] 6.5 Implementar o script ou ação que verifica o relatório de cobertura e faz a pipeline falhar se for menor que 80%.
-- [ ] 6.6 Configurar a autenticação com o Google Cloud usando secrets do GitHub.
-- [ ] 6.7 Adicionar as etapas para construir a imagem Docker e publicá-la no Artifact Registry (condicional à execução na branch `main`).
-- [ ] 6.8 Adicionar a etapa final para implantar a imagem no Google Cloud Run (condicional à execução na branch `main`).
+- [x] 6.1 Criar o diretório `.github/workflows/` e adicionar um arquivo YAML para a pipeline (ex: `main.yml`).
+- [x] 6.2 Configurar a pipeline para fazer o checkout do código e configurar o ambiente Java (JDK).
+- [x] 6.3 Adicionar uma etapa que inicia os emuladores do Firestore e Pub/Sub como serviços, para que fiquem disponíveis para os testes.
+- [x] 6.4 Adicionar o passo para executar os testes de integração e gerar o relatório de cobertura (usando Jacoco, por exemplo).
+- [x] 6.5 Implementar o script ou ação que verifica o relatório de cobertura e faz a pipeline falhar se for menor que 80%.
+- [x] 6.6 Configurar a autenticação com o Google Cloud usando secrets do GitHub.
+- [x] 6.7 Adicionar as etapas para construir a imagem Docker e publicá-la no Artifact Registry (condicional à execução na branch `main`).
+- [x] 6.8 Adicionar a etapa final para implantar a imagem no Google Cloud Run (condicional à execução na branch `main`).
 
 ## Detalhes da Implementação
 
