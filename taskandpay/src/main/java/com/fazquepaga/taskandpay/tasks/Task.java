@@ -1,12 +1,11 @@
 package com.fazquepaga.taskandpay.tasks;
 
 import com.google.cloud.firestore.annotation.DocumentId;
+import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.time.Instant;
 
 @Data
 @Builder
@@ -14,8 +13,7 @@ import java.time.Instant;
 @AllArgsConstructor
 public class Task {
 
-    @DocumentId
-    private String id;
+    @DocumentId private String id;
 
     private String description;
     private TaskType type;

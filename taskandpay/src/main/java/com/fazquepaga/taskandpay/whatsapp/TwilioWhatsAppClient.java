@@ -26,9 +26,9 @@ public class TwilioWhatsAppClient implements WhatsAppClient {
     @Override
     public void sendMessage(String to, String message) {
         Message.creator(
-                new PhoneNumber("whatsapp:" + to),
-                new PhoneNumber("whatsapp:" + fromPhoneNumber),
-                message)
+                        new PhoneNumber("whatsapp:" + to),
+                        new PhoneNumber("whatsapp:" + fromPhoneNumber),
+                        message)
                 .create();
     }
 }

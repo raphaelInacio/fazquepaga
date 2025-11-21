@@ -1,14 +1,12 @@
 package com.fazquepaga.taskandpay.allowance;
 
 import com.fazquepaga.taskandpay.tasks.Task;
-import org.springframework.stereotype.Component;
-
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.List;
+import org.springframework.stereotype.Component;
 
 @Component
 public class AllowanceCalculatorImpl implements AllowanceCalculator {
@@ -18,7 +16,11 @@ public class AllowanceCalculatorImpl implements AllowanceCalculator {
     private static final int POINTS_HIGH = 20;
 
     @Override
-    public BigDecimal calculateTaskValue(Task task, BigDecimal monthlyAllowance, List<Task> allTasksForMonth, YearMonth yearMonth) {
+    public BigDecimal calculateTaskValue(
+            Task task,
+            BigDecimal monthlyAllowance,
+            List<Task> allTasksForMonth,
+            YearMonth yearMonth) {
         if (monthlyAllowance == null || monthlyAllowance.compareTo(BigDecimal.ZERO) <= 0) {
             return BigDecimal.ZERO.setScale(2, RoundingMode.HALF_EVEN);
         }
@@ -33,10 +35,14 @@ public class AllowanceCalculatorImpl implements AllowanceCalculator {
             return BigDecimal.ZERO.setScale(2, RoundingMode.HALF_EVEN);
         }
 
-        BigDecimal valuePerPoint = monthlyAllowance.divide(BigDecimal.valueOf(totalPointsPossible), 4, RoundingMode.HALF_EVEN);
+        BigDecimal valuePerPoint =
+                monthlyAllowance.divide(
+                        BigDecimal.valueOf(totalPointsPossible), 4, RoundingMode.HALF_EVEN);
         int taskPoints = getPointsForWeight(task.getWeight());
 
-        return valuePerPoint.multiply(BigDecimal.valueOf(taskPoints)).setScale(2, RoundingMode.HALF_EVEN);
+        return valuePerPoint
+                .multiply(BigDecimal.valueOf(taskPoints))
+                .setScale(2, RoundingMode.HALF_EVEN);
     }
 
     private long calculateTotalPointsPossible(List<Task> tasks, YearMonth yearMonth) {
@@ -74,10 +80,14 @@ public class AllowanceCalculatorImpl implements AllowanceCalculator {
     private int getPointsForWeight(Task.TaskWeight weight) {
         if (weight == null) return 0;
         switch (weight) {
-            case LOW: return POINTS_LOW;
-            case MEDIUM: return POINTS_MEDIUM;
-            case HIGH: return POINTS_HIGH;
-            default: return 0;
+            case LOW:
+                return POINTS_LOW;
+            case MEDIUM:
+                return POINTS_MEDIUM;
+            case HIGH:
+                return POINTS_HIGH;
+            default:
+                return 0;
         }
     }
 

@@ -20,7 +20,10 @@ public class TaskRepository {
     }
 
     private CollectionReference getTasksCollection(String userId) {
-        return firestore.collection(USERS_COLLECTION).document(userId).collection(TASKS_SUBCOLLECTION);
+        return firestore
+                .collection(USERS_COLLECTION)
+                .document(userId)
+                .collection(TASKS_SUBCOLLECTION);
     }
 
     public ApiFuture<WriteResult> save(String userId, Task task) {
@@ -34,20 +37,14 @@ public class TaskRepository {
         }
     }
 
-        public ApiFuture<QuerySnapshot> findTasksByUserId(String userId) {
+    public ApiFuture<QuerySnapshot> findTasksByUserId(String userId) {
 
-            return getTasksCollection(userId).get();
-
-        }
-
-    
-
-        public ApiFuture<com.google.cloud.firestore.DocumentSnapshot> findById(String userId, String taskId) {
-
-            return getTasksCollection(userId).document(taskId).get();
-
-        }
-
+        return getTasksCollection(userId).get();
     }
 
-    
+    public ApiFuture<com.google.cloud.firestore.DocumentSnapshot> findById(
+            String userId, String taskId) {
+
+        return getTasksCollection(userId).document(taskId).get();
+    }
+}

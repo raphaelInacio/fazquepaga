@@ -6,10 +6,9 @@ import com.google.cloud.firestore.DocumentReference;
 import com.google.cloud.firestore.DocumentSnapshot;
 import com.google.cloud.firestore.Firestore;
 import com.google.cloud.firestore.WriteResult;
-import org.springframework.stereotype.Repository;
-
-import java.util.concurrent.ExecutionException;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import org.springframework.stereotype.Repository;
 
 @Repository
 public class UserRepository {
@@ -37,60 +36,36 @@ public class UserRepository {
         return usersCollection.document(userId).get();
     }
 
-        public User findByIdSync(String userId) throws ExecutionException, InterruptedException {
+    public User findByIdSync(String userId) throws ExecutionException, InterruptedException {
 
-            DocumentSnapshot documentSnapshot = findById(userId).get();
+        DocumentSnapshot documentSnapshot = findById(userId).get();
 
-            if (documentSnapshot.exists()) {
+        if (documentSnapshot.exists()) {
 
-                return documentSnapshot.toObject(User.class);
-
-            }
-
-            return null;
-
+            return documentSnapshot.toObject(User.class);
         }
 
-    
-
-            public User findByPhoneNumber(String phoneNumber) throws ExecutionException, InterruptedException {
-
-    
-
-                // This query requires a custom index on the 'phoneNumber' field in Firestore.
-
-    
-
-                // Without it, the query will fail.
-
-    
-
-                ApiFuture<com.google.cloud.firestore.QuerySnapshot> future = usersCollection.whereEqualTo("phoneNumber", phoneNumber).limit(1).get();
-
-    
-
-                List<com.google.cloud.firestore.QueryDocumentSnapshot> documents = future.get().getDocuments();
-
-    
-
-                if (!documents.isEmpty()) {
-
-    
-
-                    return documents.get(0).toObject(User.class);
-
-    
-
-                }
-
-    
-
-                return null;
-
-    
-
-            }
-
+        return null;
     }
 
-    
+    public User findByPhoneNumber(String phoneNumber)
+            throws ExecutionException, InterruptedException {
+
+        // This query requires a custom index on the 'phoneNumber' field in Firestore.
+
+        // Without it, the query will fail.
+
+        ApiFuture<com.google.cloud.firestore.QuerySnapshot> future =
+                usersCollection.whereEqualTo("phoneNumber", phoneNumber).limit(1).get();
+
+        List<com.google.cloud.firestore.QueryDocumentSnapshot> documents =
+                future.get().getDocuments();
+
+        if (!documents.isEmpty()) {
+
+            return documents.get(0).toObject(User.class);
+        }
+
+        return null;
+    }
+}

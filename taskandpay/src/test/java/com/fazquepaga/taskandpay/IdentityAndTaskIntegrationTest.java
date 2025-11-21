@@ -1,5 +1,11 @@
 package com.fazquepaga.taskandpay;
 
+import static org.hamcrest.Matchers.hasSize;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fazquepaga.taskandpay.identity.User;
 import com.fazquepaga.taskandpay.identity.dto.CreateChildRequest;
@@ -8,7 +14,6 @@ import com.fazquepaga.taskandpay.tasks.Task;
 import com.fazquepaga.taskandpay.tasks.dto.CreateTaskRequest;
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.core.NoCredentialsProvider;
-import com.google.cloud.firestore.Firestore;
 import com.google.cloud.spring.data.firestore.FirestoreTemplate;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -19,20 +24,12 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.testcontainers.containers.FirestoreEmulatorContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
-import reactor.core.publisher.Flux;
-
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.hamcrest.Matchers.hasSize;
-
 import org.testcontainers.utility.DockerImageName;
 
 @SpringBootTest
@@ -45,12 +42,13 @@ class IdentityAndTaskIntegrationTest {
     private static final FirestoreEmulatorContainer firestoreEmulator =
             new FirestoreEmulatorContainer(
                     DockerImageName.parse("google/cloud-sdk:latest")
-                            .asCompatibleSubstituteFor("gcr.io/google.com/cloudsdktool/google-cloud-cli")
-            );
+                            .asCompatibleSubstituteFor(
+                                    "gcr.io/google.com/cloudsdktool/google-cloud-cli"));
 
     @DynamicPropertySource
     static void firestoreProperties(DynamicPropertyRegistry registry) {
-        registry.add("spring.cloud.gcp.firestore.host-port", firestoreEmulator::getEmulatorEndpoint);
+        registry.add(
+                "spring.cloud.gcp.firestore.host-port", firestoreEmulator::getEmulatorEndpoint);
     }
 
     @TestConfiguration
@@ -61,20 +59,16 @@ class IdentityAndTaskIntegrationTest {
         }
     }
 
-    @Autowired
-    private MockMvc mockMvc;
+    @Autowired private MockMvc mockMvc;
 
-    @Autowired
-    private FirestoreTemplate firestoreTemplate;
+    @Autowired private FirestoreTemplate firestoreTemplate;
 
-    @Autowired
-    private ObjectMapper objectMapper;
+    @Autowired private ObjectMapper objectMapper;
 
     @AfterEach
     void cleanup() {
         firestoreTemplate.deleteAll(User.class).block();
     }
-
 
     @Test
     void shouldRegisterParentAndCreateChildAndTasks() throws Exception {
@@ -85,14 +79,18 @@ class IdentityAndTaskIntegrationTest {
 
         String parentJson = objectMapper.writeValueAsString(parentRequest);
 
-        String registeredParentJson = mockMvc.perform(post("/api/v1/auth/register")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(parentJson))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.id").exists())
-                .andExpect(jsonPath("$.name").value("Test Parent"))
-                .andExpect(jsonPath("$.role").value("PARENT"))
-                .andReturn().getResponse().getContentAsString();
+        String registeredParentJson =
+                mockMvc.perform(
+                                post("/api/v1/auth/register")
+                                        .contentType(MediaType.APPLICATION_JSON)
+                                        .content(parentJson))
+                        .andExpect(status().isCreated())
+                        .andExpect(jsonPath("$.id").exists())
+                        .andExpect(jsonPath("$.name").value("Test Parent"))
+                        .andExpect(jsonPath("$.role").value("PARENT"))
+                        .andReturn()
+                        .getResponse()
+                        .getContentAsString();
 
         User registeredParent = objectMapper.readValue(registeredParentJson, User.class);
         String parentId = registeredParent.getId();
@@ -105,15 +103,19 @@ class IdentityAndTaskIntegrationTest {
 
         String childJson = objectMapper.writeValueAsString(childRequest);
 
-        String createdChildJson = mockMvc.perform(post("/api/v1/children")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(childJson))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.id").exists())
-                .andExpect(jsonPath("$.name").value("Test Child"))
-                .andExpect(jsonPath("$.role").value("CHILD"))
-                .andExpect(jsonPath("$.parentId").value(parentId))
-                .andReturn().getResponse().getContentAsString();
+        String createdChildJson =
+                mockMvc.perform(
+                                post("/api/v1/children")
+                                        .contentType(MediaType.APPLICATION_JSON)
+                                        .content(childJson))
+                        .andExpect(status().isCreated())
+                        .andExpect(jsonPath("$.id").exists())
+                        .andExpect(jsonPath("$.name").value("Test Child"))
+                        .andExpect(jsonPath("$.role").value("CHILD"))
+                        .andExpect(jsonPath("$.parentId").value(parentId))
+                        .andReturn()
+                        .getResponse()
+                        .getContentAsString();
 
         User createdChild = objectMapper.readValue(createdChildJson, User.class);
         String childId = createdChild.getId();
@@ -124,13 +126,13 @@ class IdentityAndTaskIntegrationTest {
         task1Request.setType(Task.TaskType.DAILY);
         task1Request.setWeight(Task.TaskWeight.MEDIUM);
 
-
         String task1Json = objectMapper.writeValueAsString(task1Request);
 
-        mockMvc.perform(post("/api/v1/tasks")
-                        .param("child_id", childId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(task1Json))
+        mockMvc.perform(
+                        post("/api/v1/tasks")
+                                .param("child_id", childId)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(task1Json))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").exists())
                 .andExpect(jsonPath("$.description").value("Do homework"))
@@ -144,15 +146,15 @@ class IdentityAndTaskIntegrationTest {
 
         String task2Json = objectMapper.writeValueAsString(task2Request);
 
-        mockMvc.perform(post("/api/v1/tasks")
-                        .param("child_id", childId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(task2Json))
+        mockMvc.perform(
+                        post("/api/v1/tasks")
+                                .param("child_id", childId)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(task2Json))
                 .andExpect(status().isCreated());
 
         // 5. Get all tasks for the child
-        mockMvc.perform(get("/api/v1/tasks")
-                        .param("child_id", childId))
+        mockMvc.perform(get("/api/v1/tasks").param("child_id", childId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(2)));
     }
@@ -164,9 +166,10 @@ class IdentityAndTaskIntegrationTest {
 
         String childJson = objectMapper.writeValueAsString(childRequest);
 
-        mockMvc.perform(post("/api/v1/children")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(childJson))
+        mockMvc.perform(
+                        post("/api/v1/children")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(childJson))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value("Parent ID is required to create a child."));
     }

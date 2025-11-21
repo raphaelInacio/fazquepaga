@@ -11,8 +11,10 @@ public class OpenApiConfig {
     @Bean
     public OpenAPI taskAndPayOpenAPI() {
         return new OpenAPI()
-                .info(new Info().title("TaskAndPay API")
-                        .description("API for TaskAndPay Application")
-                        .version("v0.0.1"));
+                .info(
+                        new Info()
+                                .title("TaskAndPay API")
+                                .description("API for TaskAndPay Application")
+                                .version("v0.0.1"));
     }
 }

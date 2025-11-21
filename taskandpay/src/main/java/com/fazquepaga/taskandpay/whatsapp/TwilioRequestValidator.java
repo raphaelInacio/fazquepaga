@@ -1,11 +1,10 @@
 package com.fazquepaga.taskandpay.whatsapp;
 
 import com.twilio.security.RequestValidator;
+import jakarta.servlet.http.HttpServletRequest;
+import java.util.Map;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import jakarta.servlet.http.HttpServletRequest;
-import java.util.stream.Collectors;
-import java.util.Map;
 
 @Component
 public class TwilioRequestValidator {
