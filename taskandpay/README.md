@@ -1,55 +1,110 @@
-# TaskAndPay Application
+# TaskAndPay
 
-This is the backend application for the TaskAndPay platform, a modular monolith built with Spring Boot, Google Cloud Firestore, and Google Cloud Pub/Sub.
+O **TaskAndPay** é uma plataforma backend projetada para auxiliar pais e filhos no gerenciamento de tarefas domésticas e mesadas. A aplicação utiliza uma arquitetura modular monolítica e integra tecnologias modernas como Inteligência Artificial (Vertex AI) e mensageria (Google Pub/Sub) para criar uma experiência fluida e automatizada.
 
-## Como Rodar Localmente
+## 🚀 Funcionalidades Principais
 
-Para rodar a aplicação localmente, você precisará ter o Docker e o Docker Compose instalados em sua máquina.
+A aplicação é dividida em módulos de domínio focados:
 
-1.  **Clone o repositório:**
-    ```bash
-    git clone <URL_DO_REPOSITORIO>
-    cd taskandpay
-    ```
+*   **Identity (`identity`)**: Gerenciamento de usuários (pais e filhos), autenticação e perfis.
+*   **Tasks (`tasks`)**: Ciclo de vida completo das tarefas (criação, atribuição, envio de provas, aprovação).
+*   **Allowance (`allowance`)**: Motor de cálculo de mesadas baseado no cumprimento de tarefas.
+*   **AI (`ai`)**:
+    *   **Sugestão de Tarefas**: Utiliza IA Generativa (Gemini) para sugerir tarefas adequadas à idade da criança.
+    *   **Validação de Provas**: Analisa imagens enviadas como prova de conclusão de tarefas para pré-validação automática.
+*   **WhatsApp (`whatsapp`)**: Integração com WhatsApp Business para envio de provas de tarefas (fotos) e notificações.
 
-2.  **Inicie o ambiente Docker Compose:**
-    Este comando irá construir a imagem da aplicação, iniciar a aplicação Spring Boot, o emulador do Firestore e o emulador do Pub/Sub.
+## 🛠️ Tech Stack
 
-    ```bash
-    docker-compose up --build
-    ```
+*   **Linguagem**: Java 17
+*   **Framework**: Spring Boot 3.5.7
+*   **Banco de Dados**: Google Cloud Firestore (NoSQL)
+*   **Mensageria**: Google Cloud Pub/Sub
+*   **IA**: Spring AI com Google Vertex AI (Gemini)
+*   **Integração**: Twilio (WhatsApp)
+*   **Build**: Maven
+*   **Containerização**: Docker & Docker Compose
 
-    A primeira vez que você executar este comando, pode levar alguns minutos para baixar as imagens e construir a aplicação.
+## 📋 Pré-requisitos
 
-3.  **Acesse a aplicação:**
-    A aplicação estará disponível em `http://localhost:8080`.
-    O emulador do Firestore estará disponível em `http://localhost:8081` (UI do emulador).
-    O emulador do Pub/Sub estará disponível em `http://localhost:8085`.
+*   Java 17+
+*   Docker e Docker Compose
+*   Maven (opcional, wrapper incluído)
 
-## Estrutura do Projeto
+## 🏃‍♂️ Como Rodar Localmente
 
-O projeto é um monólito modular, com o código organizado nos seguintes pacotes principais:
+A aplicação foi desenhada para ser executada facilmente em ambiente local utilizando emuladores do Google Cloud.
 
--   `identity/`: Gerenciamento de usuários (pais, filhos), autenticação e segurança de perfis.
--   `tasks/`: Criação, gerenciamento e transições de estado de tarefas.
--   `allowance/`: Lógica de cálculo da mesada.
--   `ai/`: Cliente e lógica de negócios para interagir com Vertex AI (Gemini).
--   `whatsapp/`: Interações com a API do WhatsApp Business.
--   `shared/`: Utilitários e interfaces compartilhadas.
+### 1. Clone o Repositório
 
-## Dependências
+```bash
+git clone <URL_DO_REPOSITORIO>
+cd taskandpay
+```
 
-As principais dependências incluem:
+### 2. Inicie a Infraestrutura (Emuladores)
 
--   Spring Boot Web
--   Lombok
--   Spring Cloud GCP Starter Data Firestore
--   Spring Cloud GCP Pub/Sub
+Utilize o Docker Compose para subir os emuladores do Firestore e Pub/Sub:
 
-## Testes
+```bash
+docker-compose up -d
+```
 
-Para executar os testes (ainda a ser implementado):
+Isso iniciará:
+*   **Firestore Emulator**: Porta `8081` (UI) e `8080` (gRPC).
+*   **Pub/Sub Emulator**: Porta `8085`.
+
+### 3. Execute a Aplicação
+
+Você pode rodar a aplicação via linha de comando ou através da sua IDE favorita.
+
+**Via Maven Wrapper:**
+
+```bash
+./mvnw spring-boot:run
+```
+
+A aplicação estará disponível em `http://localhost:8080`.
+
+## ⚙️ Configuração
+
+As configurações principais estão no arquivo `src/main/resources/application.properties`.
+
+### Emuladores (Padrão)
+Por padrão, a aplicação está configurada para se conectar aos emuladores locais:
+
+```properties
+spring.cloud.gcp.firestore.emulator.enabled=true
+spring.cloud.gcp.firestore.host=localhost:8080
+spring.cloud.gcp.pubsub.emulator-host=localhost:8085
+```
+
+### Integrações Externas (Twilio)
+Para testar a integração com WhatsApp, você precisará configurar suas credenciais do Twilio:
+
+```properties
+twilio.account-sid=SEU_ACCOUNT_SID
+twilio.auth-token=SEU_AUTH_TOKEN
+twilio.from-phone-number=+14155238886
+```
+
+## 🧪 Testes
+
+O projeto inclui testes unitários e de integração. Para executá-los:
 
 ```bash
 ./mvnw test
+```
+
+## 📂 Estrutura do Projeto
+
+```
+src/main/java/com/fazquepaga/taskandpay
+├── ai/           # Integração com Spring AI (Gemini)
+├── allowance/    # Lógica de cálculo de mesada
+├── identity/     # Gestão de usuários
+├── shared/       # Configurações e utilitários compartilhados
+├── tasks/        # Gestão de tarefas
+├── whatsapp/     # Integração com Twilio/WhatsApp
+└── TaskandpayApplication.java
 ```
