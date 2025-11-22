@@ -1,27 +1,30 @@
-# Use a imagem oficial do OpenJDK como base
-FROM eclipse-temurin:17-jdk-jammy
+# Stage 1: Build the application with full source code
+FROM eclipse-temurin:17-jdk-jammy AS builder
 
-# Define o diretório de trabalho dentro do contêiner
+# Set the working directory
 WORKDIR /app
 
-# Copia os arquivos de build e o pom.xml
-COPY mvnw .
-COPY .mvn .mvn
-COPY pom.xml .
+# Copy all project files from the build context to the container
+COPY . .
 
-# Baixa as dependências do projeto para criar uma camada de cache no Docker
-RUN chmod +x ./mvnw
-RUN ./mvnw dependency:go-offline
+# Grant execute permission to the Maven wrapper
+RUN chmod +x backend/mvnw
 
-# Copia o código-fonte da aplicação
-COPY src ./src
+# Build the application using the backend's pom.xml
+# This will also build the frontend as defined in the pom.xml
+RUN ./backend/mvnw -f backend/pom.xml clean package -Dmaven.test.skip=true
 
-# Compila a aplicação e empacota em um JAR executável
-# Pula os testes, pois já devem ter sido executados no pipeline de CI
-RUN ./mvnw clean package -Dmaven.test.skip=true
+# Stage 2: Create the final, lean image
+FROM eclipse-temurin:17-jdk-jammy
 
-# Expõe a porta em que a aplicação Spring Boot será executada
+# Set the working directory
+WORKDIR /app
+
+# Copy only the built JAR file from the builder stage
+COPY --from=builder /app/backend/target/taskandpay-0.0.1-SNAPSHOT.jar .
+
+# Expose the port the application runs on
 EXPOSE 8080
 
-# Define o comando para executar a aplicação
-ENTRYPOINT ["java", "-jar", "target/taskandpay-0.0.1-SNAPSHOT.jar"]
+# Set the command to run the application
+ENTRYPOINT ["java", "-jar", "taskandpay-0.0.1-SNAPSHOT.jar"]
