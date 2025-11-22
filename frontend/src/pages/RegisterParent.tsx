@@ -5,6 +5,7 @@ import * as z from "zod";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { parentService } from "@/services/parentService";
+import { useSubscription } from "@/contexts/SubscriptionContext";
 import { Button } from "@/components/ui/button";
 import {
     Form,
@@ -22,6 +23,7 @@ import { CreateParentRequest } from "@/types";
 export default function RegisterParent() {
     const { t } = useTranslation();
     const navigate = useNavigate();
+    const { setUser } = useSubscription();
     const [isLoading, setIsLoading] = useState(false);
 
     const formSchema = z.object({
@@ -46,10 +48,13 @@ export default function RegisterParent() {
             };
             const parent = await parentService.registerParent(parentData);
             toast.success(t("auth.register.success"));
-            // Store parent ID for demo purposes
+            // Store parent data for demo purposes and sync with SubscriptionContext
             if (parent && parent.id) {
                 localStorage.setItem("parentId", parent.id);
-                localStorage.setItem("parentName", parent.name); // Store name for dashboard
+                localStorage.setItem("parentName", parent.name);
+                localStorage.setItem("parent", JSON.stringify(parent));
+                // Sync with SubscriptionContext
+                setUser(parent);
             }
             navigate("/dashboard");
         } catch (error) {

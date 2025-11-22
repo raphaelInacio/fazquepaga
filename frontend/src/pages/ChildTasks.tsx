@@ -168,8 +168,22 @@ export default function ChildTasks() {
             form.reset();
             setShowCreateForm(false);
             loadTasks();
-        } catch (error) {
-            toast.error("Failed to create task");
+        } catch (error: any) {
+            // Check if it's a 402 Payment Required error (subscription limit reached)
+            if (error.response?.status === 402) {
+                toast.error("Limite de tarefas recorrentes atingido! Faça upgrade para Premium.", {
+                    duration: 5000,
+                    action: {
+                        label: "Upgrade",
+                        onClick: () => {
+                            // TODO: Navigate to upgrade page
+                            alert("Funcionalidade de upgrade em desenvolvimento!");
+                        },
+                    },
+                });
+            } else {
+                toast.error("Failed to create task");
+            }
             console.error(error);
         } finally {
             setIsLoading(false);

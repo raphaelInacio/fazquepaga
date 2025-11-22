@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Plus, User } from "lucide-react";
+import { Plus, User, Gift } from "lucide-react";
 import { ChildWithLocalData } from "@/types";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -76,9 +76,14 @@ export default function Dashboard() {
                         <h1 className="text-3xl font-bold text-gray-900">{t("dashboard.title")}</h1>
                         <p className="text-gray-500">{t("dashboard.welcome", { name: parentName || "Parent" })}</p>
                     </div>
-                    <Button onClick={() => navigate("/add-child")}>
-                        <Plus className="mr-2 h-4 w-4" /> {t("dashboard.addChild")}
-                    </Button>
+                    <div className="flex gap-2">
+                        <Button variant="outline" onClick={() => navigate("/gift-cards")}>
+                            <Gift className="mr-2 h-4 w-4" /> Loja de Recompensas
+                        </Button>
+                        <Button onClick={() => navigate("/add-child")}>
+                            <Plus className="mr-2 h-4 w-4" /> {t("dashboard.addChild")}
+                        </Button>
+                    </div>
                 </div>
 
                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">

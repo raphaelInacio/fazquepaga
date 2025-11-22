@@ -9,6 +9,7 @@ import RegisterParent from "./pages/RegisterParent";
 import AddChild from "./pages/AddChild";
 import Dashboard from "./pages/Dashboard";
 import ChildTasks from "./pages/ChildTasks";
+import { GiftCardStorePage } from "./pages/GiftCardStorePage";
 import { LanguageSwitcher } from "./components/LanguageSwitcher";
 
 
@@ -29,6 +30,7 @@ const App = () => (
           <Route path="/add-child" element={<AddChild />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/child/:childId/tasks" element={<ChildTasks />} />
+          <Route path="/gift-cards" element={<GiftCardStorePage />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
@@ -38,3 +40,4 @@ const App = () => (
 );
 
 export default App;
+

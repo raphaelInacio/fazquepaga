@@ -29,6 +29,8 @@ export interface User {
     phoneNumber?: string;
     monthlyAllowance?: number;
     age?: number;
+    subscriptionTier?: 'FREE' | 'PREMIUM';
+    subscriptionStatus?: 'ACTIVE' | 'CANCELED' | 'PAST_DUE';
 }
 
 export interface CreateChildRequest {
@@ -49,3 +51,13 @@ export interface CreateParentRequest {
     name: string;
     email: string;
 }
+
+export interface GiftCard {
+    id: string;
+    name: string;
+    brand: string;
+    value: number;
+    imageUrl?: string;
+    description: string;
+}
+

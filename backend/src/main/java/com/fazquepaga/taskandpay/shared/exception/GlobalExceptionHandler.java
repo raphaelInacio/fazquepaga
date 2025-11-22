@@ -1,5 +1,6 @@
 package com.fazquepaga.taskandpay.shared.exception;
 
+import com.fazquepaga.taskandpay.subscription.SubscriptionLimitReachedException;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.Locale;
 import java.util.concurrent.ExecutionException;
@@ -21,17 +22,16 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler({
-        ExecutionException.class,
-        InterruptedException.class,
-        RuntimeException.class
+            ExecutionException.class,
+            InterruptedException.class,
+            RuntimeException.class
     })
     public ResponseEntity<ApiError> handleInternalServerErrors(
             Exception ex, HttpServletRequest request) {
         log.error("Uncaught exception: ", ex);
         Locale locale = LocaleContextHolder.getLocale();
         String message = messageSource.getMessage("error.internal", null, locale);
-        ApiError apiError =
-                new ApiError(HttpStatus.INTERNAL_SERVER_ERROR, message, request.getRequestURI());
+        ApiError apiError = new ApiError(HttpStatus.INTERNAL_SERVER_ERROR, message, request.getRequestURI());
         return new ResponseEntity<>(apiError, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
@@ -39,8 +39,15 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiError> handleIllegalArgumentException(
             IllegalArgumentException ex, HttpServletRequest request) {
         log.warn("Bad Request: {}", ex.getMessage());
-        ApiError apiError =
-                new ApiError(HttpStatus.BAD_REQUEST, ex.getMessage(), request.getRequestURI());
+        ApiError apiError = new ApiError(HttpStatus.BAD_REQUEST, ex.getMessage(), request.getRequestURI());
         return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(SubscriptionLimitReachedException.class)
+    public ResponseEntity<ApiError> handleSubscriptionLimitReachedException(
+            SubscriptionLimitReachedException ex, HttpServletRequest request) {
+        log.warn("Subscription limit reached: {}", ex.getMessage());
+        ApiError apiError = new ApiError(HttpStatus.PAYMENT_REQUIRED, ex.getMessage(), request.getRequestURI());
+        return new ResponseEntity<>(apiError, HttpStatus.PAYMENT_REQUIRED);
     }
 }

@@ -64,6 +64,8 @@ public class IdentityService {
                 .name(request.getName())
                 .email(request.getEmail())
                 .role(User.Role.PARENT)
+                .subscriptionTier(User.SubscriptionTier.FREE) // Default to FREE tier
+                .subscriptionStatus(User.SubscriptionStatus.ACTIVE)
                 .build();
 
         userRepository.save(parent).get();
