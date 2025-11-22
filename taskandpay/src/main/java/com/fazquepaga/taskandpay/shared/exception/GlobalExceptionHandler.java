@@ -1,7 +1,10 @@
 package com.fazquepaga.taskandpay.shared.exception;
 
 import jakarta.servlet.http.HttpServletRequest;
+import java.util.Locale;
 import java.util.concurrent.ExecutionException;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -11,6 +14,12 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 @lombok.extern.slf4j.Slf4j
 public class GlobalExceptionHandler {
 
+    private final MessageSource messageSource;
+
+    public GlobalExceptionHandler(MessageSource messageSource) {
+        this.messageSource = messageSource;
+    }
+
     @ExceptionHandler({
         ExecutionException.class,
         InterruptedException.class,
@@ -19,11 +28,10 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiError> handleInternalServerErrors(
             Exception ex, HttpServletRequest request) {
         log.error("Uncaught exception: ", ex);
+        Locale locale = LocaleContextHolder.getLocale();
+        String message = messageSource.getMessage("error.internal", null, locale);
         ApiError apiError =
-                new ApiError(
-                        HttpStatus.INTERNAL_SERVER_ERROR,
-                        "An internal error occurred. Please try again later.",
-                        request.getRequestURI());
+                new ApiError(HttpStatus.INTERNAL_SERVER_ERROR, message, request.getRequestURI());
         return new ResponseEntity<>(apiError, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
