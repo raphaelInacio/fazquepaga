@@ -17,54 +17,6 @@ export const GiftCardStorePage: React.FC = () => {
         loadGiftCards();
     }, []);
 
-    const loadGiftCards = async () => {
-        if (!user?.id) {
-            setError('User not found');
-            setLoading(false);
-            return;
-        }
-
-        if (!canAccessGiftCardStore()) {
-            setError('Gift Card store is only available for Premium users');
-            setLoading(false);
-            return;
-        }
-
-        try {
-            setLoading(true);
-            const cards = await giftCardService.getAvailableGiftCards(user.id);
-            setGiftCards(cards);
-            setError(null);
-        } catch (err: any) {
-            console.error('Failed to load gift cards:', err);
-            setError(err.response?.data?.message || 'Failed to load gift cards');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleRedeem = async (giftCardId: string) => {
-        if (!user?.id) return;
-
-        try {
-            setRedeeming(giftCardId);
-            const message = await giftCardService.redeemGiftCard(giftCardId, user.id);
-            alert(message);
-        } catch (err: any) {
-            console.error('Failed to redeem gift card:', err);
-            alert(err.response?.data?.message || 'Failed to redeem gift card');
-        } finally {
-            setRedeeming(null);
-        }
-    };
-
-    if (loading) {
-        return (
-            <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-50 flex items-center justify-center">
-                <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
-            </div>
-        );
-    }
 
     if (error) {
         return (
@@ -107,6 +59,7 @@ export const GiftCardStorePage: React.FC = () => {
                     {giftCards.map((card) => (
                         <div
                             key={card.id}
+                            data-testid={`gift-card-${card.id}`}
                             className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow"
                         >
                             {/* Card Image Placeholder */}

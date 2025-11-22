@@ -26,7 +26,7 @@ jobs:
     - name: Run Tests and Check Coverage
       run: mvn -B verify
       # This runs unit and integration tests.
-      # Jacoco is configured to fail the build if coverage < 80% during the 'verify' phase.
+      # Jacoco is configured to fail the build if coverage < 60% during the 'verify' phase.
       # Testcontainers will automatically spin up Firestore/PubSub emulators using Docker.
 
     - name: Upload Coverage Report

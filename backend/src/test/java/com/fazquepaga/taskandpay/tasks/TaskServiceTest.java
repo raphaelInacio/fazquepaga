@@ -24,11 +24,14 @@ import org.mockito.MockitoAnnotations;
 
 class TaskServiceTest {
 
-    @Mock private TaskRepository taskRepository;
+    @Mock
+    private TaskRepository taskRepository;
 
-    @Mock private UserRepository userRepository;
+    @Mock
+    private UserRepository userRepository;
 
-    @InjectMocks private TaskService taskService;
+    @InjectMocks
+    private TaskService taskService;
 
     @BeforeEach
     void setUp() {
@@ -42,6 +45,7 @@ class TaskServiceTest {
         // Given
 
         String userId = "user-id";
+        String parentId = "parent-id";
 
         CreateTaskRequest request = new CreateTaskRequest();
 
@@ -53,9 +57,20 @@ class TaskServiceTest {
 
         request.setRequiresProof(false);
 
-        User child = User.builder().id(userId).role(User.Role.CHILD).build();
+        User child = User.builder()
+                .id(userId)
+                .role(User.Role.CHILD)
+                .parentId(parentId)
+                .build();
+
+        User parent = User.builder()
+                .id(parentId)
+                .role(User.Role.PARENT)
+                .subscriptionTier(User.SubscriptionTier.FREE)
+                .build();
 
         when(userRepository.findByIdSync(userId)).thenReturn(child);
+        when(userRepository.findByIdSync(parentId)).thenReturn(parent);
 
         when(taskRepository.save(eq(userId), any(Task.class)))
                 .thenReturn(ApiFutures.immediateFuture(null));
@@ -82,13 +97,12 @@ class TaskServiceTest {
 
         String userId = "user-id";
 
-        Task task =
-                Task.builder()
-                        .id("task-id")
-                        .description("My Task")
-                        .status(Task.TaskStatus.PENDING)
-                        .createdAt(Instant.now())
-                        .build();
+        Task task = Task.builder()
+                .id("task-id")
+                .description("My Task")
+                .status(Task.TaskStatus.PENDING)
+                .createdAt(Instant.now())
+                .build();
 
         // Mock Firestore response
 

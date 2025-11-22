@@ -14,6 +14,8 @@ O problema central que ele resolve é a dificuldade de gerenciar e incentivar de
 - **Objetivo Secundário**: Fomentar a responsabilidade nas crianças, medida pela taxa de tarefas concluídas.
 - **Objetivo de Negócio**: Validar o modelo de monetização Freemium, convertendo usuários gratuitos em assinantes através de funcionalidades exclusivas (IA e Gift Cards).
 
+**Referência**: Para detalhes completos sobre a estratégia de produto, proposta de valor e diferenciação entre planos Free vs Paid, consulte [Estratégia de Produto](../../docs/product_strategy.md).
+
 ## Histórias de Usuário
 
 - **Como pai/mãe, eu quero...**
