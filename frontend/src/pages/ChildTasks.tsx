@@ -248,7 +248,7 @@ export default function ChildTasks() {
                             <QrCode className="mr-2 h-4 w-4" />
                             Generate Code
                         </Button>
-                        <Button onClick={() => setShowCreateForm(!showCreateForm)}>
+                        <Button onClick={() => setShowCreateForm(!showCreateForm)} data-testid="create-task-button">
                             <Plus className="mr-2 h-4 w-4" />
                             Create Task
                         </Button>

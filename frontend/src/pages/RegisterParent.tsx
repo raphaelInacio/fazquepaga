@@ -100,7 +100,7 @@ export default function RegisterParent() {
                                     </FormItem>
                                 )}
                             />
-                            <Button type="submit" className="w-full" disabled={isLoading}>
+                            <Button type="submit" className="w-full" disabled={isLoading} data-testid="register-submit-button">
                                 {isLoading ? t("auth.register.buttonLoading") : t("auth.register.button")}
                             </Button>
                         </form>

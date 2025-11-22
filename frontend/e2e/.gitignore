@@ -1,0 +1,6 @@
+# Playwright E2E Tests
+
+## Ignorar arquivos de teste do Playwright
+/test-results/
+/playwright-report/
+/playwright/.cache/

@@ -77,10 +77,10 @@ export default function Dashboard() {
                         <p className="text-gray-500">{t("dashboard.welcome", { name: parentName || "Parent" })}</p>
                     </div>
                     <div className="flex gap-2">
-                        <Button variant="outline" onClick={() => navigate("/gift-cards")}>
+                        <Button variant="outline" onClick={() => navigate("/gift-cards")} data-testid="gift-cards-button">
                             <Gift className="mr-2 h-4 w-4" /> Loja de Recompensas
                         </Button>
-                        <Button onClick={() => navigate("/add-child")}>
+                        <Button onClick={() => navigate("/add-child")} data-testid="add-child-button">
                             <Plus className="mr-2 h-4 w-4" /> {t("dashboard.addChild")}
                         </Button>
                     </div>
