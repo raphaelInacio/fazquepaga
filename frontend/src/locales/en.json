@@ -1,0 +1,119 @@
+{
+    "app": {
+        "title": "TaskAndPay"
+    },
+    "common": {
+        "loading": "Loading...",
+        "submit": "Submit",
+        "cancel": "Cancel",
+        "save": "Save",
+        "delete": "Delete",
+        "edit": "Edit",
+        "back": "Back",
+        "next": "Next",
+        "close": "Close"
+    },
+    "auth": {
+        "register": {
+            "title": "Create Parent Account",
+            "name": "Name",
+            "namePlaceholder": "John Doe",
+            "email": "Email",
+            "emailPlaceholder": "john@example.com",
+            "button": "Register",
+            "buttonLoading": "Creating...",
+            "success": "Account created successfully!",
+            "error": "Failed to create account. Please try again."
+        }
+    },
+    "child": {
+        "add": {
+            "title": "Add Child",
+            "name": "Name",
+            "namePlaceholder": "Alice",
+            "phone": "Phone Number",
+            "phonePlaceholder": "1234567890",
+            "age": "Age",
+            "agePlaceholder": "10",
+            "button": "Add Child",
+            "buttonLoading": "Adding...",
+            "success": "Child added successfully!",
+            "error": "Failed to add child. Please try again.",
+            "errorParentNotFound": "Parent ID not found. Please login again."
+        }
+    },
+    "dashboard": {
+        "title": "Dashboard",
+        "welcome": "Welcome, {{name}}!",
+        "addChild": "Add Child",
+        "children": "Children",
+        "noChildren": "No children added yet",
+        "viewTasks": "View Tasks",
+        "setAllowance": "Set Allowance",
+        "allowance": "Allowance",
+        "setAllowanceTitle": "Set Monthly Allowance for {{name}}",
+        "amount": "Amount",
+        "save": "Save"
+    },
+    "tasks": {
+        "title": "{{childName}}'s Tasks",
+        "allowance": "Allowance",
+        "monthlyOverview": "Monthly Overview",
+        "predictedEarnings": "Predicted Earnings",
+        "totalMonthlyAllowance": "Total Monthly Allowance",
+        "loading": "Loading...",
+        "create": {
+            "title": "Create New Task",
+            "taskTitle": "Task Title",
+            "taskTitlePlaceholder": "Clean the room",
+            "description": "Description",
+            "descriptionPlaceholder": "Organize toys and make the bed",
+            "points": "Points",
+            "pointsPlaceholder": "10",
+            "button": "Create Task",
+            "buttonLoading": "Creating...",
+            "success": "Task created successfully!",
+            "error": "Failed to create task"
+        },
+        "list": {
+            "title": "Task List",
+            "noTasks": "No tasks yet",
+            "status": {
+                "pending": "Pending",
+                "completed": "Completed",
+                "approved": "Approved"
+            }
+        },
+        "ai": {
+            "button": "Get AI Suggestions",
+            "buttonLoading": "Loading...",
+            "success": "AI suggestions loaded!",
+            "error": "Failed to load AI suggestions",
+            "errorAge": "Child age is required for AI suggestions"
+        },
+        "onboarding": {
+            "button": "Generate Onboarding Code",
+            "success": "Onboarding code generated!",
+            "error": "Failed to generate onboarding code",
+            "code": "Code: {{code}}"
+        }
+    },
+    "notFound": {
+        "title": "404 - Page Not Found",
+        "message": "The page you are looking for does not exist.",
+        "backHome": "Back to Home"
+    },
+    "index": {
+        "welcome": "Welcome to TaskAndPay",
+        "description": "Manage tasks and rewards for your children",
+        "getStarted": "Get Started"
+    },
+    "validation": {
+        "nameMin": "Name must be at least {{min}} characters",
+        "emailInvalid": "Invalid email address",
+        "phoneMin": "Phone must be at least {{min}} characters",
+        "ageMin": "Age must be at least {{min}}",
+        "ageMax": "Age must be at most {{max}}",
+        "required": "This field is required"
+    }
+}

@@ -6,9 +6,15 @@ import java.time.YearMonth;
 import java.util.List;
 
 public interface AllowanceCalculator {
-    BigDecimal calculateTaskValue(
-            Task task,
-            BigDecimal monthlyAllowance,
-            List<Task> allTasksForMonth,
-            YearMonth yearMonth);
+    java.math.BigDecimal calculateTaskValue(
+            com.fazquepaga.taskandpay.tasks.Task task,
+            java.math.BigDecimal monthlyAllowance,
+            java.util.List<com.fazquepaga.taskandpay.tasks.Task> allTasksForMonth,
+            java.time.YearMonth yearMonth);
+
+    long calculateTotalPointsPossible(
+            java.util.List<com.fazquepaga.taskandpay.tasks.Task> tasks,
+            java.time.YearMonth yearMonth);
+
+    int getPointsForWeight(com.fazquepaga.taskandpay.tasks.Task.TaskWeight weight);
 }

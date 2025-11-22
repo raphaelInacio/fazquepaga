@@ -1,0 +1,119 @@
+{
+    "app": {
+        "title": "TaskAndPay"
+    },
+    "common": {
+        "loading": "Carregando...",
+        "submit": "Enviar",
+        "cancel": "Cancelar",
+        "save": "Salvar",
+        "delete": "Excluir",
+        "edit": "Editar",
+        "back": "Voltar",
+        "next": "Próximo",
+        "close": "Fechar"
+    },
+    "auth": {
+        "register": {
+            "title": "Criar Conta de Responsável",
+            "name": "Nome",
+            "namePlaceholder": "João Silva",
+            "email": "Email",
+            "emailPlaceholder": "joao@exemplo.com",
+            "button": "Registrar",
+            "buttonLoading": "Criando...",
+            "success": "Conta criada com sucesso!",
+            "error": "Falha ao criar conta. Por favor, tente novamente."
+        }
+    },
+    "child": {
+        "add": {
+            "title": "Adicionar Criança",
+            "name": "Nome",
+            "namePlaceholder": "Alice",
+            "phone": "Telefone",
+            "phonePlaceholder": "1234567890",
+            "age": "Idade",
+            "agePlaceholder": "10",
+            "button": "Adicionar Criança",
+            "buttonLoading": "Adicionando...",
+            "success": "Criança adicionada com sucesso!",
+            "error": "Falha ao adicionar criança. Por favor, tente novamente.",
+            "errorParentNotFound": "ID do responsável não encontrado. Por favor, faça login novamente."
+        }
+    },
+    "dashboard": {
+        "title": "Painel",
+        "welcome": "Bem-vindo, {{name}}!",
+        "addChild": "Adicionar Criança",
+        "children": "Crianças",
+        "noChildren": "Nenhuma criança adicionada ainda",
+        "viewTasks": "Ver Tarefas",
+        "setAllowance": "Definir Mesada",
+        "allowance": "Mesada",
+        "setAllowanceTitle": "Definir Mesada Mensal para {{name}}",
+        "amount": "Valor",
+        "save": "Salvar"
+    },
+    "tasks": {
+        "title": "Tarefas de {{childName}}",
+        "allowance": "Mesada",
+        "monthlyOverview": "Visão Mensal",
+        "predictedEarnings": "Ganhos Previstos",
+        "totalMonthlyAllowance": "Mesada Mensal Total",
+        "loading": "Carregando...",
+        "create": {
+            "title": "Criar Nova Tarefa",
+            "taskTitle": "Título da Tarefa",
+            "taskTitlePlaceholder": "Arrumar o quarto",
+            "description": "Descrição",
+            "descriptionPlaceholder": "Organizar brinquedos e fazer a cama",
+            "points": "Pontos",
+            "pointsPlaceholder": "10",
+            "button": "Criar Tarefa",
+            "buttonLoading": "Criando...",
+            "success": "Tarefa criada com sucesso!",
+            "error": "Falha ao criar tarefa"
+        },
+        "list": {
+            "title": "Lista de Tarefas",
+            "noTasks": "Nenhuma tarefa ainda",
+            "status": {
+                "pending": "Pendente",
+                "completed": "Concluída",
+                "approved": "Aprovada"
+            }
+        },
+        "ai": {
+            "button": "Obter Sugestões de IA",
+            "buttonLoading": "Carregando...",
+            "success": "Sugestões de IA carregadas!",
+            "error": "Falha ao carregar sugestões de IA",
+            "errorAge": "Idade da criança é necessária para sugestões de IA"
+        },
+        "onboarding": {
+            "button": "Gerar Código de Integração",
+            "success": "Código de integração gerado!",
+            "error": "Falha ao gerar código de integração",
+            "code": "Código: {{code}}"
+        }
+    },
+    "notFound": {
+        "title": "404 - Página Não Encontrada",
+        "message": "A página que você está procurando não existe.",
+        "backHome": "Voltar para Início"
+    },
+    "index": {
+        "welcome": "Bem-vindo ao TaskAndPay",
+        "description": "Gerencie tarefas e recompensas para suas crianças",
+        "getStarted": "Começar"
+    },
+    "validation": {
+        "nameMin": "Nome deve ter pelo menos {{min}} caracteres",
+        "emailInvalid": "Endereço de email inválido",
+        "phoneMin": "Telefone deve ter pelo menos {{min}} caracteres",
+        "ageMin": "Idade deve ser pelo menos {{min}}",
+        "ageMax": "Idade deve ser no máximo {{max}}",
+        "required": "Este campo é obrigatório"
+    }
+}

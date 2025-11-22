@@ -35,9 +35,8 @@ public class AllowanceCalculatorImpl implements AllowanceCalculator {
             return BigDecimal.ZERO.setScale(2, RoundingMode.HALF_EVEN);
         }
 
-        BigDecimal valuePerPoint =
-                monthlyAllowance.divide(
-                        BigDecimal.valueOf(totalPointsPossible), 4, RoundingMode.HALF_EVEN);
+        BigDecimal valuePerPoint = monthlyAllowance.divide(
+                BigDecimal.valueOf(totalPointsPossible), 4, RoundingMode.HALF_EVEN);
         int taskPoints = getPointsForWeight(task.getWeight());
 
         return valuePerPoint
@@ -45,7 +44,8 @@ public class AllowanceCalculatorImpl implements AllowanceCalculator {
                 .setScale(2, RoundingMode.HALF_EVEN);
     }
 
-    private long calculateTotalPointsPossible(List<Task> tasks, YearMonth yearMonth) {
+    @Override
+    public long calculateTotalPointsPossible(List<Task> tasks, YearMonth yearMonth) {
         long totalPoints = 0;
         int daysInMonth = yearMonth.lengthOfMonth();
 
@@ -77,8 +77,10 @@ public class AllowanceCalculatorImpl implements AllowanceCalculator {
         return totalPoints;
     }
 
-    private int getPointsForWeight(Task.TaskWeight weight) {
-        if (weight == null) return 0;
+    @Override
+    public int getPointsForWeight(Task.TaskWeight weight) {
+        if (weight == null)
+            return 0;
         switch (weight) {
             case LOW:
                 return POINTS_LOW;

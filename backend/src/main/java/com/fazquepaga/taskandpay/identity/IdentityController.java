@@ -49,4 +49,15 @@ public class IdentityController {
 
         return ResponseEntity.ok(Map.of("code", code));
     }
+
+    @PostMapping("/children/{childId}/allowance")
+    public ResponseEntity<User> updateChildAllowance(
+            @PathVariable String childId, @RequestBody Map<String, java.math.BigDecimal> request)
+            throws ExecutionException, InterruptedException {
+
+        java.math.BigDecimal allowance = request.get("allowance");
+        User updatedChild = identityService.updateChildAllowance(childId, allowance);
+
+        return ResponseEntity.ok(updatedChild);
+    }
 }

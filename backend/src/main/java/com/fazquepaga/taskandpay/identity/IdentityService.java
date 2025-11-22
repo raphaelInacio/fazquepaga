@@ -13,8 +13,7 @@ public class IdentityService {
 
     private final UserRepository userRepository;
 
-    private final Map<String, String> onboardingCodes =
-            new ConcurrentHashMap<>(); // code -> childId
+    private final Map<String, String> onboardingCodes = new ConcurrentHashMap<>(); // code -> childId
 
     public IdentityService(UserRepository userRepository) {
 
@@ -61,12 +60,11 @@ public class IdentityService {
     public User registerParent(CreateParentRequest request)
             throws ExecutionException, InterruptedException {
 
-        User parent =
-                User.builder()
-                        .name(request.getName())
-                        .email(request.getEmail())
-                        .role(User.Role.PARENT)
-                        .build();
+        User parent = User.builder()
+                .name(request.getName())
+                .email(request.getEmail())
+                .role(User.Role.PARENT)
+                .build();
 
         userRepository.save(parent).get();
 
@@ -92,16 +90,26 @@ public class IdentityService {
             throw new IllegalArgumentException("Parent with ID " + parentId + " not found.");
         }
 
-        User child =
-                User.builder()
-                        .name(request.getName())
-                        .phoneNumber(request.getPhoneNumber())
-                        .role(User.Role.CHILD)
-                        .parentId(parentId)
-                        .build();
+        User child = User.builder()
+                .name(request.getName())
+                .phoneNumber(request.getPhoneNumber())
+                .role(User.Role.CHILD)
+                .parentId(parentId)
+                .build();
 
         userRepository.save(child).get();
 
+        return child;
+    }
+
+    public User updateChildAllowance(String childId, java.math.BigDecimal allowance)
+            throws ExecutionException, InterruptedException {
+        User child = userRepository.findByIdSync(childId);
+        if (child == null) {
+            throw new IllegalArgumentException("Child not found");
+        }
+        child.setMonthlyAllowance(allowance);
+        userRepository.save(child).get();
         return child;
     }
 }

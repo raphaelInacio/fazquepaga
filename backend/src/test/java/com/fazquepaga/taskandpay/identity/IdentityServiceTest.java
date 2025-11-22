@@ -243,4 +243,22 @@ class IdentityServiceTest {
 
         assertEquals("Parent with ID " + parentId + " not found.", exception.getMessage());
     }
+
+    @Test
+    void shouldUpdateChildAllowance() throws ExecutionException, InterruptedException {
+        // Given
+        String childId = "child-id";
+        java.math.BigDecimal allowance = new java.math.BigDecimal("50.00");
+        User child = User.builder().id(childId).build();
+
+        when(userRepository.findByIdSync(childId)).thenReturn(child);
+        when(userRepository.save(any(User.class))).thenReturn(ApiFutures.immediateFuture(null));
+
+        // When
+        User result = identityService.updateChildAllowance(childId, allowance);
+
+        // Then
+        assertNotNull(result);
+        assertEquals(allowance, result.getMonthlyAllowance());
+    }
 }

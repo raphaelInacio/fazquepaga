@@ -12,7 +12,7 @@ O problema central que ele resolve é a dificuldade de gerenciar e incentivar de
 
 - **Objetivo Primário**: Alcançar um alto engajamento do usuário, medido pelo número de famílias ativas usando a plataforma mensalmente.
 - **Objetivo Secundário**: Fomentar a responsabilidade nas crianças, medida pela taxa de tarefas concluídas.
-- **Objetivo de Negócio**: Estabelecer uma base de usuários para futuros recursos premium, como integrações financeiras reais.
+- **Objetivo de Negócio**: Validar o modelo de monetização Freemium, convertendo usuários gratuitos em assinantes através de funcionalidades exclusivas (IA e Gift Cards).
 
 ## Histórias de Usuário
 
@@ -28,6 +28,7 @@ O problema central que ele resolve é a dificuldade de gerenciar e incentivar de
     - Ver as tarefas que preciso fazer.
     - Marcar uma tarefa como concluída enviando uma foto via WhatsApp (para tarefas que exigem isso).
     - Acompanhar quanto dinheiro ganhei com minhas tarefas concluídas.
+    - **(Plano Pago)** Trocar meu saldo acumulado por Gift Cards (Roblox, iFood, etc.) diretamente no app.
 
 ## Funcionalidades Essenciais
 
@@ -57,6 +58,18 @@ O problema central que ele resolve é a dificuldade de gerenciar e incentivar de
 6.  **Registro Financeiro**:
     - Um extrato simples e claro mostrando as tarefas concluídas e o valor da mesada ganha.
 
+7.  **Planos e Monetização (Freemium)**:
+    - **Plano Free**:
+        - Limite de 5 tarefas recorrentes ativas.
+        - Apenas 1 filho.
+        - Aprovação de tarefas 100% manual (sem pré-validação de IA).
+        - Sem acesso a sugestões de tarefas por IA.
+    - **Plano Pago (Premium)**:
+        - Tarefas recorrentes ilimitadas.
+        - **IA Generativa**: Sugestões de tarefas e Validação Visual de fotos.
+        - **Loja de Recompensas**: Possibilidade de trocar saldo por Gift Cards reais.
+        - Relatórios de comportamento via IA.
+
 ## Experiência do Usuário
 
 - **Interface dos Pais**: Uma aplicação web abrangente e fácil de usar.
@@ -80,7 +93,7 @@ O problema central que ele resolve é a dificuldade de gerenciar e incentivar de
 
 ## Fora do Escopo (Não-Metas para o MVP)
 
-- Transações financeiras diretas ou integração com cartões pré-pagos.
+- Transações bancárias diretas (PIX, TED) entre pais e filhos.
 - Recursos de gamificação (emblemas, placares de líderes, etc.).
 - Suporte para múltiplos filhos em uma única conta de pai/mãe.
 - Relatórios e análises complexas para os pais.

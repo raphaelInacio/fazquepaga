@@ -141,4 +141,28 @@ class IdentityControllerTest {
                                 .andExpect(status().isOk())
                                 .andExpect(jsonPath("$.code").value(onboardingCode));
         }
+
+        @Test
+        void shouldUpdateChildAllowanceSuccessfully() throws Exception {
+                // Given
+                String childId = "child-id";
+                java.math.BigDecimal allowance = new java.math.BigDecimal("50.00");
+                java.util.Map<String, java.math.BigDecimal> request = java.util.Map.of("allowance", allowance);
+
+                User updatedChild = User.builder()
+                                .id(childId)
+                                .name("Child")
+                                .monthlyAllowance(allowance)
+                                .build();
+
+                when(identityService.updateChildAllowance(childId, allowance)).thenReturn(updatedChild);
+
+                // When & Then
+                mockMvc.perform(
+                                post("/api/v1/children/{childId}/allowance", childId)
+                                                .contentType(MediaType.APPLICATION_JSON)
+                                                .content(objectMapper.writeValueAsString(request)))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.monthlyAllowance").value(50.00));
+        }
 }
