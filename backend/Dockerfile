@@ -10,6 +10,7 @@ COPY .mvn .mvn
 COPY pom.xml .
 
 # Baixa as dependências do projeto para criar uma camada de cache no Docker
+RUN chmod +x ./mvnw
 RUN ./mvnw dependency:go-offline
 
 # Copia o código-fonte da aplicação
