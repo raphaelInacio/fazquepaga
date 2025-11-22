@@ -8,8 +8,6 @@ import org.springframework.http.HttpStatus;
 
 class ApiErrorTest {
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
-
     @Test
     void shouldCreateApiErrorWithAllFields() {
         // Given
@@ -64,16 +62,20 @@ class ApiErrorTest {
     @Test
     void shouldSerializeToJson() throws Exception {
         // Given
-        ApiError apiError = new ApiError(HttpStatus.BAD_REQUEST, "Test message", "/api/v1/test");
+        ApiError apiError = new ApiError(HttpStatus.NOT_FOUND, "Resource not found", "/api/v1/test");
+
+        // Configure ObjectMapper with JSR310 module for LocalDateTime support
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new com.fasterxml.jackson.datatype.jsr310.JavaTimeModule());
 
         // When
         String json = objectMapper.writeValueAsString(apiError);
 
         // Then
         assertNotNull(json);
-        assertTrue(json.contains("\"status\":400"));
-        assertTrue(json.contains("\"error\":\"Bad Request\""));
-        assertTrue(json.contains("\"message\":\"Test message\""));
+        assertTrue(json.contains("\"status\":404"));
+        assertTrue(json.contains("\"error\":\"Not Found\""));
+        assertTrue(json.contains("\"message\":\"Resource not found\""));
         assertTrue(json.contains("\"path\":\"/api/v1/test\""));
         assertTrue(json.contains("\"timestamp\""));
     }

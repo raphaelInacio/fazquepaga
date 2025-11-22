@@ -18,12 +18,18 @@ class GlobalExceptionHandlerTest {
     @Mock
     private HttpServletRequest request;
 
+    @Mock
+    private org.springframework.context.MessageSource messageSource;
+
     @InjectMocks
     private GlobalExceptionHandler exceptionHandler;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
+        // Mock MessageSource to return a default error message
+        when(messageSource.getMessage(any(String.class), any(), any(java.util.Locale.class)))
+                .thenReturn("An internal error occurred. Please try again later.");
     }
 
     @Test
@@ -39,7 +45,7 @@ class GlobalExceptionHandlerTest {
         assertNotNull(response);
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
         assertNotNull(response.getBody());
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getBody().getStatus());
+        assertEquals(500, response.getBody().getStatus());
         assertEquals(
                 "An internal error occurred. Please try again later.",
                 response.getBody().getMessage());
@@ -60,7 +66,7 @@ class GlobalExceptionHandlerTest {
         assertNotNull(response);
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
         assertNotNull(response.getBody());
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getBody().getStatus());
+        assertEquals(500, response.getBody().getStatus());
         assertEquals(
                 "An internal error occurred. Please try again later.",
                 response.getBody().getMessage());
@@ -80,7 +86,7 @@ class GlobalExceptionHandlerTest {
         assertNotNull(response);
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
         assertNotNull(response.getBody());
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getBody().getStatus());
+        assertEquals(500, response.getBody().getStatus());
     }
 
     @Test
@@ -96,7 +102,7 @@ class GlobalExceptionHandlerTest {
         assertNotNull(response);
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
         assertNotNull(response.getBody());
-        assertEquals(HttpStatus.BAD_REQUEST, response.getBody().getStatus());
+        assertEquals(400, response.getBody().getStatus());
         assertEquals("Invalid parameter", response.getBody().getMessage());
         assertEquals("/api/v1/auth/register", response.getBody().getPath());
         assertNotNull(response.getBody().getTimestamp());

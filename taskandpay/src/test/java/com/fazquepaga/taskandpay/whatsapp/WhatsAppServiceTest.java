@@ -56,7 +56,8 @@ class WhatsAppServiceTest {
         String phoneNumber = "+1234567890";
         Map<String, String> payload = Map.of("Body", onboardingCode, "From", "whatsapp:" + phoneNumber);
 
-        doNothing().when(identityService).completeOnboarding(onboardingCode, phoneNumber);
+        // completeOnboarding is void, so we don't need to mock its return value
+        // Just verify it's called
 
         // When
         whatsAppService.handleWebhook(payload);
