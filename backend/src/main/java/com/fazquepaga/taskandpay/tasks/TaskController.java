@@ -36,4 +36,16 @@ public class TaskController {
 
         return ResponseEntity.ok(tasks);
     }
+
+    @PostMapping("/{taskId}/approve")
+    public ResponseEntity<Task> approveTask(
+            @PathVariable String taskId,
+            @RequestParam("child_id") String childId,
+            @RequestParam("parent_id") String parentId)
+            throws ExecutionException, InterruptedException {
+
+        Task approvedTask = taskService.approveTask(childId, taskId, parentId);
+
+        return ResponseEntity.ok(approvedTask);
+    }
 }

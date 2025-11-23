@@ -104,6 +104,18 @@ public class IdentityService {
         return child;
     }
 
+    public User getChild(String childId, String parentId)
+            throws ExecutionException, InterruptedException {
+        User child = userRepository.findByIdSync(childId);
+        if (child == null || child.getRole() != User.Role.CHILD) {
+            throw new IllegalArgumentException("Child not found");
+        }
+        if (!child.getParentId().equals(parentId)) {
+            throw new IllegalArgumentException("Child does not belong to this parent");
+        }
+        return child;
+    }
+
     public User updateChildAllowance(String childId, java.math.BigDecimal allowance)
             throws ExecutionException, InterruptedException {
         User child = userRepository.findByIdSync(childId);

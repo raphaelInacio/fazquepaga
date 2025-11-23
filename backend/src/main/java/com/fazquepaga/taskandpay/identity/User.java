@@ -21,6 +21,7 @@ public class User {
     private String parentId; // Links a child to a parent
     private String phoneNumber; // Used for children for WhatsApp identification
     private java.math.BigDecimal monthlyAllowance;
+    private java.math.BigDecimal balance; // Current balance for the child
     private Integer age; // Used for children
     private SubscriptionTier subscriptionTier; // Subscription tier (only for PARENT role)
     private SubscriptionStatus subscriptionStatus; // Subscription status (only for PARENT role)

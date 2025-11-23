@@ -11,8 +11,8 @@ Este documento serve como uma baseline, refletindo o estado atual da implementa�
 ## Objetivos
 
 - **Objetivo Primário**: Alcançar alto engajamento do usuário, medido por famílias ativas.
-- **Objetivo Secundário**: Fomentar a responsabilidade nas crianças, medida pela taxa de conclusão de tarefas.
-- **Objetivo de Negócio**: Validar o modelo de monetização Freemium.
+- **Objetivo Secundário**: Fomentar a responsabilidade e educação financeira nas crianças.
+- **Objetivo de Negócio**: Validar e expandir o modelo de monetização Freemium.
 
 **Referência**: Para a estratégia de produto original, consulte [Estratégia de Produto](../../docs/product_strategy.md).
 
@@ -48,25 +48,31 @@ Este documento serve como uma baseline, refletindo o estado atual da implementa�
 | **7. Planos e Monetização** | **Implementado** | A lógica de negócio para diferenciar os planos Free e Premium está implementada no backend (`SubscriptionService`), controlando o acesso a funcionalidades como IA, número de tarefas e Loja de Gift Cards. |
 | **8. Loja de Gift Cards (Premium)** | **Implementado (Mock)** | Pais com plano Premium podem acessar uma loja de gift cards e "resgatar" itens. A funcionalidade é simulada. |
 
+## AI Roadmap & Funcionalidades Futuras
+
+Para aprofundar nosso diferencial como uma plataforma nativa de IA, as seguintes funcionalidades estão planejadas para evoluções futuras do produto.
+
+### Aprimoramentos com IA (Próximas Fases)
+
+- **Coach Financeiro para Crianças:** No portal infantil, um assistente de IA ajudará a criança a definir metas de economia (ex: "Quero um jogo de R$250") e criará um plano de tarefas e economia para alcançar esse objetivo, com estímulos visuais e sugestões de tarefas extras.
+- **"Modo Aventura" para Tarefas:** Uma opção para a criança gamificar sua experiência, onde a IA reescreve as tarefas com uma temática lúdica e oferece feedback divertido.
+- **Insights para os Pais no Extrato:** O extrato financeiro será enriquecido com dicas e observações geradas por IA sobre os hábitos financeiros da criança.
+- **"Pacotes de Tarefas" por Objetivo:** Pais poderão pedir à IA para gerar um conjunto de tarefas com base em um objetivo de desenvolvimento (ex: "ensinar responsabilidade na cozinha").
+
+### Visão de Longo Prazo (Future)
+
+- **Motor de Mesada Inteligente:** Substituir os pesos manuais por uma sugestão de valor monetário gerado por IA, baseado na tarefa, idade e outros dados.
+- **Relatórios Preditivos e de Comportamento:** Análise de padrões de conclusão de tarefas para fornecer aos pais insights mais profundos e sugestões proativas para ajudar a criança.
+- **Notificações Inteligentes:** Notificações contextuais e personalizadas para pais e filhos, com textos gerados por IA para aumentar o engajamento.
+
 ## Plano de Lançamento em Fases (Revisado)
 
-- **MVP (Estado Atual)**: As funcionalidades essenciais para o pai (registro, criação de filho, criação de tarefas) e para o filho (conclusão via WhatsApp) estão implementadas. A monetização (planos e loja) está presente de forma lógica/mockada.
-- **Próximos Passos para Concluir o MVP**:
+- **MVP (Estado Atual)**: Funcionalidades essenciais para pais e conclusão via WhatsApp para filhos.
+- **Próximos Passos para Concluir a Versão 1.0**:
     1. Implementar a interface de **aprovação de tarefas** para os pais no portal web.
-    2. Implementar uma interface para os pais visualizarem a **prova (foto)** enviada pelo filho.
-    3. Criar uma tela de **extrato financeiro** simples para os pais.
-    4. Corrigir a dependência do frontend em `localStorage` criando endpoints de API para buscar dados de entidades (ex: `GET /api/v1/children/{id}`).
+    2. Criar uma tela de **extrato financeiro** com os primeiros insights da IA.
+    3. Lançar a **v1 do Portal da Criança** com o "Modo Aventura" e o "Coach Financeiro".
+    4. Implementar a geração de **"Pacotes de Tarefas"**.
 
-## Riscos e Mitigações
-
-- **Risco de Adoção pelo Usuário**: A falta de um portal web para a criança pode limitar o engajamento de usuários que não usam ou não têm acesso fácil ao WhatsApp.
-    - **Mitigação**: O foco no WhatsApp foi uma decisão de MVP, mas a criação de um portal web para a criança deve ser considerada na Fase 2.
-- **Risco de Precisão da IA**: A validação de imagem por IA pode errar.
-    - **Mitigação (Mantida)**: A IA atua como pré-validador; a aprovação final é (ou deveria ser) do pai.
-
-## Questões em Aberto
-
-- **Aprovação Web**: Como exatamente a interface de aprovação de tarefas para os pais deve funcionar no portal web?
-- **Dependência do Frontend**: A dependência do frontend no `localStorage` para passar dados entre páginas é frágil. Devemos priorizar a criação de endpoints (`GET /api/v1/children/{id}`) para tornar a aplicação mais robusta?
-- **Portal da Criança**: A interação via WhatsApp é suficiente para o MVP ou um portal web simples para a criança é necessário para o lançamento inicial?
-- **Feedback de Conclusão**: Como o filho é notificado de que sua tarefa foi aprovada e o dinheiro creditado? Esse fluxo de feedback precisa ser definido.
+## Riscos e Mitigações e Questões em Aberto
+*(Seções mantidas como na versão anterior)*

@@ -38,12 +38,19 @@ class TaskServiceSubscriptionTest {
         @Mock
         private SubscriptionService subscriptionService;
 
+        @Mock
+        private com.fazquepaga.taskandpay.allowance.LedgerService ledgerService;
+
+        @Mock
+        private com.fazquepaga.taskandpay.allowance.AllowanceService allowanceService;
+
         private TaskService taskService;
 
         @BeforeEach
         void setUp() {
                 MockitoAnnotations.openMocks(this);
-                taskService = new TaskService(taskRepository, userRepository, subscriptionService);
+                taskService = new TaskService(taskRepository, userRepository, subscriptionService, ledgerService,
+                                allowanceService);
         }
 
         @Test

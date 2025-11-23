@@ -167,4 +167,29 @@ class TaskControllerTest {
                                 .andExpect(status().isBadRequest())
                                 .andExpect(jsonPath("$.message").value("Child not found"));
         }
+
+        @Test
+        void shouldApproveTaskSuccessfully() throws Exception {
+                // Given
+                String taskId = "task-id";
+                String childId = "child-id";
+                String parentId = "parent-id";
+
+                Task approvedTask = Task.builder()
+                                .id(taskId)
+                                .description("Clean your room")
+                                .status(Task.TaskStatus.APPROVED)
+                                .build();
+
+                when(taskService.approveTask(childId, taskId, parentId)).thenReturn(approvedTask);
+
+                // When & Then
+                mockMvc.perform(
+                                post("/api/v1/tasks/{taskId}/approve", taskId)
+                                                .param("child_id", childId)
+                                                .param("parent_id", parentId))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.id").value(taskId))
+                                .andExpect(jsonPath("$.status").value("APPROVED"));
+        }
 }

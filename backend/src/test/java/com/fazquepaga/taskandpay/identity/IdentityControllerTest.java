@@ -2,6 +2,7 @@ package com.fazquepaga.taskandpay.identity;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -164,5 +165,25 @@ class IdentityControllerTest {
                                                 .content(objectMapper.writeValueAsString(request)))
                                 .andExpect(status().isOk())
                                 .andExpect(jsonPath("$.monthlyAllowance").value(50.00));
+        }
+
+        @Test
+        void shouldGetChildSuccessfully() throws Exception {
+                // Given
+                String childId = "child-id";
+                User child = User.builder()
+                                .id(childId)
+                                .name("Jane Doe")
+                                .role(User.Role.CHILD)
+                                .build();
+
+                when(identityService.getChild(childId, "parent-id")).thenReturn(child);
+
+                // When & Then
+                mockMvc.perform(get("/api/v1/children/{childId}", childId)
+                                .param("parent_id", "parent-id"))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.id").value(childId))
+                                .andExpect(jsonPath("$.name").value("Jane Doe"));
         }
 }

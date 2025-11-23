@@ -1,10 +1,12 @@
 package com.fazquepaga.taskandpay.allowance;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -14,9 +16,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class AllowanceController {
 
     private final AllowanceService allowanceService;
+    private final LedgerService ledgerService;
 
-    public AllowanceController(AllowanceService allowanceService) {
+    public AllowanceController(AllowanceService allowanceService, LedgerService ledgerService) {
         this.allowanceService = allowanceService;
+        this.ledgerService = ledgerService;
     }
 
     @GetMapping("/predicted")
@@ -27,5 +31,13 @@ public class AllowanceController {
         BigDecimal predictedAllowance = allowanceService.calculatePredictedAllowance(childId);
 
         return ResponseEntity.ok(Map.of("predicted_allowance", predictedAllowance));
+    }
+
+    @GetMapping("/children/{childId}/ledger")
+    public ResponseEntity<List<Transaction>> getLedger(
+            @PathVariable String childId, @RequestParam("parent_id") String parentId)
+            throws ExecutionException, InterruptedException {
+        List<Transaction> transactions = ledgerService.getTransactions(childId, parentId);
+        return ResponseEntity.ok(transactions);
     }
 }
