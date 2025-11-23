@@ -62,3 +62,51 @@ The backend will be available at `http://localhost:8080`. The Spring Boot applic
 
 *   The frontend uses ESLint for linting.
 *   End-to-end tests are written with Playwright.
+
+
+## 📂 Project Structure
+
+The project is a monorepo with two main parts:
+
+```
+.
+├── backend/      # Spring Boot modular monolith
+│   ├── src/main/java/com/fazquepaga/taskandpay
+│   │   ├── ai/           # AI integration (Gemini)
+│   │   ├── allowance/    # Allowance calculation logic
+│   │   ├── identity/     # User management
+│   │   ├── tasks/        # Task management
+│   │   └── whatsapp/     # Twilio/WhatsApp integration
+│   ├── pom.xml
+│   └── docker-compose.yml
+└── frontend/     # React web application
+    ├── src/
+    │   ├── components/
+    │   ├── pages/
+    │   └── services/
+    └── package.json
+```
+
+## Project Rules
+
+### GitHub Pipeline
+- CI workflow triggers on push to `main` and pull requests.
+- Jobs include **build**, **test**, **coverage**, and **deploy**.
+- Status checks required: build success, tests pass, coverage >= 80%.
+
+### Backend Code Formatting
+- Enforced with **Spotless** using **Google Java Format (AOSP style)**.
+- Run `./mvnw spotless:apply` to format code.
+- Formatting is verified in CI.
+
+### Coverage Requirements
+- JaCoCo report must show **minimum 80% overall coverage**.
+- CI fails if coverage drops below the threshold.
+
+### Frontend UI Tests
+- End‑to‑end tests written with **Playwright**.
+- Run with `npm run test:e2e`.
+- CI ensures all Playwright tests pass before merging.
+
+
+

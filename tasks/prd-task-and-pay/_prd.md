@@ -2,7 +2,7 @@
 
 ## Visão Geral
 
-O TaskAndPay é uma plataforma de Software como Serviço (SaaS) projetada para pais e filhos (menores de 18 anos) para gerenciar tarefas e mesadas de uma forma moderna e envolvente. O sistema permite que os pais atribuam valor às atividades de seus filhos, acompanhem sua conclusão e automatizem o cálculo da mesada. Ele integra de forma única a IA para sugestões e validação de tarefas, com uma interface simples para crianças via WhatsApp.
+O TaskAndPay é uma plataforma de Software como Serviço (SaaS) projetada para pais e filhos (menores de 18 anos) para gerenciar tarefas e mesadas de uma forma moderna e envolvente. O sistema permite que os pais atribuam valor às atividades de seus filhos, acompanhem sua conclusão e automatizem o cálculo da mesada. Ele integra IA para sugestões de tarefas e oferece uma interface web simples e dedicada para as crianças interagirem com suas responsabilidades, usando o WhatsApp como um canal de notificação opcional.
 
 O problema central que ele resolve é a dificuldade de gerenciar e incentivar de forma consistente as responsabilidades das crianças, ao mesmo tempo que lhes ensina educação financeira.
 
@@ -24,18 +24,22 @@ O problema central que ele resolve é a dificuldade de gerenciar e incentivar de
     - Criar tarefas de diferentes tipos: **diárias** (ex: "arrumar a cama"), **semanais** (ex: "ir ao curso de inglês"), ou **únicas** (ex: "passar na prova de matemática").
     - Atribuir um "Peso" ou "Importância" (Baixo, Médio, Alto) a cada tarefa para que o sistema possa calcular seu valor automaticamente.
     - Receber sugestões de uma IA para tarefas apropriadas para a idade.
-    - Ser notificado quando uma tarefa for marcada como concluída e aprová-la. Para algumas tarefas, quero ver uma foto enviada pelo meu filho via WhatsApp, que foi pré-validada por uma IA.
+    - Ser notificado quando uma tarefa for marcada como concluída e aprová-la. Para algumas tarefas, quero ver uma foto enviada pelo meu filho, que pode ser pré-validada por uma IA se eu for um assinante.
+    - Criar um login simples (usuário/PIN) para meu filho acessar seu próprio portal.
 
 - **Como filho(a), eu quero...**
-    - Ver as tarefas que preciso fazer.
-    - Marcar uma tarefa como concluída enviando uma foto via WhatsApp (para tarefas que exigem isso).
+    - Acessar um portal web simples com meu login para ver minhas tarefas.
+    - Marcar uma tarefa como "concluída" através de um clique no portal.
+    - Para tarefas que exigem prova, quero poder enviar uma foto através do portal.
     - Acompanhar quanto dinheiro ganhei com minhas tarefas concluídas.
+    - Receber notificações sobre novas tarefas no WhatsApp (se meus pais configurarem).
     - **(Plano Pago)** Trocar meu saldo acumulado por Gift Cards (Roblox, iFood, etc.) diretamente no app.
 
 ## Funcionalidades Essenciais
 
 1.  **Gerenciamento de Usuários**:
-    - Registro seguro e gerenciamento de perfis para pais e filhos.
+    - Registro seguro e gerenciamento de perfis para pais.
+    - Criação de um perfil de filho associado, com credenciais de login simples (ex: usuário/PIN).
 
 2.  **Gerenciamento de Tarefas com Múltiplos Tipos**:
     - **Tarefas Diárias**: Tarefas recorrentes que acontecem todos os dias.
@@ -49,13 +53,14 @@ O problema central que ele resolve é a dificuldade de gerenciar e incentivar de
     - A aplicação calcula o total de pontos possíveis em um mês e determina um valor "por ponto" dividindo a mesada total pelo total de pontos.
     - O valor de cada tarefa é calculado automaticamente com base em seus pontos.
 
-4.  **Recursos com Inteligência Artificial**:
+4.  **Recursos com Inteligência Artificial (Plano Premium)**:
     - **Sugestão de Tarefas**: Um LLM fornece aos pais ideias de tarefas.
-    - **Validação de Imagem**: Um LLM com capacidade de visão realiza uma verificação prévia nas fotos enviadas via WhatsApp para confirmar se correspondem à tarefa concluída, sinalizando-a para a aprovação final do pai.
+    - **Validação de Imagem**: Um LLM com capacidade de visão realiza uma verificação prévia nas fotos enviadas para confirmar se correspondem à tarefa concluída, sinalizando-a para a aprovação final do pai.
 
 5.  **Fluxo de Conclusão**:
-    - **Integração com WhatsApp**: As crianças podem enviar uma foto para um número específico para marcar uma tarefa visual como concluída.
-    - **Aprovação Manual**: Os pais podem aprovar manualmente tarefas não visuais (ex: "passar na prova") ou anular a validação da IA através do painel web.
+    - **Portal da Criança**: As crianças marcam as tarefas como concluídas através de seu painel web.
+    - **Aprovação dos Pais**: Os pais aprovam as tarefas concluídas através do painel web principal.
+    - **Notificações Opcionais via WhatsApp**: As crianças podem receber avisos sobre novas tarefas via WhatsApp, com um link para o portal.
 
 6.  **Registro Financeiro**:
     - Um extrato simples e claro mostrando as tarefas concluídas e o valor da mesada ganha.
@@ -64,7 +69,7 @@ O problema central que ele resolve é a dificuldade de gerenciar e incentivar de
     - **Plano Free**:
         - Limite de 5 tarefas recorrentes ativas.
         - Apenas 1 filho.
-        - Aprovação de tarefas 100% manual (sem pré-validação de IA).
+        - Aprovação de tarefas 100% manual.
         - Sem acesso a sugestões de tarefas por IA.
     - **Plano Pago (Premium)**:
         - Tarefas recorrentes ilimitadas.
@@ -75,12 +80,11 @@ O problema central que ele resolve é a dificuldade de gerenciar e incentivar de
 ## Experiência do Usuário
 
 - **Interface dos Pais**: Uma aplicação web abrangente e fácil de usar.
-- **Interface das Crianças**: Principalmente através do WhatsApp para simplicidade e acessibilidade.
+- **Interface das Crianças**: Um portal web dedicado, seguro e de fácil utilização. O WhatsApp pode ser usado como um canal de notificação opcional.
 
 ## Restrições Técnicas de Alto Nível
 
 - A aplicação principal voltada para os pais deve ser baseada na web.
-- Requer uma integração estável com um provedor de API do WhatsApp Business.
 - Requer integração com um provedor de LLM de terceiros que ofereça capacidades de geração de texto e visão.
 - **Ecossistema de Agentes de IA**: A arquitetura da solução deverá ser baseada em um ecossistema de agentes de IA, seguindo os seguintes padrões e tecnologias:
     - **Modelo de IA**: Utilizar a família de modelos **Google Gemini** como base para as capacidades de geração de texto e visão.
@@ -102,7 +106,7 @@ O problema central que ele resolve é a dificuldade de gerenciar e incentivar de
 
 ## Plano de Lançamento em Fases
 
-- **MVP**: Todos os recursos listados em "Funcionalidades Essenciais". O objetivo é validar o ciclo central de criação de tarefas, conclusão e geração de valor.
+- **MVP**: Todos os recursos listados em "Funcionalidades Essenciais", com foco no portal da criança como interface primária. O objetivo é validar o ciclo central de criação de tarefas, conclusão e geração de valor.
 - **Fase 2**: Explorar a integração de cartões pré-pagos para pagamentos no mundo real. Introduzir suporte para múltiplos filhos.
 
 ## Métricas de Sucesso
@@ -114,14 +118,15 @@ O problema central que ele resolve é a dificuldade de gerenciar e incentivar de
 
 ## Riscos e Mitigações
 
-- **Risco Técnico**: A confiabilidade e o custo das APIs do WhatsApp e do LLM.
+- **Risco Técnico**: A confiabilidade e o custo da API do LLM.
     - **Mitigação**: Selecionar provedores de API com SLAs claros e preços previsíveis. Projetar o sistema para lidar com interrupções de API de forma elegante.
-- **Risco de Adoção pelo Usuário**: As crianças podem não se engajar com o sistema baseado no WhatsApp.
-    - **Mitigação**: Manter o modelo de interação para as crianças o mais simples possível. Focar no aspecto da recompensa.
+- **Risco de Adoção pelo Usuário**: As crianças podem não se engajar com o sistema.
+    - **Mitigação**: A plataforma oferece um portal web dedicado e simplificado como o principal meio de interação para a criança, o que remove barreiras de acesso (como a necessidade de ter WhatsApp). A interface deve ser extremamente intuitiva e focada na recompensa.
 - **Risco de Precisão da IA**: A validação de imagem por IA pode produzir falsos positivos/negativos.
     - **Mitigação**: A validação da IA é uma verificação prévia, não uma aprovação final. O pai/mãe sempre tem a palavra final, o que minimiza o impacto de erros da IA.
 
 ## Questões em Aberto
 
-- Como o sistema deve lidar com o número variável de dias e dias da semana em um mês ao calcular o "total de pontos possíveis"? (O cálculo deve ser dinâmico com base no mês do calendário).
-- Qual é o processo de integração para conectar o número de WhatsApp de uma criança à sua conta de forma segura?
+- Como o sistema deve lidar com o número variável de dias e dias da semana em um mês ao calcular o "total de pontos possíveis"? (O cálculo deve ser dinâmâmico com base no mês do calendário).
+- Qual será o processo exato e seguro para os pais criarem e gerenciarem as credenciais de login para o portal de seus filhos?
+- Como a integração opcional com o WhatsApp será configurada e gerenciada pelos pais?
