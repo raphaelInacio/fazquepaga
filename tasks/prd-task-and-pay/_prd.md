@@ -1,132 +1,72 @@
-# Documento de Requisitos do Produto (PRD): TaskAndPay
+# Documento de Requisitos do Produto (PRD): TaskAndPay (Baseline Novembro 2025)
 
 ## Visão Geral
 
-O TaskAndPay é uma plataforma de Software como Serviço (SaaS) projetada para pais e filhos (menores de 18 anos) para gerenciar tarefas e mesadas de uma forma moderna e envolvente. O sistema permite que os pais atribuam valor às atividades de seus filhos, acompanhem sua conclusão e automatizem o cálculo da mesada. Ele integra IA para sugestões de tarefas e oferece uma interface web simples e dedicada para as crianças interagirem com suas responsabilidades, usando o WhatsApp como um canal de notificação opcional.
+O TaskAndPay é uma plataforma SaaS para pais e filhos gerenciarem tarefas e mesadas. A plataforma permite aos pais atribuir valor monetário às atividades, acompanhar sua conclusão e automatizar o cálculo da mesada. O sistema utiliza IA para sugestões de tarefas e uma interface web para os pais, com o WhatsApp servindo como o principal canal de interação para os filhos.
 
-O problema central que ele resolve é a dificuldade de gerenciar e incentivar de forma consistente as responsabilidades das crianças, ao mesmo tempo que lhes ensina educação financeira.
+Este documento serve como uma baseline, refletindo o estado atual da implementação e identificando o que foi concluído versus o que ainda está pendente.
 
-**Princípio Orientador:** Esta plataforma é uma aplicação nativa de IA de nova geração. Nosso objetivo principal é explorar as fronteiras da IA generativa, aproveitando-a para criar experiências de usuário inovadoras e inteligentes. Priorizaremos o uso de IA generativa para resolver problemas e construir funcionalidades sempre que viável.
+**Princípio Orientador:** A plataforma é uma aplicação nativa de IA, priorizando o uso de IA generativa para criar experiências de usuário inovadoras.
 
 ## Objetivos
 
-- **Objetivo Primário**: Alcançar um alto engajamento do usuário, medido pelo número de famílias ativas usando a plataforma mensalmente.
-- **Objetivo Secundário**: Fomentar a responsabilidade nas crianças, medida pela taxa de tarefas concluídas.
-- **Objetivo de Negócio**: Validar o modelo de monetização Freemium, convertendo usuários gratuitos em assinantes através de funcionalidades exclusivas (IA e Gift Cards).
+- **Objetivo Primário**: Alcançar alto engajamento do usuário, medido por famílias ativas.
+- **Objetivo Secundário**: Fomentar a responsabilidade nas crianças, medida pela taxa de conclusão de tarefas.
+- **Objetivo de Negócio**: Validar o modelo de monetização Freemium.
 
-**Referência**: Para detalhes completos sobre a estratégia de produto, proposta de valor e diferenciação entre planos Free vs Paid, consulte [Estratégia de Produto](../../docs/product_strategy.md).
+**Referência**: Para a estratégia de produto original, consulte [Estratégia de Produto](../../docs/product_strategy.md).
 
-## Histórias de Usuário
+## Histórias de Usuário (Status Atual)
 
 - **Como pai/mãe, eu quero...**
-    - Registrar a mim e ao meu filho em uma plataforma web.
-    - Definir um valor total de mesada mensal que desejo distribuir entre as tarefas do meu filho.
-    - Criar tarefas de diferentes tipos: **diárias** (ex: "arrumar a cama"), **semanais** (ex: "ir ao curso de inglês"), ou **únicas** (ex: "passar na prova de matemática").
-    - Atribuir um "Peso" ou "Importância" (Baixo, Médio, Alto) a cada tarefa para que o sistema possa calcular seu valor automaticamente.
-    - Receber sugestões de uma IA para tarefas apropriadas para a idade.
-    - Ser notificado quando uma tarefa for marcada como concluída e aprová-la. Para algumas tarefas, quero ver uma foto enviada pelo meu filho, que pode ser pré-validada por uma IA se eu for um assinante.
-    - Criar um login simples (usuário/PIN) para meu filho acessar seu próprio portal.
+    - ✅ Registrar a mim e ao meu filho em uma plataforma web.
+    - ✅ Definir um valor total de mesada mensal para meu filho.
+    - ✅ Criar tarefas de diferentes tipos (diárias, semanais, únicas) com pesos (Baixo, Médio, Alto) para cálculo automático de valor.
+    - ✅ Receber sugestões de tarefas de uma IA com base na idade.
+    - 🟡 Ser notificado quando uma tarefa for marcada como concluída. *(A notificação existe, mas a aprovação via web não)*.
+    - 🟡 Ver uma foto enviada pelo meu filho. *(O envio via WhatsApp é possível, mas a visualização e aprovação na interface web dos pais não está implementada)*.
+    - ✅ Criar um login simples para meu filho (código de onboarding para WhatsApp).
 
 - **Como filho(a), eu quero...**
-    - Acessar um portal web simples com meu login para ver minhas tarefas.
-    - Marcar uma tarefa como "concluída" através de um clique no portal.
-    - Para tarefas que exigem prova, quero poder enviar uma foto através do portal.
-    - Acompanhar quanto dinheiro ganhei com minhas tarefas concluídas.
-    - Receber notificações sobre novas tarefas no WhatsApp (se meus pais configurarem).
-    - **(Plano Pago)** Trocar meu saldo acumulado por Gift Cards (Roblox, iFood, etc.) diretamente no app.
+    - ❌ Acessar um portal web simples com meu login para ver minhas tarefas. *(A interação atual é primariamente via WhatsApp)*.
+    - ✅ Marcar uma tarefa como "concluída" via WhatsApp.
+    - ✅ Enviar uma foto como prova via WhatsApp.
+    - ❌ Acompanhar quanto dinheiro ganhei com minhas tarefas. *(O backend calcula, mas a interface para o filho não existe)*.
+    - ✅ Receber notificações sobre novas tarefas no WhatsApp.
+    - ✅ **(Plano Pago)** Trocar meu saldo acumulado por Gift Cards (Roblox, iFood, etc.) diretamente no app. *(Funcionalidade mockada disponível para pais Premium)*.
 
-## Funcionalidades Essenciais
+## Funcionalidades Essenciais (Status de Implementação)
 
-1.  **Gerenciamento de Usuários**:
-    - Registro seguro e gerenciamento de perfis para pais.
-    - Criação de um perfil de filho associado, com credenciais de login simples (ex: usuário/PIN).
+| Funcionalidade | Status | Detalhes |
+| :--- | :--- | :--- |
+| **1. Gerenciamento de Usuários** | **Implementado** | Pais podem se registrar e adicionar filhos. A criança é integrada (onboarded) via WhatsApp. |
+| **2. Gerenciamento de Tarefas** | **Parcialmente Implementado** | Pais podem criar e visualizar tarefas. A criação de tarefas respeita os limites do plano (Free/Premium). |
+| **3. Motor de Cálculo de Mesada** | **Implementado** | O backend calcula o valor previsto da mesada com base nas tarefas e pesos definidos. |
+| **4. Recursos com IA (Premium)** | **Parcialmente Implementado** | **Sugestão de Tarefas**: Implementado e funcional. **Validação de Imagem**: Backend está pronto para receber imagem e processar de forma assíncrona, mas o fluxo completo de aprovação não está finalizado. |
+| **5. Fluxo de Conclusão** | **Parcialmente Implementado** | **Criança**: Pode submeter tarefas como concluídas via WhatsApp. **Pais**: **NÃO HÁ INTERFACE** para aprovar tarefas no portal web. Este é um GAP CRÍTICO. |
+| **6. Registro Financeiro** | **Não Implementado** | Não há extrato financeiro visível para pais ou filhos. |
+| **7. Planos e Monetização** | **Implementado** | A lógica de negócio para diferenciar os planos Free e Premium está implementada no backend (`SubscriptionService`), controlando o acesso a funcionalidades como IA, número de tarefas e Loja de Gift Cards. |
+| **8. Loja de Gift Cards (Premium)** | **Implementado (Mock)** | Pais com plano Premium podem acessar uma loja de gift cards e "resgatar" itens. A funcionalidade é simulada. |
 
-2.  **Gerenciamento de Tarefas com Múltiplos Tipos**:
-    - **Tarefas Diárias**: Tarefas recorrentes que acontecem todos os dias.
-    - **Tarefas Semanais**: Atividades agendadas para dias específicos da semana.
-    - **Tarefas Únicas**: Metas de uma só vez ou eventos especiais.
+## Plano de Lançamento em Fases (Revisado)
 
-3.  **Motor de Cálculo de Mesada**:
-    - Os pais definem uma mesada mensal total.
-    - Os pais atribuem um peso (ex: Baixo, Médio, Alto) a cada tarefa.
-    - O sistema converte pesos em pontos (ex: Baixo=1, Médio=5, Alto=20).
-    - A aplicação calcula o total de pontos possíveis em um mês e determina um valor "por ponto" dividindo a mesada total pelo total de pontos.
-    - O valor de cada tarefa é calculado automaticamente com base em seus pontos.
-
-4.  **Recursos com Inteligência Artificial (Plano Premium)**:
-    - **Sugestão de Tarefas**: Um LLM fornece aos pais ideias de tarefas.
-    - **Validação de Imagem**: Um LLM com capacidade de visão realiza uma verificação prévia nas fotos enviadas para confirmar se correspondem à tarefa concluída, sinalizando-a para a aprovação final do pai.
-
-5.  **Fluxo de Conclusão**:
-    - **Portal da Criança**: As crianças marcam as tarefas como concluídas através de seu painel web.
-    - **Aprovação dos Pais**: Os pais aprovam as tarefas concluídas através do painel web principal.
-    - **Notificações Opcionais via WhatsApp**: As crianças podem receber avisos sobre novas tarefas via WhatsApp, com um link para o portal.
-
-6.  **Registro Financeiro**:
-    - Um extrato simples e claro mostrando as tarefas concluídas e o valor da mesada ganha.
-
-7.  **Planos e Monetização (Freemium)**:
-    - **Plano Free**:
-        - Limite de 5 tarefas recorrentes ativas.
-        - Apenas 1 filho.
-        - Aprovação de tarefas 100% manual.
-        - Sem acesso a sugestões de tarefas por IA.
-    - **Plano Pago (Premium)**:
-        - Tarefas recorrentes ilimitadas.
-        - **IA Generativa**: Sugestões de tarefas e Validação Visual de fotos.
-        - **Loja de Recompensas**: Possibilidade de trocar saldo por Gift Cards reais.
-        - Relatórios de comportamento via IA.
-
-## Experiência do Usuário
-
-- **Interface dos Pais**: Uma aplicação web abrangente e fácil de usar.
-- **Interface das Crianças**: Um portal web dedicado, seguro e de fácil utilização. O WhatsApp pode ser usado como um canal de notificação opcional.
-
-## Restrições Técnicas de Alto Nível
-
-- A aplicação principal voltada para os pais deve ser baseada na web.
-- Requer integração com um provedor de LLM de terceiros que ofereça capacidades de geração de texto e visão.
-- **Ecossistema de Agentes de IA**: A arquitetura da solução deverá ser baseada em um ecossistema de agentes de IA, seguindo os seguintes padrões e tecnologias:
-    - **Modelo de IA**: Utilizar a família de modelos **Google Gemini** como base para as capacidades de geração de texto e visão.
-    - **Interface de Usuário para Agentes (Agent-UI)**: Adotar um framework dedicado para a construção de interfaces de usuário que interajam com os agentes, como o `CopilotKit` ou o protocolo `AG-UI`.
-    - **Comunicação Agente-Ferramenta (MCP)**: Implementar o **Model Context Protocol (MCP)** para padronizar a forma como os agentes interagem com ferramentas externas, APIs e fontes de dados.
-    - **Comunicação Agente-Agente (A2A)**: Utilizar um protocolo padrão para a comunicação entre agentes, como o **Agent-to-Agent Protocol (A2A)** ou o **Agent Communication Protocol (ACP)**, para permitir a colaboração e orquestração de tarefas complexas entre múltiplos agentes.
-
-**Referências:**
-- **Google Gemini:** [https://deepmind.google/technologies/gemini/](https://deepmind.google/technologies/gemini/)
-- **Agent-to-Agent (A2A) Protocol:** [https://a2aprotocol.ai/](https://a2aprotocol.ai/)
-- **Model Context Protocol (MCP) e ACP:** [https://agentcommunicationprotocol.dev/](https://agentcommunicationprotocol.dev/)
-
-## Fora do Escopo (Não-Metas para o MVP)
-
-- Transações bancárias diretas (PIX, TED) entre pais e filhos.
-- Recursos de gamificação (emblemas, placares de líderes, etc.).
-- Suporte para múltiplos filhos em uma única conta de pai/mãe.
-- Relatórios e análises complexas para os pais.
-
-## Plano de Lançamento em Fases
-
-- **MVP**: Todos os recursos listados em "Funcionalidades Essenciais", com foco no portal da criança como interface primária. O objetivo é validar o ciclo central de criação de tarefas, conclusão e geração de valor.
-- **Fase 2**: Explorar a integração de cartões pré-pagos para pagamentos no mundo real. Introduzir suporte para múltiplos filhos.
-
-## Métricas de Sucesso
-
-- **Métrica Principal**: Número de Famílias Ativas Mensalmente.
-- **Métricas Chave**:
-    - Taxa de conclusão de tarefas (Tarefas Concluídas / Tarefas Atribuídas).
-    - Taxa de retenção de pais.
+- **MVP (Estado Atual)**: As funcionalidades essenciais para o pai (registro, criação de filho, criação de tarefas) e para o filho (conclusão via WhatsApp) estão implementadas. A monetização (planos e loja) está presente de forma lógica/mockada.
+- **Próximos Passos para Concluir o MVP**:
+    1. Implementar a interface de **aprovação de tarefas** para os pais no portal web.
+    2. Implementar uma interface para os pais visualizarem a **prova (foto)** enviada pelo filho.
+    3. Criar uma tela de **extrato financeiro** simples para os pais.
+    4. Corrigir a dependência do frontend em `localStorage` criando endpoints de API para buscar dados de entidades (ex: `GET /api/v1/children/{id}`).
 
 ## Riscos e Mitigações
 
-- **Risco Técnico**: A confiabilidade e o custo da API do LLM.
-    - **Mitigação**: Selecionar provedores de API com SLAs claros e preços previsíveis. Projetar o sistema para lidar com interrupções de API de forma elegante.
-- **Risco de Adoção pelo Usuário**: As crianças podem não se engajar com o sistema.
-    - **Mitigação**: A plataforma oferece um portal web dedicado e simplificado como o principal meio de interação para a criança, o que remove barreiras de acesso (como a necessidade de ter WhatsApp). A interface deve ser extremamente intuitiva e focada na recompensa.
-- **Risco de Precisão da IA**: A validação de imagem por IA pode produzir falsos positivos/negativos.
-    - **Mitigação**: A validação da IA é uma verificação prévia, não uma aprovação final. O pai/mãe sempre tem a palavra final, o que minimiza o impacto de erros da IA.
+- **Risco de Adoção pelo Usuário**: A falta de um portal web para a criança pode limitar o engajamento de usuários que não usam ou não têm acesso fácil ao WhatsApp.
+    - **Mitigação**: O foco no WhatsApp foi uma decisão de MVP, mas a criação de um portal web para a criança deve ser considerada na Fase 2.
+- **Risco de Precisão da IA**: A validação de imagem por IA pode errar.
+    - **Mitigação (Mantida)**: A IA atua como pré-validador; a aprovação final é (ou deveria ser) do pai.
 
 ## Questões em Aberto
 
-- Como o sistema deve lidar com o número variável de dias e dias da semana em um mês ao calcular o "total de pontos possíveis"? (O cálculo deve ser dinâmâmico com base no mês do calendário).
-- Qual será o processo exato e seguro para os pais criarem e gerenciarem as credenciais de login para o portal de seus filhos?
-- Como a integração opcional com o WhatsApp será configurada e gerenciada pelos pais?
+- **Aprovação Web**: Como exatamente a interface de aprovação de tarefas para os pais deve funcionar no portal web?
+- **Dependência do Frontend**: A dependência do frontend no `localStorage` para passar dados entre páginas é frágil. Devemos priorizar a criação de endpoints (`GET /api/v1/children/{id}`) para tornar a aplicação mais robusta?
+- **Portal da Criança**: A interação via WhatsApp é suficiente para o MVP ou um portal web simples para a criança é necessário para o lançamento inicial?
+- **Feedback de Conclusão**: Como o filho é notificado de que sua tarefa foi aprovada e o dinheiro creditado? Esse fluxo de feedback precisa ser definido.
