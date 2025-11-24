@@ -17,8 +17,14 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
-@WebMvcTest(IdentityController.class)
-class IdentityControllerTest {
+import com.fazquepaga.taskandpay.config.SecurityConfig;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
+import org.springframework.security.test.context.support.WithMockUser;
+
+@WebMvcTest(controllers = UserController.class,
+        includeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = SecurityConfig.class))
+class UserControllerTest {
 
         @Autowired
         private MockMvc mockMvc;
@@ -77,6 +83,7 @@ class IdentityControllerTest {
         }
 
         @Test
+        @WithMockUser(username = "parent@example.com", roles = "PARENT")
         void shouldCreateChildSuccessfully() throws Exception {
                 // Given
                 CreateChildRequest request = new CreateChildRequest();
@@ -107,6 +114,7 @@ class IdentityControllerTest {
         }
 
         @Test
+        @WithMockUser(username = "parent@example.com", roles = "PARENT")
         void shouldReturnBadRequestWhenParentNotFound() throws Exception {
                 // Given
                 CreateChildRequest request = new CreateChildRequest();
@@ -130,6 +138,7 @@ class IdentityControllerTest {
         }
 
         @Test
+        @WithMockUser(username = "parent@example.com", roles = "PARENT")
         void shouldGenerateOnboardingCodeSuccessfully() throws Exception {
                 // Given
                 String childId = "child-id";
@@ -144,6 +153,7 @@ class IdentityControllerTest {
         }
 
         @Test
+        @WithMockUser(username = "parent@example.com", roles = "PARENT")
         void shouldUpdateChildAllowanceSuccessfully() throws Exception {
                 // Given
                 String childId = "child-id";
@@ -168,6 +178,7 @@ class IdentityControllerTest {
         }
 
         @Test
+        @WithMockUser(username = "parent@example.com", roles = "PARENT")
         void shouldGetChildSuccessfully() throws Exception {
                 // Given
                 String childId = "child-id";
@@ -175,15 +186,25 @@ class IdentityControllerTest {
                                 .id(childId)
                                 .name("Jane Doe")
                                 .role(User.Role.CHILD)
+                                .parentId("parent@example.com") // Child belongs to this parent
                                 .build();
 
-                when(identityService.getChild(childId, "parent-id")).thenReturn(child);
+                when(identityService.getChild(childId, "parent@example.com")).thenReturn(child);
 
                 // When & Then
-                mockMvc.perform(get("/api/v1/children/{childId}", childId)
-                                .param("parent_id", "parent-id"))
+                mockMvc.perform(get("/api/v1/children/{childId}", childId))
                                 .andExpect(status().isOk())
                                 .andExpect(jsonPath("$.id").value(childId))
                                 .andExpect(jsonPath("$.name").value("Jane Doe"));
+        }
+
+        @Test
+        void shouldDenyGetChildWhenUnauthorized() throws Exception {
+                // Given
+                String childId = "child-id";
+
+                // When & Then
+                mockMvc.perform(get("/api/v1/children/{childId}", childId))
+                                .andExpect(status().isUnauthorized());
         }
 }

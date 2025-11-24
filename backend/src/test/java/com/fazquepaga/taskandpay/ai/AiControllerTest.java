@@ -13,7 +13,13 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-@WebMvcTest(AiController.class)
+import com.fazquepaga.taskandpay.config.SecurityConfig;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
+import org.springframework.security.test.context.support.WithMockUser;
+
+@WebMvcTest(controllers = AiController.class,
+        includeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = SecurityConfig.class))
 class AiControllerTest {
 
     @Autowired
@@ -23,6 +29,7 @@ class AiControllerTest {
     private AiSuggestionService suggestionService;
 
     @Test
+    @WithMockUser(username = "parent@example.com", roles = "PARENT")
     void shouldReturnTaskSuggestionsForAge() throws Exception {
         // Given
         int age = 10;
@@ -46,6 +53,7 @@ class AiControllerTest {
     }
 
     @Test
+    @WithMockUser(username = "parent@example.com", roles = "PARENT")
     void shouldReturnSuggestionsForYoungerChild() throws Exception {
         // Given
         int age = 5;
@@ -61,6 +69,7 @@ class AiControllerTest {
     }
 
     @Test
+    @WithMockUser(username = "parent@example.com", roles = "PARENT")
     void shouldReturnSuggestionsForOlderChild() throws Exception {
         // Given
         int age = 15;
@@ -76,6 +85,7 @@ class AiControllerTest {
     }
 
     @Test
+    @WithMockUser(username = "parent@example.com", roles = "PARENT")
     void shouldHandleEmptySuggestionsList() throws Exception {
         // Given
         int age = 10;

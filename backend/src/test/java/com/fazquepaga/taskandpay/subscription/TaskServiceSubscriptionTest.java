@@ -9,6 +9,7 @@ import com.fazquepaga.taskandpay.tasks.dto.CreateTaskRequest;
 import com.google.api.core.ApiFutures;
 import com.google.cloud.firestore.QueryDocumentSnapshot;
 import com.google.cloud.firestore.QuerySnapshot;
+import jakarta.inject.Provider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -41,18 +42,19 @@ class TaskServiceSubscriptionTest {
         @Mock
         private com.fazquepaga.taskandpay.allowance.LedgerService ledgerService;
 
+
+        
         @Mock
-        private com.fazquepaga.taskandpay.allowance.AllowanceService allowanceService;
-
+        private jakarta.inject.Provider<com.fazquepaga.taskandpay.allowance.AllowanceService> allowanceServiceProvider;
+        
         private TaskService taskService;
-
+        
         @BeforeEach
         void setUp() {
                 MockitoAnnotations.openMocks(this);
                 taskService = new TaskService(taskRepository, userRepository, subscriptionService, ledgerService,
-                                allowanceService);
+                                allowanceServiceProvider);
         }
-
         @Test
         void testCreateRecurringTask_FreeUserWithinLimit_ShouldSucceed()
                         throws ExecutionException, InterruptedException {

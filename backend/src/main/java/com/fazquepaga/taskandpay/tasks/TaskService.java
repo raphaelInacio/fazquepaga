@@ -10,6 +10,8 @@ import java.time.Instant;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
+import jakarta.inject.Provider;
+
 import org.springframework.stereotype.Service;
 
 @Service
@@ -22,12 +24,12 @@ public class TaskService {
     private final SubscriptionService subscriptionService;
 
     private final com.fazquepaga.taskandpay.allowance.LedgerService ledgerService;
-    private final com.fazquepaga.taskandpay.allowance.AllowanceService allowanceService;
+    private final Provider<com.fazquepaga.taskandpay.allowance.AllowanceService> allowanceServiceProvider;
 
     public TaskService(TaskRepository taskRepository, UserRepository userRepository,
             SubscriptionService subscriptionService,
             com.fazquepaga.taskandpay.allowance.LedgerService ledgerService,
-            com.fazquepaga.taskandpay.allowance.AllowanceService allowanceService) {
+            Provider<com.fazquepaga.taskandpay.allowance.AllowanceService> allowanceServiceProvider) {
 
         this.taskRepository = taskRepository;
 
@@ -35,7 +37,7 @@ public class TaskService {
 
         this.subscriptionService = subscriptionService;
         this.ledgerService = ledgerService;
-        this.allowanceService = allowanceService;
+        this.allowanceServiceProvider = allowanceServiceProvider;
     }
 
     public Task createTask(String userId, CreateTaskRequest request)
@@ -151,7 +153,7 @@ public class TaskService {
         }
 
         // Calculate value
-        java.math.BigDecimal value = allowanceService.calculateValueForTask(childId, taskId);
+        java.math.BigDecimal value = allowanceServiceProvider.get().calculateValueForTask(childId, taskId);
 
         // Update task status
         task.setStatus(Task.TaskStatus.APPROVED);

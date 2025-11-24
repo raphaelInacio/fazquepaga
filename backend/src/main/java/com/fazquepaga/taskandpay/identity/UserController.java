@@ -2,6 +2,7 @@ package com.fazquepaga.taskandpay.identity;
 
 import com.fazquepaga.taskandpay.identity.dto.CreateChildRequest;
 import com.fazquepaga.taskandpay.identity.dto.CreateParentRequest;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import org.springframework.http.HttpStatus;
@@ -16,11 +17,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/v1")
-public class IdentityController {
+public class UserController {
 
     private final IdentityService identityService;
 
-    public IdentityController(IdentityService identityService) {
+    public UserController(IdentityService identityService) {
 
         this.identityService = identityService;
     }
@@ -45,12 +46,21 @@ public class IdentityController {
 
     @GetMapping("/children/{childId}")
     public ResponseEntity<User> getChild(
-            @PathVariable String childId, @RequestParam("parent_id") String parentId)
+            @PathVariable String childId, java.security.Principal principal)
             throws ExecutionException, InterruptedException {
 
-        User child = identityService.getChild(childId, parentId);
+        User child = identityService.getChild(childId, principal.getName());
 
         return ResponseEntity.ok(child);
+    }
+
+    @GetMapping("/children")
+    public ResponseEntity<List<User>> getChildren(java.security.Principal principal)
+            throws ExecutionException, InterruptedException {
+
+        List<User> children = identityService.getChildren(principal.getName());
+
+        return ResponseEntity.ok(children);
     }
 
     @PostMapping("/children/{childId}/onboarding-code")

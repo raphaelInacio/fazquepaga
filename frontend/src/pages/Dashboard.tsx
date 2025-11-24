@@ -1,10 +1,5 @@
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useTranslation } from "react-i18next";
-import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Plus, User, Gift } from "lucide-react";
-import { ChildWithLocalData } from "@/types";
+import { User as UserIcon, Gift, Loader2 } from "lucide-react";
+import { User } from "@/types";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,53 +9,53 @@ import { toast } from "sonner";
 export default function Dashboard() {
     const { t } = useTranslation();
     const navigate = useNavigate();
-    const [children, setChildren] = useState<ChildWithLocalData[]>([]);
+    const [children, setChildren] = useState<User[]>([]);
     const [parentName, setParentName] = useState("");
-    const parentId = localStorage.getItem("parentId");
     const [selectedChildId, setSelectedChildId] = useState<string | null>(null);
     const [allowanceAmount, setAllowanceAmount] = useState("");
     const [isAllowanceDialogOpen, setIsAllowanceDialogOpen] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
+        const parentId = localStorage.getItem("parentId");
         if (!parentId) {
             navigate("/register");
             return;
         }
 
-        // Load parent name from localStorage
         const storedName = localStorage.getItem("parentName");
         if (storedName) setParentName(storedName);
 
-        // Load children from localStorage
-        const childrenData = localStorage.getItem("children");
-        if (childrenData) {
+        const fetchChildren = async () => {
             try {
-                const parsedChildren = JSON.parse(childrenData);
-                setChildren(parsedChildren);
+                const childrenData = await childService.getChildren();
+                setChildren(childrenData);
             } catch (error) {
-                console.error("Failed to parse children data", error);
+                console.error("Failed to fetch children", error);
+                toast.error("Failed to load your children's data.");
+            } finally {
+                setIsLoading(false);
             }
-        }
-    }, [parentId, navigate]);
+        };
+
+        fetchChildren();
+    }, [navigate]);
 
     const handleSetAllowance = async () => {
         if (!selectedChildId || !allowanceAmount) return;
 
         try {
-            const updatedChild = await childService.updateAllowance(selectedChildId, parseFloat(allowanceAmount));
+            await childService.updateAllowance(selectedChildId, parseFloat(allowanceAmount));
             toast.success("Allowance updated successfully!");
             setIsAllowanceDialogOpen(false);
             setAllowanceAmount("");
             setSelectedChildId(null);
 
-            // Update local state
-            const updatedChildren = children.map(c =>
-                c.id === selectedChildId ? { ...c, monthlyAllowance: updatedChild.monthlyAllowance } : c
-            );
-            setChildren(updatedChildren);
-
-            // Update localStorage
-            localStorage.setItem("children", JSON.stringify(updatedChildren));
+            // Refetch children to update the UI
+            setIsLoading(true);
+            const childrenData = await childService.getChildren();
+            setChildren(childrenData);
+            setIsLoading(false);
 
         } catch (error) {
             toast.error("Failed to update allowance");
@@ -86,76 +81,81 @@ export default function Dashboard() {
                     </div>
                 </div>
 
-                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                    {children.map((child) => (
-                        <Card
-                            key={child.id}
-                            className="hover:shadow-lg transition-shadow cursor-pointer"
-                            onClick={() => navigate(`/child/${child.id}/tasks`)}
-                        >
-                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-xl font-medium">{child.name}</CardTitle>
-                                <User className="h-4 w-4 text-muted-foreground" />
-                            </CardHeader>
-                            <CardContent>
-                                <div className="text-2xl font-bold">{child.age || "N/A"} years old</div>
-                                {child.monthlyAllowance !== undefined && (
-                                    <div className="text-sm text-green-600 font-medium mt-1">
-                                        {t("dashboard.allowance")}: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(child.monthlyAllowance)}
-                                    </div>
-                                )}
-                                <p className="text-xs text-muted-foreground mt-1">
-                                    {t("dashboard.viewTasks")}
-                                </p>
-                                <div className="mt-4" onClick={(e) => e.stopPropagation()}>
-                                    <Dialog open={isAllowanceDialogOpen && selectedChildId === child.id} onOpenChange={(open) => {
-                                        setIsAllowanceDialogOpen(open);
-                                        if (open) {
-                                            setSelectedChildId(child.id);
-                                            setAllowanceAmount(child.monthlyAllowance?.toString() || "");
-                                        } else {
-                                            setSelectedChildId(null);
-                                        }
-                                    }}>
-                                        <DialogTrigger asChild>
-                                            <Button variant="outline" size="sm" className="w-full">
-                                                {t("dashboard.setAllowance")}
-                                            </Button>
-                                        </DialogTrigger>
-                                        <DialogContent>
-                                            <DialogHeader>
-                                                <DialogTitle>{t("dashboard.setAllowanceTitle", { name: child.name })}</DialogTitle>
-                                            </DialogHeader>
-                                            <div className="grid gap-4 py-4">
-                                                <div className="grid grid-cols-4 items-center gap-4">
-                                                    <Label htmlFor="allowance" className="text-right">
-                                                        {t("dashboard.amount")}
-                                                    </Label>
-                                                    <Input
-                                                        id="allowance"
-                                                        type="number"
-                                                        value={allowanceAmount}
-                                                        onChange={(e) => setAllowanceAmount(e.target.value)}
-                                                        className="col-span-3"
-                                                        placeholder="0.00"
-                                                    />
+                {isLoading ? (
+                    <div className="flex justify-center items-center py-12">
+                        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                    </div>
+                ) : (
+                    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                        {children.map((child) => (
+                            <Card
+                                key={child.id}
+                                className="hover:shadow-lg transition-shadow cursor-pointer"
+                                onClick={() => navigate(`/child/${child.id}/tasks`)}
+                            >
+                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                    <CardTitle className="text-xl font-medium">{child.name}</CardTitle>
+                                    <UserIcon className="h-4 w-4 text-muted-foreground" />
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="text-2xl font-bold">{child.age || "N/A"} years old</div>
+                                    {child.monthlyAllowance !== undefined && (
+                                        <div className="text-sm text-green-600 font-medium mt-1">
+                                            {t("dashboard.allowance")}: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(child.monthlyAllowance)}
+                                        </div>
+                                    )}
+                                    <p className="text-xs text-muted-foreground mt-1">
+                                        {t("dashboard.viewTasks")}
+                                    </p>
+                                    <div className="mt-4" onClick={(e) => e.stopPropagation()}>
+                                        <Dialog open={isAllowanceDialogOpen && selectedChildId === child.id} onOpenChange={(open) => {
+                                            if (open) {
+                                                setSelectedChildId(child.id);
+                                                setAllowanceAmount(child.monthlyAllowance?.toString() || "");
+                                            } else {
+                                                setSelectedChildId(null);
+                                            }
+                                        }}>
+                                            <DialogTrigger asChild>
+                                                <Button variant="outline" size="sm" className="w-full">
+                                                    {t("dashboard.setAllowance")}
+                                                </Button>
+                                            </DialogTrigger>
+                                            <DialogContent>
+                                                <DialogHeader>
+                                                    <DialogTitle>{t("dashboard.setAllowanceTitle", { name: child.name })}</DialogTitle>
+                                                </DialogHeader>
+                                                <div className="grid gap-4 py-4">
+                                                    <div className="grid grid-cols-4 items-center gap-4">
+                                                        <Label htmlFor="allowance" className="text-right">
+                                                            {t("dashboard.amount")}
+                                                        </Label>
+                                                        <Input
+                                                            id="allowance"
+                                                            type="number"
+                                                            value={allowanceAmount}
+                                                            onChange={(e) => setAllowanceAmount(e.target.value)}
+                                                            className="col-span-3"
+                                                            placeholder="0.00"
+                                                        />
+                                                    </div>
                                                 </div>
-                                            </div>
-                                            <Button onClick={handleSetAllowance}>{t("dashboard.save")}</Button>
-                                        </DialogContent>
-                                    </Dialog>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    ))}
+                                                <Button onClick={handleSetAllowance}>{t("dashboard.save")}</Button>
+                                            </DialogContent>
+                                        </Dialog>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        ))}
 
-                    {children.length === 0 && (
-                        <div className="col-span-full text-center py-12 text-gray-500">
-                            <p>{t("dashboard.noChildren")}</p>
-                            <p className="mt-2">{t("dashboard.addChild")}</p>
-                        </div>
-                    )}
-                </div>
+                        {children.length === 0 && !isLoading && (
+                            <div className="col-span-full text-center py-12 text-gray-500">
+                                <p>{t("dashboard.noChildren")}</p>
+                                <p className="mt-2">{t("dashboard.addChild")}</p>
+                            </div>
+                        )}
+                    </div>
+                )}
             </div>
         </div>
     );

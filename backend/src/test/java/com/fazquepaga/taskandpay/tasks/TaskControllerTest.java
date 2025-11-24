@@ -19,7 +19,13 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
-@WebMvcTest(TaskController.class)
+import com.fazquepaga.taskandpay.config.SecurityConfig;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
+import org.springframework.security.test.context.support.WithMockUser;
+
+@WebMvcTest(controllers = TaskController.class,
+        includeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = SecurityConfig.class))
 class TaskControllerTest {
 
         @Autowired
@@ -32,6 +38,7 @@ class TaskControllerTest {
         private TaskService taskService;
 
         @Test
+        @WithMockUser(username = "parent@example.com", roles = "PARENT")
         void shouldCreateTaskSuccessfully() throws Exception {
                 // Given
                 String childId = "child-id";
@@ -70,6 +77,7 @@ class TaskControllerTest {
         }
 
         @Test
+        @WithMockUser(username = "parent@example.com", roles = "PARENT")
         void shouldCreateTaskWithProofRequired() throws Exception {
                 // Given
                 String childId = "child-id";
@@ -104,6 +112,7 @@ class TaskControllerTest {
         }
 
         @Test
+        @WithMockUser(username = "parent@example.com", roles = "PARENT")
         void shouldGetTasksForChild() throws Exception {
                 // Given
                 String childId = "child-id";
@@ -136,6 +145,7 @@ class TaskControllerTest {
         }
 
         @Test
+        @WithMockUser(username = "parent@example.com", roles = "PARENT")
         void shouldReturnEmptyListWhenNoTasks() throws Exception {
                 // Given
                 String childId = "child-with-no-tasks";
@@ -149,6 +159,7 @@ class TaskControllerTest {
         }
 
         @Test
+        @WithMockUser(username = "parent@example.com", roles = "PARENT")
         void shouldReturnBadRequestWhenChildNotFound() throws Exception {
                 // Given
                 String childId = "non-existent-child";
@@ -169,11 +180,41 @@ class TaskControllerTest {
         }
 
         @Test
+        void shouldDenyApproveTaskWhenUnauthorized() throws Exception {
+                // Given
+                String taskId = "task-id";
+                String childId = "child-id";
+
+                // When & Then
+                mockMvc.perform(post("/api/v1/tasks/{taskId}/approve", taskId)
+                                .param("child_id", childId))
+                                .andExpect(status().isUnauthorized());
+        }
+
+        @Test
+        @WithMockUser(username = "unauthorized@example.com", roles = "PARENT")
+        void shouldReturnForbiddenWhenParentIsNotAuthorizedToApproveTask() throws Exception {
+                // Given
+                String taskId = "task-id";
+                String childId = "child-id";
+                String authorizedParentId = "authorized@example.com";
+
+                when(taskService.approveTask(childId, taskId, "unauthorized@example.com"))
+                        .thenThrow(new IllegalArgumentException("Child not found or does not belong to this parent"));
+
+                // When & Then
+                mockMvc.perform(post("/api/v1/tasks/{taskId}/approve", taskId)
+                                .param("child_id", childId))
+                                .andExpect(status().isBadRequest());
+        }
+
+        @Test
+        @WithMockUser(username = "parent@example.com", roles = "PARENT")
         void shouldApproveTaskSuccessfully() throws Exception {
                 // Given
                 String taskId = "task-id";
                 String childId = "child-id";
-                String parentId = "parent-id";
+                String parentId = "parent@example.com"; // Authenticated parent
 
                 Task approvedTask = Task.builder()
                                 .id(taskId)
@@ -186,8 +227,7 @@ class TaskControllerTest {
                 // When & Then
                 mockMvc.perform(
                                 post("/api/v1/tasks/{taskId}/approve", taskId)
-                                                .param("child_id", childId)
-                                                .param("parent_id", parentId))
+                                                .param("child_id", childId)) // parent_id is from @WithMockUser
                                 .andExpect(status().isOk())
                                 .andExpect(jsonPath("$.id").value(taskId))
                                 .andExpect(jsonPath("$.status").value("APPROVED"));

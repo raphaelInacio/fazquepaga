@@ -15,7 +15,13 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
-@WebMvcTest(WhatsAppController.class)
+import com.fazquepaga.taskandpay.config.SecurityConfig;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
+import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
+
+@WebMvcTest(controllers = WhatsAppController.class,
+        includeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = SecurityConfig.class))
 class WhatsAppControllerTest {
 
     @Autowired private MockMvc mockMvc;
@@ -37,6 +43,7 @@ class WhatsAppControllerTest {
 
         mockMvc.perform(
                         post("/api/v1/whatsapp/webhook")
+                                .with(SecurityMockMvcRequestPostProcessors.csrf())
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(payload)))
                 .andExpect(status().isOk());

@@ -40,12 +40,6 @@ export interface CreateChildRequest {
     age?: number;
 }
 
-export interface ChildWithLocalData extends User {
-    id: string;
-    name: string;
-    age: number;
-    phoneNumber: string;
-}
 
 export interface CreateParentRequest {
     name: string;

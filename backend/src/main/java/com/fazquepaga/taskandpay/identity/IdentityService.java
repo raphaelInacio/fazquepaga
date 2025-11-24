@@ -2,10 +2,12 @@ package com.fazquepaga.taskandpay.identity;
 
 import com.fazquepaga.taskandpay.identity.dto.CreateChildRequest;
 import com.fazquepaga.taskandpay.identity.dto.CreateParentRequest;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -114,6 +116,15 @@ public class IdentityService {
             throw new IllegalArgumentException("Child does not belong to this parent");
         }
         return child;
+    }
+
+    public List<User> getChildren(String parentId)
+            throws ExecutionException, InterruptedException {
+        List<com.google.cloud.firestore.QueryDocumentSnapshot> documents =
+                userRepository.findByParentId(parentId).get().getDocuments();
+        return documents.stream()
+                .map(doc -> doc.toObject(User.class))
+                .collect(Collectors.toList());
     }
 
     public User updateChildAllowance(String childId, java.math.BigDecimal allowance)
