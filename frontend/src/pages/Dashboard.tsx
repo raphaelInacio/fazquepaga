@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { User as UserIcon, Gift, Loader2, QrCode, Plus } from "lucide-react";
+import { User as UserIcon, Gift, Loader2, QrCode, Plus, Sparkles } from "lucide-react";
 import { User } from "@/types";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -95,6 +95,9 @@ export default function Dashboard() {
                         <p className="text-gray-500">{t("dashboard.welcome", { name: parentName || "Parent" })}</p>
                     </div>
                     <div className="flex gap-2">
+                        <Button variant="outline" onClick={() => navigate("/ai-suggestions")}>
+                            <Sparkles className="mr-2 h-4 w-4" /> AI Sugestões
+                        </Button>
                         <Button variant="outline" onClick={() => navigate("/gift-cards")} data-testid="gift-cards-button">
                             <Gift className="mr-2 h-4 w-4" /> Loja de Recompensas
                         </Button>

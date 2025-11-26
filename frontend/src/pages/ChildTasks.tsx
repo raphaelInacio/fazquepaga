@@ -14,6 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { childService } from "@/services/childService";
 import { taskService } from "@/services/taskService";
 import { allowanceService } from "@/services/allowanceService";
+import api from "@/lib/api";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -37,6 +38,9 @@ export default function ChildTasks() {
         requiresProof: false,
         weight: "MEDIUM"
     });
+    const [aiSuggestions, setAiSuggestions] = useState<string[]>([]);
+    const [isLoadingAI, setIsLoadingAI] = useState(false);
+    const [showAISuggestions, setShowAISuggestions] = useState(false);
 
     useEffect(() => {
         if (!childId) {
@@ -140,6 +144,47 @@ export default function ChildTasks() {
         }
     };
 
+    const handleGetAISuggestions = async () => {
+        if (!child?.age) {
+            toast.error("Child age not available");
+            return;
+        }
+
+        setIsLoadingAI(true);
+        try {
+            const response = await api.get(`/api/v1/ai/tasks/suggestions?age=${child.age}`);
+            const suggestions = response.data.suggestions || response.data || [];
+
+            setAiSuggestions(suggestions);
+            setShowAISuggestions(true);
+            toast.success("AI suggestions generated!");
+        } catch (error) {
+            toast.error("Failed to load AI suggestions");
+            console.error(error);
+        } finally {
+            setIsLoadingAI(false);
+        }
+    };
+
+    const handleAddSuggestionAsTask = async (suggestion: string) => {
+        if (!childId) return;
+        try {
+            await taskService.createTask(childId, {
+                description: suggestion,
+                type: "ONE_TIME",
+                weight: "MEDIUM",
+                requiresProof: false,
+            });
+            toast.success("Task added from AI suggestion!");
+            loadTasks();
+            // Remove suggestion from list
+            setAiSuggestions(prev => prev.filter(s => s !== suggestion));
+        } catch (error) {
+            toast.error("Failed to create task");
+            console.error(error);
+        }
+    };
+
     const getStatusColor = (status?: string) => {
         switch (status) {
             case "COMPLETED":
@@ -191,11 +236,54 @@ export default function ChildTasks() {
                                 <p className="text-gray-500">Age: {child.age || "N/A"} years old</p>
                             </div>
                         </div>
-                        <Button onClick={() => setIsCreateTaskDialogOpen(true)} data-testid="create-task-button">
-                            <Plus className="h-4 w-4 mr-2" />
-                            Create Task
-                        </Button>
+                        <div className="flex gap-2">
+                            <Button
+                                onClick={handleGetAISuggestions}
+                                disabled={isLoadingAI}
+                                className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white shadow-lg"
+                            >
+                                <Sparkles className="h-4 w-4 mr-2" />
+                                {isLoadingAI ? "Generating..." : "✨ Gerar Tarefas com IA"}
+                            </Button>
+                            <Button variant="outline" onClick={() => setIsCreateTaskDialogOpen(true)} data-testid="create-task-button">
+                                <Plus className="h-4 w-4 mr-2" />
+                                Criar Tarefa Manual
+                            </Button>
+                        </div>
                     </div>
+
+                    {showAISuggestions && aiSuggestions.length > 0 && (
+                        <Card className="border-2 border-purple-200 bg-gradient-to-br from-purple-50 to-blue-50">
+                            <CardHeader>
+                                <CardTitle className="flex items-center gap-2">
+                                    <Sparkles className="h-5 w-5 text-purple-600" />
+                                    AI Task Suggestions
+                                </CardTitle>
+                                <CardDescription>
+                                    Click "Adicionar" to create any of these age-appropriate tasks
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="grid gap-3">
+                                    {aiSuggestions.map((suggestion, index) => (
+                                        <div
+                                            key={index}
+                                            className="flex items-center justify-between p-4 bg-white rounded-lg border border-purple-100 hover:border-purple-300 transition-colors"
+                                        >
+                                            <span className="text-gray-700">{suggestion}</span>
+                                            <Button
+                                                onClick={() => handleAddSuggestionAsTask(suggestion)}
+                                                size="sm"
+                                                className="bg-purple-600 hover:bg-purple-700"
+                                            >
+                                                ➕ Adicionar
+                                            </Button>
+                                        </div>
+                                    ))}
+                                </div>
+                            </CardContent>
+                        </Card>
+                    )}
 
                     <Tabs defaultValue="tasks" className="w-full">
                         <TabsList className="grid w-full grid-cols-2">
