@@ -9,6 +9,7 @@ export interface Task {
     dayOfWeek?: number;
     scheduledDate?: string;
     aiValidated?: boolean;
+    proofImageUrl?: string;
 }
 
 export interface CreateTaskRequest {

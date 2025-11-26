@@ -1,41 +1,22 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { taskService } from "@/services/taskService";
-import { aiService } from "@/services/aiService";
-import { childService } from "@/services/childService";
-import { allowanceService } from "@/services/allowanceService";
 import { Button } from "@/components/ui/button";
-import {
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
-    FormDescription,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { toast } from "sonner";
-import { Task, CreateTaskRequest, User } from "@/types";
+import { Task, User } from "@/types";
 import { ArrowLeft, Plus, Sparkles, QrCode, Calendar } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
-
-const formSchema = z.object({
-    description: z.string().min(3, "Description must be at least 3 characters"),
-    type: z.enum(["DAILY", "WEEKLY", "ONE_TIME"]),
-    weight: z.enum(["LOW", "MEDIUM", "HIGH"]),
-    requiresProof: z.boolean().default(false),
-    dayOfWeek: z.number().min(0).max(6).optional(),
-    scheduledDate: z.string().optional(),
-});
+import { FinancialLedger } from "@/components/FinancialLedger";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { childService } from "@/services/childService";
+import { taskService } from "@/services/taskService";
+import { allowanceService } from "@/services/allowanceService";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 
 export default function ChildTasks() {
     const { t } = useTranslation();
@@ -43,26 +24,18 @@ export default function ChildTasks() {
     const navigate = useNavigate();
     const [child, setChild] = useState<User | null>(null);
     const [tasks, setTasks] = useState<Task[]>([]);
-    const [isLoading, setIsLoading] = useState(false);
     const [isLoadingTasks, setIsLoadingTasks] = useState(true);
-    const [showCreateForm, setShowCreateForm] = useState(false);
-    const [aiSuggestions, setAiSuggestions] = useState<string[]>([]);
-    const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
-    const [onboardingCode, setOnboardingCode] = useState<string | null>(null);
     const [filterStatus, setFilterStatus] = useState<string>("ALL");
     const [predictedAllowance, setPredictedAllowance] = useState<number>(0);
     const [isLoadingAllowance, setIsLoadingAllowance] = useState(false);
     const [isReviewDialogOpen, setIsReviewDialogOpen] = useState(false);
     const [selectedTaskForReview, setSelectedTaskForReview] = useState<Task | null>(null);
-
-    const form = useForm<z.infer<typeof formSchema>>({
-        resolver: zodResolver(formSchema),
-        defaultValues: {
-            description: "",
-            type: "DAILY",
-            weight: "MEDIUM",
-            requiresProof: false,
-        },
+    const [isCreateTaskDialogOpen, setIsCreateTaskDialogOpen] = useState(false);
+    const [newTask, setNewTask] = useState<Partial<Task>>({
+        description: "",
+        type: "ONE_TIME",
+        requiresProof: false,
+        weight: "MEDIUM"
     });
 
     useEffect(() => {
@@ -72,8 +45,10 @@ export default function ChildTasks() {
         }
 
         const fetchChildData = async () => {
+            const parentId = localStorage.getItem("parentId");
+            if (!parentId) return;
             try {
-                const childData = await childService.getChild(childId);
+                const childData = await childService.getChild(childId, parentId);
                 setChild(childData);
             } catch (error) {
                 toast.error("Failed to load child data");
@@ -101,25 +76,6 @@ export default function ChildTasks() {
         }
     };
 
-    const loadAiSuggestions = async () => {
-        if (!child?.age) {
-            toast.error("Child age is required for AI suggestions");
-            return;
-        }
-
-        setIsLoadingSuggestions(true);
-        try {
-            const suggestions = await aiService.getTaskSuggestions(child.age);
-            setAiSuggestions(suggestions);
-            toast.success("AI suggestions loaded!");
-        } catch (error) {
-            toast.error("Failed to load AI suggestions");
-            console.error(error);
-        } finally {
-            setIsLoadingSuggestions(false);
-        }
-    };
-
     const loadPredictedAllowance = async () => {
         if (!childId) return;
         setIsLoadingAllowance(true);
@@ -135,66 +91,7 @@ export default function ChildTasks() {
 
     useEffect(() => {
         loadPredictedAllowance();
-    }, [childId, tasks]); // Reload when tasks change
-
-    const generateOnboardingCode = async () => {
-        if (!childId) return;
-
-        try {
-            const response = await childService.generateOnboardingCode(childId);
-            setOnboardingCode(response.code || JSON.stringify(response));
-            toast.success("Onboarding code generated!");
-        } catch (error) {
-            toast.error("Failed to generate onboarding code");
-            console.error(error);
-        }
-    };
-
-    const onSubmit = async (values: z.infer<typeof formSchema>) => {
-        if (!childId) return;
-
-        setIsLoading(true);
-        try {
-            const taskData: CreateTaskRequest = {
-                description: values.description,
-                type: values.type,
-                weight: values.weight,
-                requiresProof: values.requiresProof,
-                dayOfWeek: values.dayOfWeek,
-                scheduledDate: values.scheduledDate,
-            };
-
-            await taskService.createTask(childId, taskData);
-            toast.success("Task created successfully!");
-            form.reset();
-            setShowCreateForm(false);
-            loadTasks();
-        } catch (error: any) {
-            // Check if it's a 402 Payment Required error (subscription limit reached)
-            if (error.response?.status === 402) {
-                toast.error("Recurring task limit reached! Upgrade to Premium.", {
-                    duration: 5000,
-                    action: {
-                        label: "Upgrade",
-                        onClick: () => {
-                            // TODO: Navigate to upgrade page
-                            alert("Upgrade functionality is under development!");
-                        },
-                    },
-                });
-            } else {
-                toast.error("Failed to create task");
-            }
-            console.error(error);
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    const useSuggestion = (suggestion: string) => {
-        form.setValue("description", suggestion);
-        setShowCreateForm(true);
-    };
+    }, [childId, tasks]);
 
     const handleReviewClick = (task: Task) => {
         setSelectedTaskForReview(task);
@@ -204,14 +101,41 @@ export default function ChildTasks() {
     const handleApproveTask = async () => {
         if (!selectedTaskForReview || !childId) return;
 
+        const parentId = localStorage.getItem("parentId");
+        if (!parentId) return;
+
         try {
-            await taskService.approveTask(childId, selectedTaskForReview.id!);
+            await taskService.approveTask(childId, selectedTaskForReview.id!, parentId);
             toast.success("Task approved successfully!");
             setIsReviewDialogOpen(false);
             setSelectedTaskForReview(null);
-            loadTasks(); // Refetch tasks to update the UI
+            loadTasks();
         } catch (error) {
             toast.error("Failed to approve task");
+            console.error(error);
+        }
+    };
+
+    const handleCreateTask = async () => {
+        if (!childId || !newTask.description) return;
+        try {
+            await taskService.createTask(childId, {
+                description: newTask.description!,
+                type: newTask.type as any,
+                weight: newTask.weight as any,
+                requiresProof: newTask.requiresProof || false,
+            });
+            toast.success("Task created successfully");
+            setIsCreateTaskDialogOpen(false);
+            setNewTask({
+                description: "",
+                type: "ONE_TIME",
+                requiresProof: false,
+                weight: "MEDIUM"
+            });
+            loadTasks();
+        } catch (error) {
+            toast.error("Failed to create task");
             console.error(error);
         }
     };
@@ -244,7 +168,7 @@ export default function ChildTasks() {
 
     const filteredTasks = tasks.filter(task => {
         if (filterStatus === 'ALL') {
-            return task.status !== 'COMPLETED' && task.status !== 'PENDING_APPROVAL';
+            return task.status !== 'COMPLETED';
         }
         return task.status === filterStatus;
     });
@@ -257,7 +181,6 @@ export default function ChildTasks() {
         <Dialog open={isReviewDialogOpen} onOpenChange={setIsReviewDialogOpen}>
             <div className="min-h-screen bg-gray-50 p-8">
                 <div className="max-w-6xl mx-auto space-y-6">
-                    {/* Header */}
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-4">
                             <Button variant="ghost" onClick={() => navigate("/dashboard")}>
@@ -265,376 +188,97 @@ export default function ChildTasks() {
                             </Button>
                             <div>
                                 <h1 className="text-3xl font-bold text-gray-900">{child.name}'s Tasks</h1>
-                                <p className="text-gray-500">Age: {child.age} years old</p>
+                                <p className="text-gray-500">Age: {child.age || "N/A"} years old</p>
                             </div>
                         </div>
-                        <div className="flex gap-2">
-                            <Button variant="outline" onClick={generateOnboardingCode}>
-                                <QrCode className="mr-2 h-4 w-4" />
-                                Generate Code
-                            </Button>
-                            <Button onClick={() => setShowCreateForm(!showCreateForm)} data-testid="create-task-button">
-                                <Plus className="mr-2 h-4 w-4" />
-                                Create Task
-                            </Button>
-                        </div>
+                        <Button onClick={() => setIsCreateTaskDialogOpen(true)} data-testid="create-task-button">
+                            <Plus className="h-4 w-4 mr-2" />
+                            Create Task
+                        </Button>
                     </div>
 
-                    {/* Predicted Allowance & Onboarding Code */}
-                    <div className="grid gap-6 md:grid-cols-2">
-                        {/* Predicted Allowance */}
-                        <Card className="bg-green-50 border-green-200">
-                            <CardHeader>
-                                <CardTitle className="flex items-center gap-2 text-green-700">
-                                    <span className="text-2xl">💰</span>
-                                    {t("tasks.allowance")}
-                                </CardTitle>
-                                <CardDescription className="text-green-600">
-                                    {t("tasks.monthlyOverview")}
-                                </CardDescription>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                                <div>
-                                    <p className="text-sm text-green-600 font-medium">{t("tasks.predictedEarnings")}</p>
-                                    <div className="text-3xl font-bold text-green-700">
-                                        {isLoadingAllowance ? (
-                                            t("tasks.loading")
-                                        ) : (
-                                            new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(predictedAllowance)
-                                        )}
-                                    </div>
-                                </div>
-
-                                {child?.monthlyAllowance !== undefined && (
-                                    <div className="pt-4 border-t border-green-200">
-                                        <p className="text-sm text-green-600 font-medium">{t("tasks.totalMonthlyAllowance")}</p>
-                                        <div className="text-xl font-semibold text-green-800">
-                                            {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(child.monthlyAllowance)}
-                                        </div>
-                                    </div>
-                                )}
-                            </CardContent>
-                        </Card>
-
-                        {/* Onboarding Code Display */}
-                        {onboardingCode ? (
-                            <Card className="bg-blue-50 border-blue-200">
-                                <CardContent className="pt-6">
-                                    <div className="text-center">
-                                        <p className="text-sm text-gray-600 mb-2">Onboarding Code:</p>
-                                        <p className="text-2xl font-mono font-bold text-blue-600">{onboardingCode}</p>
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        ) : (
-                            <Card className="bg-gray-50 border-gray-200 flex items-center justify-center p-6">
-                                <Button variant="outline" onClick={generateOnboardingCode}>
-                                    <QrCode className="mr-2 h-4 w-4" />
-                                    Generate Onboarding Code
-                                </Button>
-                            </Card>
-                        )}
-                    </div>
-
-                    {/* Pending Approval Section */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="text-yellow-600">Tasks Pending Approval</CardTitle>
-                            <CardDescription>Review tasks your child has completed.</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="space-y-4">
-                                {tasks.filter(t => t.status === 'COMPLETED' || t.status === 'PENDING_APPROVAL').map(task => (
-                                    <div key={task.id} className="p-4 border rounded-lg flex items-center justify-between">
-                                        <div>
-                                            <h3 className="font-semibold">{task.description}</h3>
-                                            <p className="text-sm text-gray-500">
-                                                Completed on: {new Date(task.createdAt || "").toLocaleDateString()}
-                                            </p>
-                                        </div>
-                                        <DialogTrigger asChild>
-                                            <Button size="sm" onClick={() => handleReviewClick(task)}>Review</Button>
-                                        </DialogTrigger>
-                                    </div>
-                                ))}
-                                {tasks.filter(t => t.status === 'COMPLETED' || t.status === 'PENDING_APPROVAL').length === 0 && (
-                                    <p className="text-sm text-gray-500 text-center">No tasks are pending approval.</p>
-                                )}
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    {/* AI Suggestions */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                                <Sparkles className="h-5 w-5 text-purple-500" />
-                                AI Task Suggestions
-                            </CardTitle>
-                            <CardDescription>
-                                Get age-appropriate task suggestions powered by AI
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="space-y-4">
-                                <Button
-                                    onClick={loadAiSuggestions}
-                                    disabled={isLoadingSuggestions}
-                                    variant="outline"
-                                >
-                                    {isLoadingSuggestions ? "Loading..." : "Get Suggestions"}
-                                </Button>
-                                {aiSuggestions.length > 0 && (
-                                    <div className="grid gap-2">
-                                        {aiSuggestions.map((suggestion, index) => (
-                                            <div
-                                                key={index}
-                                                className="flex items-center justify-between p-3 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors"
-                                            >
-                                                <span className="text-sm">{suggestion}</span>
-                                                <Button
-                                                    size="sm"
-                                                    onClick={() => useSuggestion(suggestion)}
-                                                >
-                                                    Use
-                                                </Button>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    {/* Create Task Form */}
-                    {
-                        showCreateForm && (
+                    <Tabs defaultValue="tasks" className="w-full">
+                        <TabsList className="grid w-full grid-cols-2">
+                            <TabsTrigger value="tasks">Tasks</TabsTrigger>
+                            <TabsTrigger value="financial">Financial</TabsTrigger>
+                        </TabsList>
+                        <TabsContent value="tasks">
                             <Card>
                                 <CardHeader>
-                                    <CardTitle>Create New Task</CardTitle>
+                                    <div className="flex items-center justify-between">
+                                        <CardTitle>Tasks</CardTitle>
+                                        <Select value={filterStatus} onValueChange={setFilterStatus}>
+                                            <SelectTrigger className="w-[180px]">
+                                                <SelectValue placeholder="Filter by status" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="ALL">All Tasks</SelectItem>
+                                                <SelectItem value="PENDING">Pending</SelectItem>
+                                                <SelectItem value="PENDING_APPROVAL">Pending Approval</SelectItem>
+                                                <SelectItem value="APPROVED">Approved</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
                                 </CardHeader>
                                 <CardContent>
-                                    <Form {...form}>
-                                        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                                            <FormField
-                                                control={form.control}
-                                                name="description"
-                                                render={({ field }) => (
-                                                    <FormItem>
-                                                        <FormLabel>Description</FormLabel>
-                                                        <FormControl>
-                                                            <Input placeholder="Clean your room" {...field} />
-                                                        </FormControl>
-                                                        <FormMessage />
-                                                    </FormItem>
-                                                )}
-                                            />
-
-                                            <div className="grid grid-cols-2 gap-4">
-                                                <FormField
-                                                    control={form.control}
-                                                    name="type"
-                                                    render={({ field }) => (
-                                                        <FormItem>
-                                                            <FormLabel>Type</FormLabel>
-                                                            <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                                                <FormControl>
-                                                                    <SelectTrigger>
-                                                                        <SelectValue placeholder="Select type" />
-                                                                    </SelectTrigger>
-                                                                </FormControl>
-                                                                <SelectContent>
-                                                                    <SelectItem value="DAILY">Daily</SelectItem>
-                                                                    <SelectItem value="WEEKLY">Weekly</SelectItem>
-                                                                    <SelectItem value="ONE_TIME">One Time</SelectItem>
-                                                                </SelectContent>
-                                                            </Select>
-                                                            <FormMessage />
-                                                        </FormItem>
-                                                    )}
-                                                />
-
-                                                <FormField
-                                                    control={form.control}
-                                                    name="weight"
-                                                    render={({ field }) => (
-                                                        <FormItem>
-                                                            <FormLabel>Weight</FormLabel>
-                                                            <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                                                <FormControl>
-                                                                    <SelectTrigger>
-                                                                        <SelectValue placeholder="Select weight" />
-                                                                    </SelectTrigger>
-                                                                </FormControl>
-                                                                <SelectContent>
-                                                                    <SelectItem value="LOW">Low</SelectItem>
-                                                                    <SelectItem value="MEDIUM">Medium</SelectItem>
-                                                                    <SelectItem value="HIGH">High</SelectItem>
-                                                                </SelectContent>
-                                                            </Select>
-                                                            <FormMessage />
-                                                        </FormItem>
-                                                    )}
-                                                />
-                                            </div>
-
-                                            <FormField
-                                                control={form.control}
-                                                name="requiresProof"
-                                                render={({ field }) => (
-                                                    <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                                                        <FormControl>
-                                                            <Checkbox
-                                                                checked={field.value}
-                                                                onCheckedChange={field.onChange}
-                                                            />
-                                                        </FormControl>
-                                                        <div className="space-y-1 leading-none">
-                                                            <FormLabel>Requires Proof</FormLabel>
-                                                            <FormDescription>
-                                                                Child must provide photo evidence
-                                                            </FormDescription>
-                                                        </div>
-                                                    </FormItem>
-                                                )}
-                                            />
-
-                                            {form.watch("type") === "WEEKLY" && (
-                                                <FormField
-                                                    control={form.control}
-                                                    name="dayOfWeek"
-                                                    render={({ field }) => (
-                                                        <FormItem>
-                                                            <FormLabel>Day of Week</FormLabel>
-                                                            <Select
-                                                                onValueChange={(value) => field.onChange(parseInt(value))}
-                                                                defaultValue={field.value?.toString()}
-                                                            >
-                                                                <FormControl>
-                                                                    <SelectTrigger>
-                                                                        <SelectValue placeholder="Select day" />
-                                                                    </SelectTrigger>
-                                                                </FormControl>
-                                                                <SelectContent>
-                                                                    <SelectItem value="0">Sunday</SelectItem>
-                                                                    <SelectItem value="1">Monday</SelectItem>
-                                                                    <SelectItem value="2">Tuesday</SelectItem>
-                                                                    <SelectItem value="3">Wednesday</SelectItem>
-                                                                    <SelectItem value="4">Thursday</SelectItem>
-                                                                    <SelectItem value="5">Friday</SelectItem>
-                                                                    <SelectItem value="6">Saturday</SelectItem>
-                                                                </SelectContent>
-                                                            </Select>
-                                                            <FormMessage />
-                                                        </FormItem>
-                                                    )}
-                                                />
-                                            )}
-
-                                            {form.watch("type") === "ONE_TIME" && (
-                                                <FormField
-                                                    control={form.control}
-                                                    name="scheduledDate"
-                                                    render={({ field }) => (
-                                                        <FormItem>
-                                                            <FormLabel>Scheduled Date</FormLabel>
-                                                            <FormControl>
-                                                                <Input type="datetime-local" {...field} />
-                                                            </FormControl>
-                                                            <FormMessage />
-                                                        </FormItem>
-                                                    )}
-                                                />
-                                            )}
-
-                                            <div className="flex gap-2">
-                                                <Button type="submit" disabled={isLoading}>
-                                                    {isLoading ? "Creating..." : "Create Task"}
-                                                </Button>
-                                                <Button
-                                                    type="button"
-                                                    variant="outline"
-                                                    onClick={() => setShowCreateForm(false)}
+                                    {isLoadingTasks ? (
+                                        <div className="text-center py-8 text-gray-500">Loading tasks...</div>
+                                    ) : filteredTasks.length === 0 ? (
+                                        <div className="text-center py-8 text-gray-500">
+                                            No tasks found. Create your first task!
+                                        </div>
+                                    ) : (
+                                        <div className="space-y-4">
+                                            {filteredTasks.map((task) => (
+                                                <div
+                                                    key={task.id}
+                                                    className={`p-4 border rounded-lg hover:shadow-md transition-shadow cursor-pointer ${task.status === 'PENDING_APPROVAL' ? 'border-yellow-400 bg-yellow-50' : ''
+                                                        }`}
+                                                    onClick={() => handleReviewClick(task)}
                                                 >
-                                                    Cancel
-                                                </Button>
-                                            </div>
-                                        </form>
-                                    </Form>
+                                                    <div className="flex items-start justify-between">
+                                                        <div className="flex-1">
+                                                            <div className="flex items-center gap-2 mb-2">
+                                                                <h3 className="font-semibold">{task.description}</h3>
+                                                                <Badge variant={getWeightColor(task.weight)}>
+                                                                    {task.weight}
+                                                                </Badge>
+                                                            </div>
+                                                            <div className="flex items-center gap-4 text-sm text-gray-600">
+                                                                <span className="flex items-center gap-1">
+                                                                    <Calendar className="h-3 w-3" />
+                                                                    {task.type}
+                                                                </span>
+                                                                {task.requiresProof && (
+                                                                    <span className="text-purple-600">📸 Proof Required</span>
+                                                                )}
+                                                                {task.aiValidated && (
+                                                                    <span className="text-green-600">✓ AI Validated</span>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                        <div className="flex flex-col items-end gap-2">
+                                                            <div className={`px-3 py-1 rounded-full text-white text-xs ${getStatusColor(task.status)}`}>
+                                                                {task.status || "PENDING"}
+                                                            </div>
+                                                            {task.createdAt && (
+                                                                <span className="text-xs text-gray-400">
+                                                                    {new Date(task.createdAt).toLocaleDateString()}
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
                                 </CardContent>
                             </Card>
-                        )
-                    }
-
-                    {/* Task List */}
-                    <Card>
-                        <CardHeader>
-                            <div className="flex items-center justify-between">
-                                <CardTitle>Tasks</CardTitle>
-                                <Select value={filterStatus} onValueChange={setFilterStatus}>
-                                    <SelectTrigger className="w-[180px]">
-                                        <SelectValue placeholder="Filter by status" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="ALL">All Tasks</SelectItem>
-                                        <SelectItem value="PENDING">Pending</SelectItem>
-                                        <SelectItem value="APPROVED">Approved</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                        </CardHeader>
-                        <CardContent>
-                            {isLoadingTasks ? (
-                                <div className="text-center py-8 text-gray-500">Loading tasks...</div>
-                            ) : filteredTasks.length === 0 ? (
-                                <div className="text-center py-8 text-gray-500">
-                                    No tasks found. Create your first task!
-                                </div>
-                            ) : (
-                                <div className="space-y-4">
-                                    {filteredTasks.map((task) => (
-                                        <div
-                                            key={task.id}
-                                            className="p-4 border rounded-lg hover:shadow-md transition-shadow"
-                                        >
-                                            <div className="flex items-start justify-between">
-                                                <div className="flex-1">
-                                                    <div className="flex items-center gap-2 mb-2">
-                                                        <h3 className="font-semibold">{task.description}</h3>
-                                                        <Badge variant={getWeightColor(task.weight)}>
-                                                            {task.weight}
-                                                        </Badge>
-                                                    </div>
-                                                    <div className="flex items-center gap-4 text-sm text-gray-600">
-                                                        <span className="flex items-center gap-1">
-                                                            <Calendar className="h-3 w-3" />
-                                                            {task.type}
-                                                        </span>
-                                                        {task.requiresProof && (
-                                                            <span className="text-purple-600">📸 Proof Required</span>
-                                                        )}
-                                                        {task.aiValidated && (
-                                                            <span className="text-green-600">✓ AI Validated</span>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                                <div className="flex flex-col items-end gap-2">
-                                                    <div className={`px-3 py-1 rounded-full text-white text-xs ${getStatusColor(task.status)}`}>
-                                                        {task.status || "PENDING"}
-                                                    </div>
-                                                    {task.createdAt && (
-                                                        <span className="text-xs text-gray-400">
-                                                            {new Date(task.createdAt).toLocaleDateString()}
-                                                        </span>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </CardContent>
-                    </Card>
+                        </TabsContent>
+                        <TabsContent value="financial">
+                            <FinancialLedger childId={childId!} parentId={localStorage.getItem("parentId") || ""} />
+                        </TabsContent>
+                    </Tabs>
                 </div>
                 <DialogContent>
                     <DialogHeader>
@@ -649,10 +293,17 @@ export default function ChildTasks() {
                     {selectedTaskForReview?.requiresProof && (
                         <div className="my-4">
                             <p className="font-semibold mb-2">Proof:</p>
-                            {/* Placeholder for image */}
-                            <div className="w-full h-48 bg-gray-200 rounded-md flex items-center justify-center">
-                                <span className="text-gray-500">Proof image would be here</span>
-                            </div>
+                            {selectedTaskForReview?.proofImageUrl ? (
+                                <img
+                                    src={selectedTaskForReview.proofImageUrl}
+                                    alt="Task proof"
+                                    className="w-full max-h-96 object-contain rounded-md border border-gray-300"
+                                />
+                            ) : (
+                                <div className="w-full h-48 bg-gray-200 rounded-md flex items-center justify-center">
+                                    <span className="text-gray-500">No proof image submitted yet</span>
+                                </div>
+                            )}
                         </div>
                     )}
                     <DialogFooter>
@@ -661,6 +312,69 @@ export default function ChildTasks() {
                     </DialogFooter>
                 </DialogContent>
             </div>
-        </Dialog>
+            <Dialog open={isCreateTaskDialogOpen} onOpenChange={setIsCreateTaskDialogOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Create New Task</DialogTitle>
+                        <DialogDescription>Add a new task for {child.name}</DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                        <div className="space-y-2">
+                            <Label>Description</Label>
+                            <Input
+                                name="description"
+                                value={newTask.description}
+                                onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
+                                placeholder="e.g. Clean room"
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label>Type</Label>
+                            <Select
+                                value={newTask.type}
+                                onValueChange={(value) => setNewTask({ ...newTask, type: value as any })}
+                            >
+                                <SelectTrigger data-testid="task-type-select">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="ONE_TIME">One Time</SelectItem>
+                                    <SelectItem value="DAILY">Daily</SelectItem>
+                                    <SelectItem value="WEEKLY">Weekly</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="space-y-2">
+                            <Label>Weight</Label>
+                            <Select
+                                value={newTask.weight}
+                                onValueChange={(value) => setNewTask({ ...newTask, weight: value as any })}
+                            >
+                                <SelectTrigger data-testid="task-weight-select">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="LOW">Low</SelectItem>
+                                    <SelectItem value="MEDIUM">Medium</SelectItem>
+                                    <SelectItem value="HIGH">High</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                            <Checkbox
+                                id="proof"
+                                checked={newTask.requiresProof}
+                                onCheckedChange={(checked) => setNewTask({ ...newTask, requiresProof: checked as boolean })}
+                            />
+                            <Label htmlFor="proof">Requires Proof</Label>
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setIsCreateTaskDialogOpen(false)}>Cancel</Button>
+                        <Button onClick={handleCreateTask} data-testid="create-task-submit-button">Create Task</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+        </Dialog >
     );
 }
