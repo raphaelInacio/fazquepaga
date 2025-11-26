@@ -1,8 +1,13 @@
-import { User as UserIcon, Gift, Loader2 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { User as UserIcon, Gift, Loader2, QrCode, Plus } from "lucide-react";
 import { User } from "@/types";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { childService } from "@/services/childService";
 import { toast } from "sonner";
 
@@ -13,8 +18,9 @@ export default function Dashboard() {
     const [parentName, setParentName] = useState("");
     const [selectedChildId, setSelectedChildId] = useState<string | null>(null);
     const [allowanceAmount, setAllowanceAmount] = useState("");
-    const [isAllowanceDialogOpen, setIsAllowanceDialogOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
+    const [onboardingCode, setOnboardingCode] = useState<string | null>(null);
+    const [selectedChildForCode, setSelectedChildForCode] = useState<string | null>(null);
 
     useEffect(() => {
         const parentId = localStorage.getItem("parentId");
@@ -28,7 +34,7 @@ export default function Dashboard() {
 
         const fetchChildren = async () => {
             try {
-                const childrenData = await childService.getChildren();
+                const childrenData = await childService.getChildren(parentId);
                 setChildren(childrenData);
             } catch (error) {
                 console.error("Failed to fetch children", error);
@@ -44,21 +50,38 @@ export default function Dashboard() {
     const handleSetAllowance = async () => {
         if (!selectedChildId || !allowanceAmount) return;
 
+        const parentId = localStorage.getItem("parentId");
+        if (!parentId) return;
+
         try {
-            await childService.updateAllowance(selectedChildId, parseFloat(allowanceAmount));
+            await childService.updateAllowance(selectedChildId, parseFloat(allowanceAmount), parentId);
             toast.success("Allowance updated successfully!");
-            setIsAllowanceDialogOpen(false);
             setAllowanceAmount("");
             setSelectedChildId(null);
 
             // Refetch children to update the UI
             setIsLoading(true);
-            const childrenData = await childService.getChildren();
+            const childrenData = await childService.getChildren(parentId);
             setChildren(childrenData);
             setIsLoading(false);
 
         } catch (error) {
             toast.error("Failed to update allowance");
+            console.error(error);
+        }
+    };
+
+    const handleGenerateOnboardingCode = async (childId: string) => {
+        const parentId = localStorage.getItem("parentId");
+        if (!parentId) return;
+
+        try {
+            const response = await childService.generateOnboardingCode(childId, parentId);
+            setOnboardingCode(response.code);
+            setSelectedChildForCode(childId);
+            toast.success("Onboarding code generated!");
+        } catch (error) {
+            toast.error("Failed to generate onboarding code");
             console.error(error);
         }
     };
@@ -107,8 +130,8 @@ export default function Dashboard() {
                                     <p className="text-xs text-muted-foreground mt-1">
                                         {t("dashboard.viewTasks")}
                                     </p>
-                                    <div className="mt-4" onClick={(e) => e.stopPropagation()}>
-                                        <Dialog open={isAllowanceDialogOpen && selectedChildId === child.id} onOpenChange={(open) => {
+                                    <div className="mt-4 space-y-2" onClick={(e) => e.stopPropagation()}>
+                                        <Dialog open={selectedChildId === child.id} onOpenChange={(open) => {
                                             if (open) {
                                                 setSelectedChildId(child.id);
                                                 setAllowanceAmount(child.monthlyAllowance?.toString() || "");
@@ -143,6 +166,17 @@ export default function Dashboard() {
                                                 <Button onClick={handleSetAllowance}>{t("dashboard.save")}</Button>
                                             </DialogContent>
                                         </Dialog>
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            className="w-full"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleGenerateOnboardingCode(child.id);
+                                            }}
+                                        >
+                                            <QrCode className="mr-2 h-4 w-4" /> Gerar Código WhatsApp
+                                        </Button>
                                     </div>
                                 </CardContent>
                             </Card>
@@ -156,6 +190,32 @@ export default function Dashboard() {
                         )}
                     </div>
                 )}
+
+                <Dialog open={!!onboardingCode} onOpenChange={() => setOnboardingCode(null)}>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>Código de Cadastro WhatsApp</DialogTitle>
+                        </DialogHeader>
+                        <div className="text-center p-6 space-y-4">
+                            <p className="text-gray-600">
+                                A criança deve enviar este código para o WhatsApp do sistema para completar o cadastro.
+                            </p>
+                            <div className="text-4xl font-mono font-bold tracking-wider bg-gray-100 p-4 rounded-lg">
+                                {onboardingCode}
+                            </div>
+                        </div>
+                        <Button
+                            onClick={() => {
+                                if (onboardingCode) {
+                                    navigator.clipboard.writeText(onboardingCode);
+                                    toast.success("Código copiado!");
+                                }
+                            }}
+                        >
+                            Copiar Código
+                        </Button>
+                    </DialogContent>
+                </Dialog>
             </div>
         </div>
     );

@@ -97,6 +97,7 @@ public class IdentityService {
         User child = User.builder()
                 .name(request.getName())
                 .phoneNumber(request.getPhoneNumber())
+                .age(request.getAge())
                 .role(User.Role.CHILD)
                 .parentId(parentId)
                 .build();
@@ -120,8 +121,8 @@ public class IdentityService {
 
     public List<User> getChildren(String parentId)
             throws ExecutionException, InterruptedException {
-        List<com.google.cloud.firestore.QueryDocumentSnapshot> documents =
-                userRepository.findByParentId(parentId).get().getDocuments();
+        List<com.google.cloud.firestore.QueryDocumentSnapshot> documents = userRepository.findByParentId(parentId).get()
+                .getDocuments();
         return documents.stream()
                 .map(doc -> doc.toObject(User.class))
                 .collect(Collectors.toList());

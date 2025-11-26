@@ -7,4 +7,5 @@ public class CreateChildRequest {
     private String name;
     private String parentId;
     private String phoneNumber;
+    private Integer age;
 }
