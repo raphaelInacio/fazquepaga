@@ -364,6 +364,33 @@ export default function ChildTasks() {
                             </Card>
                         </TabsContent>
                         <TabsContent value="financial">
+                            <Card className="mb-6">
+                                <CardHeader>
+                                    <CardTitle>Mesada Prevista</CardTitle>
+                                    <CardDescription>
+                                        Valor estimado baseado nas tarefas pendentes e aprovadas
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent>
+                                    {isLoadingAllowance ? (
+                                        <div className="text-center py-4">
+                                            <span className="text-gray-500">Calculando...</span>
+                                        </div>
+                                    ) : (
+                                        <div className="text-center">
+                                            <div className="text-4xl font-bold text-green-600">
+                                                {new Intl.NumberFormat('pt-BR', {
+                                                    style: 'currency',
+                                                    currency: 'BRL'
+                                                }).format(predictedAllowance)}
+                                            </div>
+                                            <p className="text-sm text-gray-500 mt-2">
+                                                Este mês
+                                            </p>
+                                        </div>
+                                    )}
+                                </CardContent>
+                            </Card>
                             <FinancialLedger childId={childId!} parentId={localStorage.getItem("parentId") || ""} />
                         </TabsContent>
                     </Tabs>
