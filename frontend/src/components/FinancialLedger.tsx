@@ -28,7 +28,10 @@ export function FinancialLedger({ childId, parentId }: FinancialLedgerProps) {
         const fetchInsights = async () => {
             try {
                 const insightsData = await getLedgerInsights(childId, parentId);
-                setInsights(insightsData);
+                // Only set insights if it's valid text (not HTML)
+                if (insightsData && !insightsData.includes('<!doctype') && !insightsData.includes('<html')) {
+                    setInsights(insightsData);
+                }
             } catch (err) {
                 // Not critical, so we can just log it
                 console.error('Failed to fetch insights:', err);
