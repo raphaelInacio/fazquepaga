@@ -11,8 +11,8 @@ export const taskService = {
         return response.data;
     },
 
-    approveTask: async (childId: string, taskId: string): Promise<Task> => {
-        const response = await api.post(`/api/v1/tasks/${taskId}/approve?child_id=${childId}`);
+    approveTask: async (childId: string, taskId: string, parentId: string): Promise<Task> => {
+        const response = await api.post(`/api/v1/tasks/${taskId}/approve?child_id=${childId}&parent_id=${parentId}`);
         return response.data;
     }
 };

@@ -167,23 +167,18 @@ export default function ChildTasks() {
         }
     };
 
-    const handleAddSuggestionAsTask = async (suggestion: string) => {
-        if (!childId) return;
-        try {
-            await taskService.createTask(childId, {
-                description: suggestion,
-                type: "ONE_TIME",
-                weight: "MEDIUM",
-                requiresProof: false,
-            });
-            toast.success("Task added from AI suggestion!");
-            loadTasks();
-            // Remove suggestion from list
-            setAiSuggestions(prev => prev.filter(s => s !== suggestion));
-        } catch (error) {
-            toast.error("Failed to create task");
-            console.error(error);
-        }
+    const handleAddSuggestionAsTask = (suggestion: string) => {
+        // Pre-fill dialog with AI suggestion and open it for customization
+        setNewTask({
+            description: suggestion,
+            type: "ONE_TIME",
+            requiresProof: false,
+            weight: "MEDIUM",
+            value: 0
+        });
+        setIsCreateTaskDialogOpen(true);
+        // Remove suggestion from list after user clicks to add it
+        setAiSuggestions(prev => prev.filter(s => s !== suggestion));
     };
 
     const getStatusColor = (status?: string) => {

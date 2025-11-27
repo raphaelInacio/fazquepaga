@@ -22,25 +22,15 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(AbstractHttpConfigurer::disable) // Disable CSRF for stateless API
-            .authorizeHttpRequests(authorize -> authorize
-                .requestMatchers("/api/v1/auth/register", "/api/v1/whatsapp/webhook").permitAll() // Allow registration and webhooks without auth
-                .anyRequest().authenticated() // All other requests require authentication
-            )
-            .httpBasic(withDefaults()); // Use HTTP Basic authentication
+                .csrf(AbstractHttpConfigurer::disable) // Disable CSRF for stateless API
+                .cors(withDefaults()) // Enable CORS using the configuration from WebMvcConfigurer
+                .authorizeHttpRequests(authorize -> authorize
+                        .anyRequest().permitAll() // Allow all requests without authentication
+                )
+                .formLogin(AbstractHttpConfigurer::disable) // Disable Form Login
+                .httpBasic(AbstractHttpConfigurer::disable); // Disable HTTP Basic
 
         return http.build();
-    }
-
-    @Bean
-    public UserDetailsService userDetailsService(PasswordEncoder passwordEncoder) {
-        // This is a temporary in-memory user for testing.
-        // In a real application, you would load users from your database (e.g., Firestore).
-        UserDetails user = User.withUsername("parent@example.com")
-            .password(passwordEncoder.encode("password"))
-            .roles("PARENT")
-            .build();
-        return new InMemoryUserDetailsManager(user);
     }
 
     @Bean

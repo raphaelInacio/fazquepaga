@@ -1,5 +1,7 @@
+
 package com.fazquepaga.taskandpay.allowance;
 
+import com.fazquepaga.taskandpay.ai.AiInsightService;
 import com.fazquepaga.taskandpay.identity.User;
 import com.fazquepaga.taskandpay.identity.UserRepository;
 import com.google.cloud.firestore.QueryDocumentSnapshot;
@@ -16,10 +18,12 @@ public class LedgerService {
 
     private final TransactionRepository transactionRepository;
     private final UserRepository userRepository;
+    private final AiInsightService aiInsightService;
 
-    public LedgerService(TransactionRepository transactionRepository, UserRepository userRepository) {
+    public LedgerService(TransactionRepository transactionRepository, UserRepository userRepository, AiInsightService aiInsightService) {
         this.transactionRepository = transactionRepository;
         this.userRepository = userRepository;
+        this.aiInsightService = aiInsightService;
     }
 
     public void addTransaction(String childId, BigDecimal amount, String description, Transaction.TransactionType type)
@@ -52,7 +56,7 @@ public class LedgerService {
         userRepository.save(child).get();
     }
 
-    public List<Transaction> getTransactions(String childId, String parentId)
+    public LedgerResponse getTransactions(String childId, String parentId)
             throws ExecutionException, InterruptedException {
         User child = userRepository.findByIdSync(childId);
         if (child == null) {
@@ -63,6 +67,16 @@ public class LedgerService {
         }
 
         List<QueryDocumentSnapshot> documents = transactionRepository.findByChildId(childId).getDocuments();
-        return documents.stream().map(doc -> doc.toObject(Transaction.class)).collect(Collectors.toList());
+        List<Transaction> transactions = documents.stream().map(doc -> doc.toObject(Transaction.class)).collect(Collectors.toList());
+
+        return LedgerResponse.builder()
+                .transactions(transactions)
+                .balance(child.getBalance())
+                .build();
+    }
+
+    public String getInsights(String childId) {
+        return aiInsightService.getInsights(childId);
     }
 }
+

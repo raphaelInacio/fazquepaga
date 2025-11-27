@@ -24,86 +24,87 @@ import org.springframework.context.annotation.FilterType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
-@WebMvcTest(controllers = LedgerController.class,
-        includeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = SecurityConfig.class))
+@WebMvcTest(controllers = LedgerController.class, includeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = SecurityConfig.class))
 class LedgerControllerTest {
 
-    @Autowired
-    private MockMvc mockMvc;
+        @Autowired
+        private MockMvc mockMvc;
 
-    @MockBean
-    private LedgerService ledgerService;
+        @MockBean
+        private LedgerService ledgerService;
 
-    @MockBean
-    private UserRepository userRepository;
+        @MockBean
+        private UserRepository userRepository;
 
-    @Test
-    @WithMockUser(username = "parent@example.com", roles = "PARENT")
-    void shouldReturnChildLedgerSuccessfully() throws Exception {
-        // Given
-        String childId = "child-id-1";
-        String parentId = "parent@example.com";
-        User child = User.builder().id(childId).parentId(parentId).build();
-        when(userRepository.findByIdSync(childId)).thenReturn(child);
+        @Test
+        void shouldReturnChildLedgerSuccessfully() throws Exception {
+                // Given
+                String childId = "child-id-1";
+                String parentId = "parent@example.com";
+                User child = User.builder().id(childId).parentId(parentId).build();
+                when(userRepository.findByIdSync(childId)).thenReturn(child);
 
-        Transaction transaction = Transaction.builder()
-                .id("tx-1")
-                .childId(childId)
-                .amount(new BigDecimal("10.00"))
-                .description("Task completed")
-                .type(Transaction.TransactionType.CREDIT)
-                .date(Instant.now()) // Corrected from .timestamp(Instant.now())
-                .build();
-        List<Transaction> transactions = Collections.singletonList(transaction);
-        // Corrected from .getTransactionsByChildId(childId)
-        when(ledgerService.getTransactions(eq(childId), eq(parentId))).thenReturn(transactions);
+                Transaction transaction = Transaction.builder()
+                                .id("tx-1")
+                                .childId(childId)
+                                .amount(new BigDecimal("10.00"))
+                                .description("Task completed")
+                                .type(Transaction.TransactionType.CREDIT)
+                                .date(Instant.now())
+                                .build();
+                List<Transaction> transactions = Collections.singletonList(transaction);
 
-        // When & Then
-        mockMvc.perform(get("/api/v1/children/{childId}/ledger", childId))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].id").value("tx-1"))
-                .andExpect(jsonPath("$[0].childId").value(childId))
-                .andExpect(jsonPath("$[0].amount").value(10.00));
-    }
+                LedgerResponse ledgerResponse = LedgerResponse.builder()
+                                .transactions(transactions)
+                                .balance(new BigDecimal("10.00"))
+                                .build();
 
-    @Test
-    @WithMockUser(username = "unauthorized@example.com", roles = "PARENT")
-    void shouldReturnForbiddenWhenParentIsNotAuthorized() throws Exception {
-        // Given
-        String childId = "child-id-1";
-        String authorizedParentId = "authorized@example.com";
-        User child = User.builder().id(childId).parentId(authorizedParentId).build();
-        when(userRepository.findByIdSync(childId)).thenReturn(child);
+                when(ledgerService.getTransactions(eq(childId), eq(parentId))).thenReturn(ledgerResponse);
 
-        // When & Then
-        mockMvc.perform(get("/api/v1/children/{childId}/ledger", childId))
-                .andExpect(status().isForbidden());
-    }
+                // When & Then
+                mockMvc.perform(get("/api/v1/children/{childId}/ledger", childId).param("parent_id", parentId))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.transactions[0].id").value("tx-1"))
+                                .andExpect(jsonPath("$.transactions[0].childId").value(childId))
+                                .andExpect(jsonPath("$.transactions[0].amount").value(10.00))
+                                .andExpect(jsonPath("$.balance").value(10.00));
+        }
 
-    @Test
-    @WithMockUser(username = "parent@example.com", roles = "PARENT")
-    void shouldReturnEmptyLedgerWhenNoTransactions() throws Exception {
-        // Given
-        String childId = "child-id-1";
-        String parentId = "parent@example.com";
-        User child = User.builder().id(childId).parentId(parentId).build();
-        when(userRepository.findByIdSync(childId)).thenReturn(child);
-        // Corrected from .getTransactionsByChildId(childId)
-        when(ledgerService.getTransactions(eq(childId), eq(parentId))).thenReturn(Collections.emptyList());
+        @Test
+        void shouldReturnForbiddenWhenParentIsNotAuthorized() throws Exception {
+                // Given
+                String childId = "child-id-1";
+                String authorizedParentId = "authorized@example.com";
+                String unauthorizedParentId = "unauthorized@example.com";
 
-        // When & Then
-        mockMvc.perform(get("/api/v1/children/{childId}/ledger", childId))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$").isEmpty());
-    }
+                User child = User.builder().id(childId).parentId(authorizedParentId).build();
+                when(userRepository.findByIdSync(childId)).thenReturn(child);
 
-    @Test
-    void shouldReturnUnauthorizedWhenNotAuthenticated() throws Exception {
-        // Given
-        String childId = "child-id-1";
+                // When & Then
+                mockMvc.perform(get("/api/v1/children/{childId}/ledger", childId).param("parent_id",
+                                unauthorizedParentId))
+                                .andExpect(status().isForbidden());
+        }
 
-        // When & Then
-        mockMvc.perform(get("/api/v1/children/{childId}/ledger", childId))
-                .andExpect(status().isUnauthorized());
-    }
+        @Test
+        void shouldReturnEmptyLedgerWhenNoTransactions() throws Exception {
+                // Given
+                String childId = "child-id-1";
+                String parentId = "parent@example.com";
+                User child = User.builder().id(childId).parentId(parentId).build();
+                when(userRepository.findByIdSync(childId)).thenReturn(child);
+
+                LedgerResponse ledgerResponse = LedgerResponse.builder()
+                                .transactions(Collections.emptyList())
+                                .balance(BigDecimal.ZERO)
+                                .build();
+
+                when(ledgerService.getTransactions(eq(childId), eq(parentId))).thenReturn(ledgerResponse);
+
+                // When & Then
+                mockMvc.perform(get("/api/v1/children/{childId}/ledger", childId).param("parent_id", parentId))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.transactions").isEmpty())
+                                .andExpect(jsonPath("$.balance").value(0));
+        }
 }

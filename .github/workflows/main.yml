@@ -34,7 +34,7 @@ jobs:
       if: always()
       with:
         name: coverage-report
-        path: taskandpay/target/site/jacoco/
+        path: backend/target/site/jacoco/
 
   deploy:
     needs: build-and-test

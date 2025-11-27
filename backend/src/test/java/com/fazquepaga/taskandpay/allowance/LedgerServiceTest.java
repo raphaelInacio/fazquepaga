@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+import com.fazquepaga.taskandpay.ai.AiInsightService;
 import com.fazquepaga.taskandpay.identity.User;
 import com.fazquepaga.taskandpay.identity.UserRepository;
 import com.google.api.core.ApiFutures;
@@ -11,7 +12,6 @@ import com.google.cloud.firestore.QueryDocumentSnapshot;
 import com.google.cloud.firestore.QuerySnapshot;
 import java.math.BigDecimal;
 import java.util.Collections;
-import java.util.List;
 import java.util.concurrent.ExecutionException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,12 +26,15 @@ class LedgerServiceTest {
     @Mock
     private UserRepository userRepository;
 
+    @Mock
+    private AiInsightService aiInsightService;
+
     private LedgerService ledgerService;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        ledgerService = new LedgerService(transactionRepository, userRepository);
+        ledgerService = new LedgerService(transactionRepository, userRepository, aiInsightService);
     }
 
     @Test
@@ -59,7 +62,7 @@ class LedgerServiceTest {
     }
 
     @Test
-    void getTransactions_ShouldReturnList() throws ExecutionException, InterruptedException {
+    void getTransactions_ShouldReturnLedgerResponse() throws ExecutionException, InterruptedException {
         // Given
         String childId = "child-1";
         QuerySnapshot querySnapshot = mock(QuerySnapshot.class);
@@ -74,10 +77,10 @@ class LedgerServiceTest {
         when(userRepository.findByIdSync(childId)).thenReturn(child);
 
         // When
-        List<Transaction> result = ledgerService.getTransactions(childId, "parent-id");
+        LedgerResponse result = ledgerService.getTransactions(childId, "parent-id");
 
         // Then
         assertNotNull(result);
-        assertEquals(1, result.size());
+        assertEquals(1, result.getTransactions().size());
     }
 }

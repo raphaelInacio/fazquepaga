@@ -10,7 +10,7 @@ export default defineConfig({
     reporter: 'html',
 
     use: {
-        baseURL: 'http://localhost:8084',
+        baseURL: 'http://localhost:8082',
         trace: 'on-first-retry',
         screenshot: 'only-on-failure',
     },
@@ -24,8 +24,11 @@ export default defineConfig({
 
     webServer: {
         command: 'npm run dev',
-        url: 'http://localhost:8084',
+        url: 'http://localhost:8082',
         reuseExistingServer: !(process.env as any).CI,
         timeout: 120 * 1000,
+        // Add a waitOn option to ensure the server is ready
+        // You might need to adjust the pattern based on Vite's actual output
+        stdout: 'ready',
     },
 });

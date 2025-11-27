@@ -12,6 +12,20 @@ const api = axios.create({
 api.interceptors.request.use((config) => {
     const language = i18n.language || 'pt';
     config.headers['Accept-Language'] = language;
+
+    // Dev auth bypass: Inject user email from localStorage
+    const parentStr = localStorage.getItem("parent");
+    if (parentStr) {
+        try {
+            const parent = JSON.parse(parentStr);
+            if (parent.email) {
+                config.headers['X-User-Email'] = parent.email;
+            }
+        } catch (e) {
+            console.error("Failed to parse parent from localStorage", e);
+        }
+    }
+
     return config;
 });
 

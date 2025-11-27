@@ -34,10 +34,10 @@ public class AllowanceController {
     }
 
     @GetMapping("/children/{childId}/ledger")
-    public ResponseEntity<List<Transaction>> getLedger(
+    public ResponseEntity<LedgerResponse> getLedger(
             @PathVariable String childId, @RequestParam("parent_id") String parentId)
             throws ExecutionException, InterruptedException {
-        List<Transaction> transactions = ledgerService.getTransactions(childId, parentId);
-        return ResponseEntity.ok(transactions);
+        LedgerResponse response = ledgerService.getTransactions(childId, parentId);
+        return ResponseEntity.ok(response);
     }
 }

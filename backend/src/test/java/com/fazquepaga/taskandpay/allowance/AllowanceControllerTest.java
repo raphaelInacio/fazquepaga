@@ -6,6 +6,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.math.BigDecimal;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -18,24 +19,56 @@ import org.springframework.test.web.servlet.MockMvc;
 @AutoConfigureMockMvc
 class AllowanceControllerTest {
 
-    @Autowired
-    private MockMvc mockMvc;
+        @Autowired
+        private MockMvc mockMvc;
 
-    @MockBean
-    private AllowanceService allowanceService;
+        @MockBean
+        private AllowanceService allowanceService;
 
-    @Test
-    @WithMockUser(username = "parent@example.com", roles = "PARENT")
-    void shouldGetPredictedAllowance() throws Exception {
-        // Given
-        String childId = "child-id";
-        BigDecimal predictedAllowance = BigDecimal.valueOf(100.0);
+        @MockBean
+        private LedgerService ledgerService;
 
-        when(allowanceService.calculatePredictedAllowance(childId)).thenReturn(predictedAllowance);
+        @Test
+        void shouldGetPredictedAllowance() throws Exception {
+                // Given
+                String childId = "child-id";
+                BigDecimal predictedAllowance = BigDecimal.valueOf(100.0);
 
-        // When & Then
-        mockMvc.perform(get("/api/v1/allowance/predicted").param("child_id", childId))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.predicted_allowance").value(100.0));
-    }
+                when(allowanceService.calculatePredictedAllowance(childId)).thenReturn(predictedAllowance);
+
+                // When & Then
+                mockMvc.perform(get("/api/v1/allowance/predicted").param("child_id", childId))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.predicted_allowance").value(100.0));
+        }
+
+        @Test
+        void shouldGetLedger() throws Exception {
+                // Given
+                String childId = "child-id";
+                String parentId = "parent-id";
+                Transaction transaction = Transaction.builder()
+                                .id("tx-1")
+                                .amount(BigDecimal.valueOf(10.0))
+                                .description("Task Reward")
+                                .type(Transaction.TransactionType.CREDIT)
+                                .build();
+
+                LedgerResponse response = LedgerResponse.builder()
+                                .transactions(List.of(transaction))
+                                .balance(BigDecimal.valueOf(50.0))
+                                .build();
+
+                when(ledgerService.getTransactions(childId, parentId)).thenReturn(response);
+
+                // When & Then
+                mockMvc.perform(get("/api/v1/allowance/children/{childId}/ledger", childId).param("parent_id",
+                                parentId))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.transactions[0].id").value("tx-1"))
+                                .andExpect(jsonPath("$.transactions[0].amount").value(10.0))
+                                .andExpect(jsonPath("$.transactions[0].description").value("Task Reward"))
+                                .andExpect(jsonPath("$.transactions[0].type").value("CREDIT"))
+                                .andExpect(jsonPath("$.balance").value(50.0));
+        }
 }

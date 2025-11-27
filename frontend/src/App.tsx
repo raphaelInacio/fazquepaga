@@ -10,7 +10,6 @@ import AddChild from "./pages/AddChild";
 import Dashboard from "./pages/Dashboard";
 import ChildTasks from "./pages/ChildTasks";
 import { GiftCardStorePage } from "./pages/GiftCardStorePage";
-import AIFeatures from "./pages/AIFeatures";
 import { LanguageSwitcher } from "./components/LanguageSwitcher";
 
 
@@ -32,7 +31,6 @@ const App = () => (
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/child/:childId/tasks" element={<ChildTasks />} />
           <Route path="/gift-cards" element={<GiftCardStorePage />} />
-          <Route path="/ai-suggestions" element={<AIFeatures />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

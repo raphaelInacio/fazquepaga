@@ -55,7 +55,7 @@ export default function AddChild() {
                 parentId: parentId,
                 age: values.age,
             };
-            const createdChild = await childService.addChild(childData);
+            const createdChild = await childService.addChild(childData, parentId);
 
             // Store child in localStorage
             const childrenData = localStorage.getItem("children");

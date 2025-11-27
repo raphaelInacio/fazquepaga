@@ -25,7 +25,7 @@ Para que pais e filhos entendam o valor gerado, precisamos de uma tela de extrat
 - [ ] 10.5 **(Feature de IA)** Criar um endpoint no backend (ex: `GET /api/v1/children/{childId}/ledger/insights`) que usa a IA para analisar as transações e retornar uma dica ou observação em texto.
 - [ ] 10.6 **(Feature de IA)** No frontend, chamar o novo endpoint de insights e exibir a mensagem em uma área de destaque no topo do extrato. Exemplo: "Notamos que Maria economizou 70% do que ganhou este mês. Ótimo progresso para a meta dela!".
 - [ ] 10.7 Integrar o componente `FinancialLedger.tsx` na página `ChildTasks.tsx` ou em uma nova aba no Dashboard.
-- [ ] 10.8 Implementar testes de componente para o extrato, incluindo a exibição do insight.
+- [ ] 10.8 Implementar testes E2E para o extrato financeiro.
 
 ## Implementation Details
 
