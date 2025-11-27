@@ -69,6 +69,7 @@ public class TaskService {
                 .description(request.getDescription())
                 .type(request.getType())
                 .weight(request.getWeight())
+                .value(request.getValue() != null ? request.getValue() : java.math.BigDecimal.ZERO)
                 .requiresProof(request.isRequiresProof())
                 .createdAt(Instant.now())
                 .dayOfWeek(request.getDayOfWeek())

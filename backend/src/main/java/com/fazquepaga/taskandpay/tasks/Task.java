@@ -1,6 +1,7 @@
 package com.fazquepaga.taskandpay.tasks;
 
 import com.google.cloud.firestore.annotation.DocumentId;
+import java.math.BigDecimal;
 import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -13,11 +14,13 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class Task {
 
-    @DocumentId private String id;
+    @DocumentId
+    private String id;
 
     private String description;
     private TaskType type;
     private TaskWeight weight;
+    private BigDecimal value; // Valor monetário da tarefa em R$
     private TaskStatus status;
     private boolean requiresProof;
     private Instant createdAt;

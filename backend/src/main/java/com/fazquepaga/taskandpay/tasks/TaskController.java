@@ -41,10 +41,10 @@ public class TaskController {
     public ResponseEntity<Task> approveTask(
             @PathVariable String taskId,
             @RequestParam("child_id") String childId,
-            java.security.Principal principal)
+            @RequestParam("parent_id") String parentId)
             throws ExecutionException, InterruptedException {
 
-        Task approvedTask = taskService.approveTask(childId, taskId, principal.getName());
+        Task approvedTask = taskService.approveTask(childId, taskId, parentId);
 
         return ResponseEntity.ok(approvedTask);
     }

@@ -36,7 +36,8 @@ export default function ChildTasks() {
         description: "",
         type: "ONE_TIME",
         requiresProof: false,
-        weight: "MEDIUM"
+        weight: "MEDIUM",
+        value: 0
     });
     const [aiSuggestions, setAiSuggestions] = useState<string[]>([]);
     const [isLoadingAI, setIsLoadingAI] = useState(false);
@@ -475,13 +476,27 @@ export default function ChildTasks() {
                                 </SelectContent>
                             </Select>
                         </div>
+                        <div className="space-y-2">
+                            <Label>Valor (R$)</Label>
+                            <Input
+                                name="value"
+                                type="number"
+                                step="0.01"
+                                min="0"
+                                value={newTask.value || 0}
+                                onChange={(e) => setNewTask({ ...newTask, value: parseFloat(e.target.value) || 0 })}
+                                placeholder="ex: 10.00"
+                            />
+                        </div>
                         <div className="flex items-center space-x-2">
                             <Checkbox
-                                id="proof"
+                                id="requiresProof"
                                 checked={newTask.requiresProof}
-                                onCheckedChange={(checked) => setNewTask({ ...newTask, requiresProof: checked as boolean })}
+                                onCheckedChange={(checked) =>
+                                    setNewTask({ ...newTask, requiresProof: checked as boolean })
+                                }
                             />
-                            <Label htmlFor="proof">Requires Proof</Label>
+                            <Label htmlFor="requiresProof">Requires Proof?</Label>
                         </div>
                     </div>
                     <DialogFooter>

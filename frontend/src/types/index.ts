@@ -3,6 +3,7 @@ export interface Task {
     description?: string;
     type: 'DAILY' | 'WEEKLY' | 'ONE_TIME';
     weight: 'LOW' | 'MEDIUM' | 'HIGH';
+    value?: number; // Valor monetário em R$
     status?: 'PENDING' | 'COMPLETED' | 'PENDING_APPROVAL' | 'APPROVED';
     requiresProof: boolean;
     createdAt?: string;
