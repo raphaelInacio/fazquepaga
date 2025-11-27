@@ -36,8 +36,8 @@ export default function ChildTasks() {
         description: "",
         type: "ONE_TIME",
         requiresProof: false,
-        weight: "MEDIUM",
-        value: 0
+        weight: "MEDIUM"
+        // value removed - will be calculated automatically by backend
     });
     const [aiSuggestions, setAiSuggestions] = useState<string[]>([]);
     const [isLoadingAI, setIsLoadingAI] = useState(false);
@@ -471,18 +471,7 @@ export default function ChildTasks() {
                                 </SelectContent>
                             </Select>
                         </div>
-                        <div className="space-y-2">
-                            <Label>Valor (R$)</Label>
-                            <Input
-                                name="value"
-                                type="number"
-                                step="0.01"
-                                min="0"
-                                value={newTask.value || 0}
-                                onChange={(e) => setNewTask({ ...newTask, value: parseFloat(e.target.value) || 0 })}
-                                placeholder="ex: 10.00"
-                            />
-                        </div>
+                        {/* Value input REMOVED - calculated automatically */}
                         <div className="flex items-center space-x-2">
                             <Checkbox
                                 id="requiresProof"

@@ -136,6 +136,10 @@ public class IdentityService {
         }
         child.setMonthlyAllowance(allowance);
         userRepository.save(child).get();
+
+        // NOVO: Recalcular valores das tarefas quando mesada mudar
+        // Note: Precisamos injetar AllowanceService - vou adicionar no constructor
+
         return child;
     }
 

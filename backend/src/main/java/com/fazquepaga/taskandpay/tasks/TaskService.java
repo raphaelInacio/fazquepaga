@@ -69,7 +69,7 @@ public class TaskService {
                 .description(request.getDescription())
                 .type(request.getType())
                 .weight(request.getWeight())
-                .value(request.getValue() != null ? request.getValue() : java.math.BigDecimal.ZERO)
+                .value(java.math.BigDecimal.ZERO) // Will be recalculated
                 .requiresProof(request.isRequiresProof())
                 .createdAt(Instant.now())
                 .dayOfWeek(request.getDayOfWeek())
@@ -79,7 +79,15 @@ public class TaskService {
 
         taskRepository.save(userId, task).get();
 
-        return task;
+        // Automatically recalculate all task values based on allowance distribution
+        allowanceServiceProvider.get().recalculateTaskValues(userId);
+
+        // Return updated task with calculated value
+        List<Task> updatedTasks = getTasksByUserId(userId);
+        return updatedTasks.stream()
+                .filter(t -> t.getId().equals(task.getId()))
+                .findFirst()
+                .orElse(task);
     }
 
     public List<Task> getTasksByUserId(String userId)
@@ -175,5 +183,12 @@ public class TaskService {
         return (int) tasks.stream()
                 .filter(task -> task.getType() == Task.TaskType.DAILY || task.getType() == Task.TaskType.WEEKLY)
                 .count();
+    }
+
+    /**
+     * Updates the value of a task (used by automatic redistribution).
+     */
+    public void updateTaskValue(String childId, Task task) throws ExecutionException, InterruptedException {
+        taskRepository.save(childId, task).get();
     }
 }

@@ -81,4 +81,88 @@ public class AllowanceService {
 
         return predictedTotal;
     }
+
+    /**
+     * Recalculates task values based on monthly allowance, weight, and type.
+     * Redistributes the allowance proportionally among all tasks.
+     */
+    public void recalculateTaskValues(String childId)
+            throws ExecutionException, InterruptedException {
+        User child = userRepository.findByIdSync(childId);
+        if (child == null || child.getMonthlyAllowance() == null) {
+            return; // No allowance = no calculation
+        }
+
+        BigDecimal monthlyAllowance = child.getMonthlyAllowance();
+        List<Task> allTasks = taskService.getTasksByUserId(childId);
+
+        if (allTasks.isEmpty()) {
+            return; // No tasks = no distribution
+        }
+
+        // Calculate total points
+        int totalPoints = calculateTotalPoints(allTasks);
+        if (totalPoints == 0) {
+            return;
+        }
+
+        // Value per point
+        BigDecimal valuePerPoint = monthlyAllowance.divide(
+                BigDecimal.valueOf(totalPoints),
+                4,
+                java.math.RoundingMode.HALF_EVEN);
+
+        // Distribute value to each task
+        for (Task task : allTasks) {
+            int taskPoints = calculateTaskPoints(task);
+            BigDecimal taskValue = valuePerPoint.multiply(BigDecimal.valueOf(taskPoints))
+                    .setScale(2, java.math.RoundingMode.HALF_EVEN);
+            task.setValue(taskValue);
+
+            // Save task with new value
+            taskService.updateTaskValue(childId, task);
+        }
+    }
+
+    private int calculateTotalPoints(List<Task> tasks) {
+        return tasks.stream()
+                .mapToInt(this::calculateTaskPoints)
+                .sum();
+    }
+
+    private int calculateTaskPoints(Task task) {
+        int occurrences = getOccurrences(task.getType());
+        int weightPoints = getWeightPoints(task.getWeight());
+        return occurrences * weightPoints;
+    }
+
+    private int getOccurrences(Task.TaskType type) {
+        if (type == null)
+            return 1;
+        switch (type) {
+            case DAILY:
+                return 30;
+            case WEEKLY:
+                return 4;
+            case ONE_TIME:
+                return 1;
+            default:
+                return 1;
+        }
+    }
+
+    private int getWeightPoints(Task.TaskWeight weight) {
+        if (weight == null)
+            return 1;
+        switch (weight) {
+            case HIGH:
+                return 3;
+            case MEDIUM:
+                return 2;
+            case LOW:
+                return 1;
+            default:
+                return 1;
+        }
+    }
 }

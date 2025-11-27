@@ -1,0 +1,6 @@
+    /**
+     * Updates the value of a task (used by automatic redistribution).
+     */
+    public void updateTaskValue(String childId, Task task) throws ExecutionException, InterruptedException {
+        taskRepository.save(childId, task).get();
+    }
