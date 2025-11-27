@@ -74,7 +74,7 @@ export function FinancialLedger({ childId, parentId }: FinancialLedgerProps) {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {ledger.transactions.map((transaction) => (
+                        {(ledger.transactions ?? []).map((transaction) => (
                             <TableRow key={transaction.id}>
                                 <TableCell>{new Date(transaction.date).toLocaleDateString()}</TableCell>
                                 <TableCell>{transaction.description}</TableCell>
