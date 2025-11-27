@@ -51,6 +51,13 @@ public class IdentityController {
         return ResponseEntity.ok(child);
     }
 
+    @GetMapping("/users/{userId}")
+    public ResponseEntity<User> getUser(@PathVariable String userId)
+            throws ExecutionException, InterruptedException {
+        User user = identityService.getUserById(userId);
+        return ResponseEntity.ok(user);
+    }
+
     @PostMapping("/children/{childId}/onboarding-code")
     public ResponseEntity<Map<String, String>> generateOnboardingCode(
             @PathVariable String childId, @RequestParam("parent_id") String parentId)

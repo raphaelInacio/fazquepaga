@@ -138,4 +138,12 @@ public class IdentityService {
         userRepository.save(child).get();
         return child;
     }
+
+    public User getUserById(String userId) throws ExecutionException, InterruptedException {
+        User user = userRepository.findByIdSync(userId);
+        if (user == null) {
+            throw new IllegalArgumentException("User not found");
+        }
+        return user;
+    }
 }
