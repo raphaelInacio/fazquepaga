@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
+import com.fazquepaga.taskandpay.identity.UserRepository;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,7 +19,10 @@ import org.springframework.ai.chat.prompt.Prompt;
 
 class AiServicesTest {
 
-    @Mock private ChatModel chatModel;
+    @Mock
+    private ChatModel chatModel;
+    @Mock
+    private UserRepository userRepository;
 
     private AiSuggestionService suggestionService;
     private AiValidatorImpl aiValidator;
@@ -26,7 +30,7 @@ class AiServicesTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        suggestionService = new AiSuggestionService(chatModel);
+        suggestionService = new AiSuggestionService(chatModel, userRepository);
         aiValidator = new AiValidatorImpl(chatModel);
     }
 

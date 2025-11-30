@@ -15,14 +15,11 @@ import org.springframework.http.ResponseEntity;
 
 class GlobalExceptionHandlerTest {
 
-    @Mock
-    private HttpServletRequest request;
+    @Mock private HttpServletRequest request;
 
-    @Mock
-    private org.springframework.context.MessageSource messageSource;
+    @Mock private org.springframework.context.MessageSource messageSource;
 
-    @InjectMocks
-    private GlobalExceptionHandler exceptionHandler;
+    @InjectMocks private GlobalExceptionHandler exceptionHandler;
 
     @BeforeEach
     void setUp() {
@@ -39,7 +36,8 @@ class GlobalExceptionHandlerTest {
         when(request.getRequestURI()).thenReturn("/api/v1/test");
 
         // When
-        ResponseEntity<ApiError> response = exceptionHandler.handleInternalServerErrors(exception, request);
+        ResponseEntity<ApiError> response =
+                exceptionHandler.handleInternalServerErrors(exception, request);
 
         // Then
         assertNotNull(response);
@@ -60,7 +58,8 @@ class GlobalExceptionHandlerTest {
         when(request.getRequestURI()).thenReturn("/api/v1/tasks");
 
         // When
-        ResponseEntity<ApiError> response = exceptionHandler.handleInternalServerErrors(exception, request);
+        ResponseEntity<ApiError> response =
+                exceptionHandler.handleInternalServerErrors(exception, request);
 
         // Then
         assertNotNull(response);
@@ -80,7 +79,8 @@ class GlobalExceptionHandlerTest {
         when(request.getRequestURI()).thenReturn("/api/v1/children");
 
         // When
-        ResponseEntity<ApiError> response = exceptionHandler.handleInternalServerErrors(exception, request);
+        ResponseEntity<ApiError> response =
+                exceptionHandler.handleInternalServerErrors(exception, request);
 
         // Then
         assertNotNull(response);
@@ -96,7 +96,8 @@ class GlobalExceptionHandlerTest {
         when(request.getRequestURI()).thenReturn("/api/v1/auth/register");
 
         // When
-        ResponseEntity<ApiError> response = exceptionHandler.handleIllegalArgumentException(exception, request);
+        ResponseEntity<ApiError> response =
+                exceptionHandler.handleIllegalArgumentException(exception, request);
 
         // Then
         assertNotNull(response);
@@ -116,7 +117,8 @@ class GlobalExceptionHandlerTest {
         when(request.getRequestURI()).thenReturn("/api/v1/children");
 
         // When
-        ResponseEntity<ApiError> response = exceptionHandler.handleIllegalArgumentException(exception, request);
+        ResponseEntity<ApiError> response =
+                exceptionHandler.handleIllegalArgumentException(exception, request);
 
         // Then
         assertNotNull(response);
@@ -131,7 +133,8 @@ class GlobalExceptionHandlerTest {
         when(request.getRequestURI()).thenReturn("/test");
 
         // When
-        ResponseEntity<ApiError> response = exceptionHandler.handleInternalServerErrors(exception, request);
+        ResponseEntity<ApiError> response =
+                exceptionHandler.handleInternalServerErrors(exception, request);
 
         // Then
         assertNotNull(response.getBody().getTimestamp());

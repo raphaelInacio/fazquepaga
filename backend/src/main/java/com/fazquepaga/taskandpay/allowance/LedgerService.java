@@ -1,4 +1,3 @@
-
 package com.fazquepaga.taskandpay.allowance;
 
 import com.fazquepaga.taskandpay.ai.AiInsightService;
@@ -20,32 +19,38 @@ public class LedgerService {
     private final UserRepository userRepository;
     private final AiInsightService aiInsightService;
 
-    public LedgerService(TransactionRepository transactionRepository, UserRepository userRepository, AiInsightService aiInsightService) {
+    public LedgerService(
+            TransactionRepository transactionRepository,
+            UserRepository userRepository,
+            AiInsightService aiInsightService) {
         this.transactionRepository = transactionRepository;
         this.userRepository = userRepository;
         this.aiInsightService = aiInsightService;
     }
 
-    public void addTransaction(String childId, BigDecimal amount, String description, Transaction.TransactionType type)
+    public void addTransaction(
+            String childId, BigDecimal amount, String description, Transaction.TransactionType type)
             throws ExecutionException, InterruptedException {
         User child = userRepository.findByIdSync(childId);
         if (child == null) {
             throw new IllegalArgumentException("Child not found");
         }
 
-        Transaction transaction = Transaction.builder()
-                .id(UUID.randomUUID().toString())
-                .childId(childId)
-                .amount(amount)
-                .description(description)
-                .date(Instant.now())
-                .type(type)
-                .build();
+        Transaction transaction =
+                Transaction.builder()
+                        .id(UUID.randomUUID().toString())
+                        .childId(childId)
+                        .amount(amount)
+                        .description(description)
+                        .date(Instant.now())
+                        .type(type)
+                        .build();
 
         transactionRepository.save(transaction);
 
         // Update balance
-        BigDecimal currentBalance = child.getBalance() != null ? child.getBalance() : BigDecimal.ZERO;
+        BigDecimal currentBalance =
+                child.getBalance() != null ? child.getBalance() : BigDecimal.ZERO;
         BigDecimal newBalance;
         if (type == Transaction.TransactionType.CREDIT) {
             newBalance = currentBalance.add(amount);
@@ -66,8 +71,12 @@ public class LedgerService {
             throw new IllegalArgumentException("Child does not belong to this parent");
         }
 
-        List<QueryDocumentSnapshot> documents = transactionRepository.findByChildId(childId).getDocuments();
-        List<Transaction> transactions = documents.stream().map(doc -> doc.toObject(Transaction.class)).collect(Collectors.toList());
+        List<QueryDocumentSnapshot> documents =
+                transactionRepository.findByChildId(childId).getDocuments();
+        List<Transaction> transactions =
+                documents.stream()
+                        .map(doc -> doc.toObject(Transaction.class))
+                        .collect(Collectors.toList());
 
         return LedgerResponse.builder()
                 .transactions(transactions)
@@ -79,4 +88,3 @@ public class LedgerService {
         return aiInsightService.getInsights(childId);
     }
 }
-

@@ -7,49 +7,45 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fazquepaga.taskandpay.config.SecurityConfig;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
-
-import com.fazquepaga.taskandpay.config.SecurityConfig;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.MediaType;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
+import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(controllers = WhatsAppController.class)
 @Import(SecurityConfig.class)
 class WhatsAppControllerTest {
 
-        @Autowired
-        private MockMvc mockMvc;
+    @Autowired private MockMvc mockMvc;
 
-        @Autowired
-        private ObjectMapper objectMapper;
+    @Autowired private ObjectMapper objectMapper;
 
-        @MockBean
-        private WhatsAppService whatsAppService;
+    @MockBean private WhatsAppService whatsAppService;
 
-        @MockBean
-        private TwilioRequestValidator requestValidator;
+    @MockBean private TwilioRequestValidator requestValidator;
 
-        @Test
-        void shouldCallWebhookHandler() throws Exception {
-                Map<String, String> payload = Map.of(
-                                "Body", "test message",
-                                "From", "whatsapp:+1234567890");
+    @Test
+    void shouldCallWebhookHandler() throws Exception {
+        Map<String, String> payload =
+                Map.of(
+                        "Body", "test message",
+                        "From", "whatsapp:+1234567890");
 
-                when(requestValidator.validate(any(), any())).thenReturn(true);
+        when(requestValidator.validate(any(), any())).thenReturn(true);
 
-                mockMvc.perform(
-                                post("/api/v1/whatsapp/webhook")
-                                                .with(SecurityMockMvcRequestPostProcessors.csrf())
-                                                .contentType(MediaType.APPLICATION_JSON)
-                                                .content(objectMapper.writeValueAsString(payload)))
-                                .andExpect(status().isOk());
+        mockMvc.perform(
+                        post("/api/v1/whatsapp/webhook")
+                                .with(SecurityMockMvcRequestPostProcessors.csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(payload)))
+                .andExpect(status().isOk());
 
-                verify(whatsAppService).handleWebhook(payload);
-        }
+        verify(whatsAppService).handleWebhook(payload);
+    }
 }

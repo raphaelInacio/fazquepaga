@@ -16,26 +16,19 @@ import org.mockito.MockitoAnnotations;
 
 class UserRepositoryTest {
 
-    @Mock
-    private Firestore firestore;
+    @Mock private Firestore firestore;
 
-    @Mock
-    private CollectionReference collectionReference;
+    @Mock private CollectionReference collectionReference;
 
-    @Mock
-    private DocumentReference documentReference;
+    @Mock private DocumentReference documentReference;
 
-    @Mock
-    private DocumentSnapshot documentSnapshot;
+    @Mock private DocumentSnapshot documentSnapshot;
 
-    @Mock
-    private Query query;
+    @Mock private Query query;
 
-    @Mock
-    private QuerySnapshot querySnapshot;
+    @Mock private QuerySnapshot querySnapshot;
 
-    @Mock
-    private QueryDocumentSnapshot queryDocumentSnapshot;
+    @Mock private QueryDocumentSnapshot queryDocumentSnapshot;
 
     private UserRepository userRepository;
 
@@ -49,11 +42,12 @@ class UserRepositoryTest {
     @Test
     void shouldSaveNewUserWithGeneratedId() {
         // Given
-        User user = User.builder()
-                .name("Test User")
-                .email("test@example.com")
-                .role(User.Role.PARENT)
-                .build();
+        User user =
+                User.builder()
+                        .name("Test User")
+                        .email("test@example.com")
+                        .role(User.Role.PARENT)
+                        .build();
 
         when(collectionReference.document()).thenReturn(documentReference);
         when(documentReference.getId()).thenReturn("generated-id");
@@ -71,12 +65,13 @@ class UserRepositoryTest {
     @Test
     void shouldUpdateExistingUser() {
         // Given
-        User user = User.builder()
-                .id("existing-id")
-                .name("Test User")
-                .email("test@example.com")
-                .role(User.Role.PARENT)
-                .build();
+        User user =
+                User.builder()
+                        .id("existing-id")
+                        .name("Test User")
+                        .email("test@example.com")
+                        .role(User.Role.PARENT)
+                        .build();
 
         when(collectionReference.document("existing-id")).thenReturn(documentReference);
         when(documentReference.set(any(User.class)))
@@ -94,11 +89,8 @@ class UserRepositoryTest {
     void shouldFindByIdWhenUserExists() throws ExecutionException, InterruptedException {
         // Given
         String userId = "user-123";
-        User expectedUser = User.builder()
-                .id(userId)
-                .name("Test User")
-                .role(User.Role.PARENT)
-                .build();
+        User expectedUser =
+                User.builder().id(userId).name("Test User").role(User.Role.PARENT).build();
 
         when(collectionReference.document(userId)).thenReturn(documentReference);
         when(documentReference.get()).thenReturn(ApiFutures.immediateFuture(documentSnapshot));
@@ -134,11 +126,12 @@ class UserRepositoryTest {
     void shouldFindByPhoneNumberWhenUserExists() throws ExecutionException, InterruptedException {
         // Given
         String phoneNumber = "+1234567890";
-        User expectedUser = User.builder()
-                .id("user-123")
-                .phoneNumber(phoneNumber)
-                .role(User.Role.CHILD)
-                .build();
+        User expectedUser =
+                User.builder()
+                        .id("user-123")
+                        .phoneNumber(phoneNumber)
+                        .role(User.Role.CHILD)
+                        .build();
 
         when(collectionReference.whereEqualTo("phoneNumber", phoneNumber)).thenReturn(query);
         when(query.limit(1)).thenReturn(query);
@@ -155,8 +148,7 @@ class UserRepositoryTest {
     }
 
     @Test
-    void shouldReturnNullWhenPhoneNumberNotFound()
-            throws ExecutionException, InterruptedException {
+    void shouldReturnNullWhenPhoneNumberNotFound() throws ExecutionException, InterruptedException {
         // Given
         String phoneNumber = "+9999999999";
 
@@ -175,11 +167,7 @@ class UserRepositoryTest {
     @Test
     void shouldHandleEmptyUserId() {
         // Given
-        User user = User.builder()
-                .id("")
-                .name("Test User")
-                .role(User.Role.PARENT)
-                .build();
+        User user = User.builder().id("").name("Test User").role(User.Role.PARENT).build();
 
         when(collectionReference.document()).thenReturn(documentReference);
         when(documentReference.getId()).thenReturn("generated-id");

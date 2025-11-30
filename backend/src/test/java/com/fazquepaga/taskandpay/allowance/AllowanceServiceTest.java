@@ -1,4 +1,3 @@
-
 package com.fazquepaga.taskandpay.allowance;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -10,7 +9,6 @@ import com.fazquepaga.taskandpay.identity.UserRepository;
 import com.fazquepaga.taskandpay.tasks.Task;
 import com.fazquepaga.taskandpay.tasks.TaskService;
 import java.math.BigDecimal;
-import java.time.Instant;
 import java.time.YearMonth;
 import java.util.Arrays;
 import java.util.Collections;
@@ -23,14 +21,11 @@ import org.mockito.MockitoAnnotations;
 
 class AllowanceServiceTest {
 
-    @Mock
-    private TaskService taskService;
+    @Mock private TaskService taskService;
 
-    @Mock
-    private UserRepository userRepository;
+    @Mock private UserRepository userRepository;
 
-    @Mock
-    private AllowanceCalculator allowanceCalculator;
+    @Mock private AllowanceCalculator allowanceCalculator;
 
     private AllowanceService allowanceService;
 
@@ -46,20 +41,23 @@ class AllowanceServiceTest {
         String childId = "child1";
         User child = User.builder().id(childId).build();
 
-        Task task1 = Task.builder()
-                .status(Task.TaskStatus.APPROVED)
-                .value(new BigDecimal("10.00"))
-                .build();
+        Task task1 =
+                Task.builder()
+                        .status(Task.TaskStatus.APPROVED)
+                        .value(new BigDecimal("10.00"))
+                        .build();
 
-        Task task2 = Task.builder()
-                .status(Task.TaskStatus.PENDING_APPROVAL)
-                .value(new BigDecimal("5.00"))
-                .build();
-        
-        Task task3 = Task.builder()
-                .status(Task.TaskStatus.PENDING)
-                .value(new BigDecimal("20.00"))
-                .build();
+        Task task2 =
+                Task.builder()
+                        .status(Task.TaskStatus.PENDING_APPROVAL)
+                        .value(new BigDecimal("5.00"))
+                        .build();
+
+        Task task3 =
+                Task.builder()
+                        .status(Task.TaskStatus.PENDING)
+                        .value(new BigDecimal("20.00"))
+                        .build();
 
         List<Task> tasks = Arrays.asList(task1, task2, task3);
 
@@ -74,15 +72,19 @@ class AllowanceServiceTest {
     }
 
     @Test
-    void testCalculatePredictedAllowanceChildNotFound() throws ExecutionException, InterruptedException {
+    void testCalculatePredictedAllowanceChildNotFound()
+            throws ExecutionException, InterruptedException {
         // Given
         String childId = "child1";
         when(userRepository.findByIdSync(childId)).thenReturn(null);
 
         // When & Then
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            allowanceService.calculatePredictedAllowance(childId);
-        });
+        IllegalArgumentException exception =
+                assertThrows(
+                        IllegalArgumentException.class,
+                        () -> {
+                            allowanceService.calculatePredictedAllowance(childId);
+                        });
         assertEquals("Child not found", exception.getMessage());
     }
 
@@ -94,11 +96,12 @@ class AllowanceServiceTest {
         User child = User.builder().id(childId).monthlyAllowance(new BigDecimal("100.00")).build();
         Task task = Task.builder().id(taskId).type(Task.TaskType.DAILY).build();
         List<Task> tasks = Collections.singletonList(task);
-        
+
         when(userRepository.findByIdSync(childId)).thenReturn(child);
         when(taskService.getTasksByUserId(childId)).thenReturn(tasks);
-        when(allowanceCalculator.calculateTaskValue(task, child.getMonthlyAllowance(), tasks, YearMonth.now()))
-            .thenReturn(new BigDecimal("10.00"));
+        when(allowanceCalculator.calculateTaskValue(
+                        task, child.getMonthlyAllowance(), tasks, YearMonth.now()))
+                .thenReturn(new BigDecimal("10.00"));
 
         // When
         BigDecimal taskValue = allowanceService.calculateValueForTask(childId, taskId);
@@ -115,9 +118,12 @@ class AllowanceServiceTest {
         when(userRepository.findByIdSync(childId)).thenReturn(null);
 
         // When & Then
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            allowanceService.calculateValueForTask(childId, taskId);
-        });
+        IllegalArgumentException exception =
+                assertThrows(
+                        IllegalArgumentException.class,
+                        () -> {
+                            allowanceService.calculateValueForTask(childId, taskId);
+                        });
         assertEquals("Child not found", exception.getMessage());
     }
 
@@ -127,14 +133,17 @@ class AllowanceServiceTest {
         String childId = "child1";
         String taskId = "task1";
         User child = User.builder().id(childId).build();
-        
+
         when(userRepository.findByIdSync(childId)).thenReturn(child);
         when(taskService.getTasksByUserId(childId)).thenReturn(Collections.emptyList());
 
         // When & Then
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            allowanceService.calculateValueForTask(childId, taskId);
-        });
+        IllegalArgumentException exception =
+                assertThrows(
+                        IllegalArgumentException.class,
+                        () -> {
+                            allowanceService.calculateValueForTask(childId, taskId);
+                        });
         assertEquals("Task not found", exception.getMessage());
     }
 
@@ -144,7 +153,8 @@ class AllowanceServiceTest {
         String childId = "child1";
         User child = User.builder().id(childId).monthlyAllowance(new BigDecimal("100.00")).build();
         Task task1 = Task.builder().type(Task.TaskType.DAILY).weight(Task.TaskWeight.LOW).build();
-        Task task2 = Task.builder().type(Task.TaskType.WEEKLY).weight(Task.TaskWeight.MEDIUM).build();
+        Task task2 =
+                Task.builder().type(Task.TaskType.WEEKLY).weight(Task.TaskWeight.MEDIUM).build();
         List<Task> tasks = Arrays.asList(task1, task2);
 
         when(userRepository.findByIdSync(childId)).thenReturn(child);
@@ -156,7 +166,7 @@ class AllowanceServiceTest {
         // Then
         verify(taskService, times(2)).updateTaskValue(eq(childId), any(Task.class));
     }
-    
+
     @Test
     void testRecalculateTaskValuesNoChild() throws ExecutionException, InterruptedException {
         // Given
@@ -171,7 +181,8 @@ class AllowanceServiceTest {
     }
 
     @Test
-    void testRecalculateTaskValuesNoMonthlyAllowance() throws ExecutionException, InterruptedException {
+    void testRecalculateTaskValuesNoMonthlyAllowance()
+            throws ExecutionException, InterruptedException {
         // Given
         String childId = "child1";
         User child = User.builder().id(childId).build();
@@ -235,4 +246,3 @@ class AllowanceServiceTest {
         verify(taskService, times(1)).updateTaskValue(eq(childId), any(Task.class));
     }
 }
-

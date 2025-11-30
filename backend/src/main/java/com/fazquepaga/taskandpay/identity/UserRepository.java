@@ -70,6 +70,9 @@ public class UserRepository {
     }
 
     public ApiFuture<com.google.cloud.firestore.QuerySnapshot> findByParentId(String parentId) {
-        return usersCollection.whereEqualTo("parentId", parentId).whereEqualTo("role", User.Role.CHILD.name()).get();
+        return usersCollection
+                .whereEqualTo("parentId", parentId)
+                .whereEqualTo("role", User.Role.CHILD.name())
+                .get();
     }
 }

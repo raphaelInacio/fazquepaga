@@ -4,8 +4,8 @@ import com.fazquepaga.taskandpay.identity.User;
 import org.springframework.stereotype.Service;
 
 /**
- * Service responsible for managing subscription-related business logic.
- * Handles permission checks based on subscription tiers.
+ * Service responsible for managing subscription-related business logic. Handles permission checks
+ * based on subscription tiers.
  */
 @Service
 public class SubscriptionService {
@@ -17,7 +17,7 @@ public class SubscriptionService {
     /**
      * Checks if a user can create a new task based on their subscription tier.
      *
-     * @param user                      The user attempting to create a task
+     * @param user The user attempting to create a task
      * @param currentRecurringTaskCount The current number of recurring tasks
      * @return true if the user can create a task, false otherwise
      */
@@ -53,7 +53,7 @@ public class SubscriptionService {
     /**
      * Checks if a user can add a new child.
      *
-     * @param user              The user attempting to add a child
+     * @param user The user attempting to add a child
      * @param currentChildCount The current number of children
      * @return true if the user can add a child, false otherwise
      */

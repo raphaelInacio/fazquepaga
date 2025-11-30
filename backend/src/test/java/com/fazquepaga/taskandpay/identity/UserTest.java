@@ -9,12 +9,13 @@ class UserTest {
     @Test
     void shouldBuildUserWithBuilder() {
         // Given & When
-        User user = User.builder()
-                .id("user-id")
-                .name("John Doe")
-                .email("john@example.com")
-                .role(User.Role.PARENT)
-                .build();
+        User user =
+                User.builder()
+                        .id("user-id")
+                        .name("John Doe")
+                        .email("john@example.com")
+                        .role(User.Role.PARENT)
+                        .build();
 
         // Then
         assertNotNull(user);
@@ -27,12 +28,13 @@ class UserTest {
     @Test
     void shouldCreateParentUser() {
         // Given & When
-        User parent = User.builder()
-                .id("parent-id")
-                .name("Parent Name")
-                .email("parent@example.com")
-                .role(User.Role.PARENT)
-                .build();
+        User parent =
+                User.builder()
+                        .id("parent-id")
+                        .name("Parent Name")
+                        .email("parent@example.com")
+                        .role(User.Role.PARENT)
+                        .build();
 
         // Then
         assertEquals(User.Role.PARENT, parent.getRole());
@@ -42,13 +44,14 @@ class UserTest {
     @Test
     void shouldCreateChildUser() {
         // Given & When
-        User child = User.builder()
-                .id("child-id")
-                .name("Child Name")
-                .phoneNumber("+1234567890")
-                .parentId("parent-id")
-                .role(User.Role.CHILD)
-                .build();
+        User child =
+                User.builder()
+                        .id("child-id")
+                        .name("Child Name")
+                        .phoneNumber("+1234567890")
+                        .parentId("parent-id")
+                        .role(User.Role.CHILD)
+                        .build();
 
         // Then
         assertEquals(User.Role.CHILD, child.getRole());
@@ -67,15 +70,16 @@ class UserTest {
     @Test
     void shouldCreateUserWithAllFields() {
         // Given & When
-        User user = User.builder()
-                .id("user-id")
-                .name("Full Name")
-                .email("email@example.com")
-                .phoneNumber("+1234567890")
-                .parentId("parent-id")
-                .age(10)
-                .role(User.Role.CHILD)
-                .build();
+        User user =
+                User.builder()
+                        .id("user-id")
+                        .name("Full Name")
+                        .email("email@example.com")
+                        .phoneNumber("+1234567890")
+                        .parentId("parent-id")
+                        .age(10)
+                        .role(User.Role.CHILD)
+                        .build();
 
         // Then
         assertNotNull(user.getId());

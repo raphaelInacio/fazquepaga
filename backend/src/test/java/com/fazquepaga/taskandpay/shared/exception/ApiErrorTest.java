@@ -62,7 +62,8 @@ class ApiErrorTest {
     @Test
     void shouldSerializeToJson() throws Exception {
         // Given
-        ApiError apiError = new ApiError(HttpStatus.NOT_FOUND, "Resource not found", "/api/v1/test");
+        ApiError apiError =
+                new ApiError(HttpStatus.NOT_FOUND, "Resource not found", "/api/v1/test");
 
         // Configure ObjectMapper with JSR310 module for LocalDateTime support
         ObjectMapper objectMapper = new ObjectMapper();
@@ -94,7 +95,6 @@ class ApiErrorTest {
         // Then
         assertNotNull(apiError.getTimestamp());
         assertTrue(
-                apiError.getTimestamp().isAfter(before)
-                        || apiError.getTimestamp().isEqual(before));
+                apiError.getTimestamp().isAfter(before) || apiError.getTimestamp().isEqual(before));
     }
 }

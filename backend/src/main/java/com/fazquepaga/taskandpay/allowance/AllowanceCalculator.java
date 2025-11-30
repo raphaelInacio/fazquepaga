@@ -1,10 +1,5 @@
 package com.fazquepaga.taskandpay.allowance;
 
-import com.fazquepaga.taskandpay.tasks.Task;
-import java.math.BigDecimal;
-import java.time.YearMonth;
-import java.util.List;
-
 public interface AllowanceCalculator {
     java.math.BigDecimal calculateTaskValue(
             com.fazquepaga.taskandpay.tasks.Task task,

@@ -1,10 +1,10 @@
 package com.fazquepaga.taskandpay.subscription;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import com.fazquepaga.taskandpay.identity.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class SubscriptionServiceTest {
 
@@ -17,11 +17,12 @@ class SubscriptionServiceTest {
 
     @Test
     void testCanCreateTask_PremiumUser_ShouldAllowUnlimitedTasks() {
-        User premiumUser = User.builder()
-                .id("premium-user")
-                .subscriptionTier(User.SubscriptionTier.PREMIUM)
-                .subscriptionStatus(User.SubscriptionStatus.ACTIVE)
-                .build();
+        User premiumUser =
+                User.builder()
+                        .id("premium-user")
+                        .subscriptionTier(User.SubscriptionTier.PREMIUM)
+                        .subscriptionStatus(User.SubscriptionStatus.ACTIVE)
+                        .build();
 
         assertTrue(subscriptionService.canCreateTask(premiumUser, 100));
         assertTrue(subscriptionService.canCreateTask(premiumUser, 1000));
@@ -29,11 +30,12 @@ class SubscriptionServiceTest {
 
     @Test
     void testCanCreateTask_FreeUser_ShouldEnforceLimit() {
-        User freeUser = User.builder()
-                .id("free-user")
-                .subscriptionTier(User.SubscriptionTier.FREE)
-                .subscriptionStatus(User.SubscriptionStatus.ACTIVE)
-                .build();
+        User freeUser =
+                User.builder()
+                        .id("free-user")
+                        .subscriptionTier(User.SubscriptionTier.FREE)
+                        .subscriptionStatus(User.SubscriptionStatus.ACTIVE)
+                        .build();
 
         // Should allow up to 4 tasks (5th task is allowed)
         assertTrue(subscriptionService.canCreateTask(freeUser, 0));
@@ -51,27 +53,21 @@ class SubscriptionServiceTest {
 
     @Test
     void testCanCreateTask_NullTier_ShouldReturnFalse() {
-        User userWithoutTier = User.builder()
-                .id("user-no-tier")
-                .build();
+        User userWithoutTier = User.builder().id("user-no-tier").build();
 
         assertFalse(subscriptionService.canCreateTask(userWithoutTier, 0));
     }
 
     @Test
     void testCanUseAI_PremiumUser_ShouldReturnTrue() {
-        User premiumUser = User.builder()
-                .subscriptionTier(User.SubscriptionTier.PREMIUM)
-                .build();
+        User premiumUser = User.builder().subscriptionTier(User.SubscriptionTier.PREMIUM).build();
 
         assertTrue(subscriptionService.canUseAI(premiumUser));
     }
 
     @Test
     void testCanUseAI_FreeUser_ShouldReturnFalse() {
-        User freeUser = User.builder()
-                .subscriptionTier(User.SubscriptionTier.FREE)
-                .build();
+        User freeUser = User.builder().subscriptionTier(User.SubscriptionTier.FREE).build();
 
         assertFalse(subscriptionService.canUseAI(freeUser));
     }
@@ -83,27 +79,21 @@ class SubscriptionServiceTest {
 
     @Test
     void testCanAccessGiftCardStore_PremiumUser_ShouldReturnTrue() {
-        User premiumUser = User.builder()
-                .subscriptionTier(User.SubscriptionTier.PREMIUM)
-                .build();
+        User premiumUser = User.builder().subscriptionTier(User.SubscriptionTier.PREMIUM).build();
 
         assertTrue(subscriptionService.canAccessGiftCardStore(premiumUser));
     }
 
     @Test
     void testCanAccessGiftCardStore_FreeUser_ShouldReturnFalse() {
-        User freeUser = User.builder()
-                .subscriptionTier(User.SubscriptionTier.FREE)
-                .build();
+        User freeUser = User.builder().subscriptionTier(User.SubscriptionTier.FREE).build();
 
         assertFalse(subscriptionService.canAccessGiftCardStore(freeUser));
     }
 
     @Test
     void testCanAddChild_FreeUser_ShouldEnforceLimit() {
-        User freeUser = User.builder()
-                .subscriptionTier(User.SubscriptionTier.FREE)
-                .build();
+        User freeUser = User.builder().subscriptionTier(User.SubscriptionTier.FREE).build();
 
         // Should allow first child
         assertTrue(subscriptionService.canAddChild(freeUser, 0));
@@ -114,9 +104,7 @@ class SubscriptionServiceTest {
 
     @Test
     void testCanAddChild_PremiumUser_ShouldAllowUnlimited() {
-        User premiumUser = User.builder()
-                .subscriptionTier(User.SubscriptionTier.PREMIUM)
-                .build();
+        User premiumUser = User.builder().subscriptionTier(User.SubscriptionTier.PREMIUM).build();
 
         assertTrue(subscriptionService.canAddChild(premiumUser, 0));
         assertTrue(subscriptionService.canAddChild(premiumUser, 10));
@@ -124,18 +112,14 @@ class SubscriptionServiceTest {
 
     @Test
     void testGetMaxRecurringTasks_PremiumUser_ShouldReturnUnlimited() {
-        User premiumUser = User.builder()
-                .subscriptionTier(User.SubscriptionTier.PREMIUM)
-                .build();
+        User premiumUser = User.builder().subscriptionTier(User.SubscriptionTier.PREMIUM).build();
 
         assertEquals(-1, subscriptionService.getMaxRecurringTasks(premiumUser));
     }
 
     @Test
     void testGetMaxRecurringTasks_FreeUser_ShouldReturnLimit() {
-        User freeUser = User.builder()
-                .subscriptionTier(User.SubscriptionTier.FREE)
-                .build();
+        User freeUser = User.builder().subscriptionTier(User.SubscriptionTier.FREE).build();
 
         assertEquals(5, subscriptionService.getMaxRecurringTasks(freeUser));
     }

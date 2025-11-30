@@ -6,12 +6,11 @@ import com.fazquepaga.taskandpay.subscription.SubscriptionLimitReachedException;
 import com.fazquepaga.taskandpay.subscription.SubscriptionService;
 import com.fazquepaga.taskandpay.tasks.dto.CreateTaskRequest;
 import com.google.cloud.firestore.QueryDocumentSnapshot;
+import jakarta.inject.Provider;
 import java.time.Instant;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
-import jakarta.inject.Provider;
-
 import org.springframework.stereotype.Service;
 
 @Service
@@ -24,12 +23,16 @@ public class TaskService {
     private final SubscriptionService subscriptionService;
 
     private final com.fazquepaga.taskandpay.allowance.LedgerService ledgerService;
-    private final Provider<com.fazquepaga.taskandpay.allowance.AllowanceService> allowanceServiceProvider;
+    private final Provider<com.fazquepaga.taskandpay.allowance.AllowanceService>
+            allowanceServiceProvider;
 
-    public TaskService(TaskRepository taskRepository, UserRepository userRepository,
+    public TaskService(
+            TaskRepository taskRepository,
+            UserRepository userRepository,
             SubscriptionService subscriptionService,
             com.fazquepaga.taskandpay.allowance.LedgerService ledgerService,
-            Provider<com.fazquepaga.taskandpay.allowance.AllowanceService> allowanceServiceProvider) {
+            Provider<com.fazquepaga.taskandpay.allowance.AllowanceService>
+                    allowanceServiceProvider) {
 
         this.taskRepository = taskRepository;
 
@@ -61,21 +64,23 @@ public class TaskService {
             int currentRecurringTaskCount = countRecurringTasks(userId);
             if (!subscriptionService.canCreateTask(parent, currentRecurringTaskCount)) {
                 throw new SubscriptionLimitReachedException(
-                        "Recurring task limit reached for Free tier. Upgrade to Premium for unlimited tasks.");
+                        "Recurring task limit reached for Free tier. Upgrade to Premium for"
+                                + " unlimited tasks.");
             }
         }
 
-        Task task = Task.builder()
-                .description(request.getDescription())
-                .type(request.getType())
-                .weight(request.getWeight())
-                .value(java.math.BigDecimal.ZERO) // Will be recalculated
-                .requiresProof(request.isRequiresProof())
-                .createdAt(Instant.now())
-                .dayOfWeek(request.getDayOfWeek())
-                .scheduledDate(request.getScheduledDate())
-                .status(Task.TaskStatus.PENDING)
-                .build();
+        Task task =
+                Task.builder()
+                        .description(request.getDescription())
+                        .type(request.getType())
+                        .weight(request.getWeight())
+                        .value(java.math.BigDecimal.ZERO) // Will be recalculated
+                        .requiresProof(request.isRequiresProof())
+                        .createdAt(Instant.now())
+                        .dayOfWeek(request.getDayOfWeek())
+                        .scheduledDate(request.getScheduledDate())
+                        .status(Task.TaskStatus.PENDING)
+                        .build();
 
         taskRepository.save(userId, task).get();
 
@@ -93,12 +98,14 @@ public class TaskService {
     public List<Task> getTasksByUserId(String userId)
             throws ExecutionException, InterruptedException {
 
-        List<QueryDocumentSnapshot> documents = taskRepository.findTasksByUserId(userId).get().getDocuments();
+        List<QueryDocumentSnapshot> documents =
+                taskRepository.findTasksByUserId(userId).get().getDocuments();
 
         return documents.stream().map(doc -> doc.toObject(Task.class)).collect(Collectors.toList());
     }
 
-    public Task approveTask(String taskId, String parentId) throws ExecutionException, InterruptedException {
+    public Task approveTask(String taskId, String parentId)
+            throws ExecutionException, InterruptedException {
         // 1. Fetch task
         // Ideally we should have a findById in TaskRepository or search by ID across
         // all users (inefficient)
@@ -152,17 +159,19 @@ public class TaskService {
         }
 
         List<Task> tasks = getTasksByUserId(childId);
-        Task task = tasks.stream()
-                .filter(t -> t.getId().equals(taskId))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("Task not found"));
+        Task task =
+                tasks.stream()
+                        .filter(t -> t.getId().equals(taskId))
+                        .findFirst()
+                        .orElseThrow(() -> new IllegalArgumentException("Task not found"));
 
         if (task.getStatus() == Task.TaskStatus.APPROVED) {
             throw new IllegalStateException("Task is already approved");
         }
 
         // Calculate value
-        java.math.BigDecimal value = allowanceServiceProvider.get().calculateValueForTask(childId, taskId);
+        java.math.BigDecimal value =
+                allowanceServiceProvider.get().calculateValueForTask(childId, taskId);
 
         // Update task status
         task.setStatus(Task.TaskStatus.APPROVED);
@@ -178,17 +187,65 @@ public class TaskService {
         return task;
     }
 
-    private int countRecurringTasks(String userId) throws ExecutionException, InterruptedException {
-        List<Task> tasks = getTasksByUserId(userId);
-        return (int) tasks.stream()
-                .filter(task -> task.getType() == Task.TaskType.DAILY || task.getType() == Task.TaskType.WEEKLY)
-                .count();
+    public Task completeTask(String taskId, String childId)
+            throws ExecutionException, InterruptedException {
+
+        // Verify child exists
+        User child = userRepository.findByIdSync(childId);
+        if (child == null || child.getRole() != User.Role.CHILD) {
+            throw new IllegalArgumentException("Child not found");
+        }
+
+        // Find task
+        List<Task> tasks = getTasksByUserId(childId);
+        Task task =
+                tasks.stream()
+                        .filter(t -> t.getId().equals(taskId))
+                        .findFirst()
+                        .orElseThrow(() -> new IllegalArgumentException("Task not found"));
+
+        // Check if task is already completed or approved
+        if (task.getStatus() == Task.TaskStatus.COMPLETED
+                || task.getStatus() == Task.TaskStatus.PENDING_APPROVAL
+                || task.getStatus() == Task.TaskStatus.APPROVED) {
+            throw new IllegalStateException("Task is already completed");
+        }
+
+        // Update status based on proof requirement
+        if (task.isRequiresProof()) {
+            task.setStatus(Task.TaskStatus.PENDING_APPROVAL);
+        } else {
+            // Auto-approve tasks that don't require proof
+            task.setStatus(Task.TaskStatus.APPROVED);
+
+            // Calculate value and add transaction
+            java.math.BigDecimal value =
+                    allowanceServiceProvider.get().calculateValueForTask(childId, taskId);
+            ledgerService.addTransaction(
+                    childId,
+                    value,
+                    "Task completed: " + task.getDescription(),
+                    com.fazquepaga.taskandpay.allowance.Transaction.TransactionType.CREDIT);
+        }
+
+        taskRepository.save(childId, task).get();
+        return task;
     }
 
-    /**
-     * Updates the value of a task (used by automatic redistribution).
-     */
-    public void updateTaskValue(String childId, Task task) throws ExecutionException, InterruptedException {
+    private int countRecurringTasks(String userId) throws ExecutionException, InterruptedException {
+        List<Task> tasks = getTasksByUserId(userId);
+        return (int)
+                tasks.stream()
+                        .filter(
+                                task ->
+                                        task.getType() == Task.TaskType.DAILY
+                                                || task.getType() == Task.TaskType.WEEKLY)
+                        .count();
+    }
+
+    /** Updates the value of a task (used by automatic redistribution). */
+    public void updateTaskValue(String childId, Task task)
+            throws ExecutionException, InterruptedException {
         taskRepository.save(childId, task).get();
     }
 }

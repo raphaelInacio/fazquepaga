@@ -14,8 +14,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class Transaction {
 
-    @DocumentId
-    private String id;
+    @DocumentId private String id;
 
     private String childId;
     private BigDecimal amount;

@@ -15,7 +15,8 @@ public class IdentityService {
 
     private final UserRepository userRepository;
 
-    private final Map<String, String> onboardingCodes = new ConcurrentHashMap<>(); // code -> childId
+    private final Map<String, String> onboardingCodes =
+            new ConcurrentHashMap<>(); // code -> childId
 
     public IdentityService(UserRepository userRepository) {
 
@@ -59,16 +60,39 @@ public class IdentityService {
         return child;
     }
 
+    public User authenticateChildByCode(String code)
+            throws ExecutionException, InterruptedException {
+
+        String childId = onboardingCodes.get(code);
+
+        if (childId == null) {
+            throw new IllegalArgumentException("Invalid or expired onboarding code.");
+        }
+
+        User child = userRepository.findByIdSync(childId);
+
+        if (child == null) {
+            throw new IllegalStateException("Child not found for onboarding code.");
+        }
+
+        if (child.getRole() != User.Role.CHILD) {
+            throw new IllegalArgumentException("Invalid user type for child login.");
+        }
+
+        return child;
+    }
+
     public User registerParent(CreateParentRequest request)
             throws ExecutionException, InterruptedException {
 
-        User parent = User.builder()
-                .name(request.getName())
-                .email(request.getEmail())
-                .role(User.Role.PARENT)
-                .subscriptionTier(User.SubscriptionTier.FREE) // Default to FREE tier
-                .subscriptionStatus(User.SubscriptionStatus.ACTIVE)
-                .build();
+        User parent =
+                User.builder()
+                        .name(request.getName())
+                        .email(request.getEmail())
+                        .role(User.Role.PARENT)
+                        .subscriptionTier(User.SubscriptionTier.FREE) // Default to FREE tier
+                        .subscriptionStatus(User.SubscriptionStatus.ACTIVE)
+                        .build();
 
         userRepository.save(parent).get();
 
@@ -94,13 +118,14 @@ public class IdentityService {
             throw new IllegalArgumentException("Parent with ID " + parentId + " not found.");
         }
 
-        User child = User.builder()
-                .name(request.getName())
-                .phoneNumber(request.getPhoneNumber())
-                .age(request.getAge())
-                .role(User.Role.CHILD)
-                .parentId(parentId)
-                .build();
+        User child =
+                User.builder()
+                        .name(request.getName())
+                        .phoneNumber(request.getPhoneNumber())
+                        .age(request.getAge())
+                        .role(User.Role.CHILD)
+                        .parentId(parentId)
+                        .build();
 
         userRepository.save(child).get();
 
@@ -119,13 +144,10 @@ public class IdentityService {
         return child;
     }
 
-    public List<User> getChildren(String parentId)
-            throws ExecutionException, InterruptedException {
-        List<com.google.cloud.firestore.QueryDocumentSnapshot> documents = userRepository.findByParentId(parentId).get()
-                .getDocuments();
-        return documents.stream()
-                .map(doc -> doc.toObject(User.class))
-                .collect(Collectors.toList());
+    public List<User> getChildren(String parentId) throws ExecutionException, InterruptedException {
+        List<com.google.cloud.firestore.QueryDocumentSnapshot> documents =
+                userRepository.findByParentId(parentId).get().getDocuments();
+        return documents.stream().map(doc -> doc.toObject(User.class)).collect(Collectors.toList());
     }
 
     public User updateChildAllowance(String childId, java.math.BigDecimal allowance)

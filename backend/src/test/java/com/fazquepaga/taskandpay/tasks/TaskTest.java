@@ -10,15 +10,16 @@ class TaskTest {
     @Test
     void shouldBuildTaskWithBuilder() {
         // Given & When
-        Task task = Task.builder()
-                .id("task-id")
-                .description("Test Task")
-                .type(Task.TaskType.ONE_TIME)
-                .weight(Task.TaskWeight.MEDIUM)
-                .status(Task.TaskStatus.PENDING)
-                .requiresProof(true)
-                .createdAt(Instant.now())
-                .build();
+        Task task =
+                Task.builder()
+                        .id("task-id")
+                        .description("Test Task")
+                        .type(Task.TaskType.ONE_TIME)
+                        .weight(Task.TaskWeight.MEDIUM)
+                        .status(Task.TaskStatus.PENDING)
+                        .requiresProof(true)
+                        .createdAt(Instant.now())
+                        .build();
 
         // Then
         assertNotNull(task);
@@ -62,13 +63,14 @@ class TaskTest {
     @Test
     void shouldCreateTaskWithoutProof() {
         // Given & When
-        Task task = Task.builder()
-                .id("task-id")
-                .description("Simple task")
-                .requiresProof(false)
-                .status(Task.TaskStatus.PENDING)
-                .createdAt(Instant.now())
-                .build();
+        Task task =
+                Task.builder()
+                        .id("task-id")
+                        .description("Simple task")
+                        .requiresProof(false)
+                        .status(Task.TaskStatus.PENDING)
+                        .createdAt(Instant.now())
+                        .build();
 
         // Then
         assertFalse(task.isRequiresProof());
@@ -77,14 +79,15 @@ class TaskTest {
     @Test
     void shouldCreateDailyTask() {
         // Given & When
-        Task task = Task.builder()
-                .id("task-id")
-                .description("Daily chore")
-                .type(Task.TaskType.DAILY)
-                .weight(Task.TaskWeight.LOW)
-                .status(Task.TaskStatus.PENDING)
-                .createdAt(Instant.now())
-                .build();
+        Task task =
+                Task.builder()
+                        .id("task-id")
+                        .description("Daily chore")
+                        .type(Task.TaskType.DAILY)
+                        .weight(Task.TaskWeight.LOW)
+                        .status(Task.TaskStatus.PENDING)
+                        .createdAt(Instant.now())
+                        .build();
 
         // Then
         assertEquals(Task.TaskType.DAILY, task.getType());
@@ -93,13 +96,14 @@ class TaskTest {
     @Test
     void shouldCreateHighWeightTask() {
         // Given & When
-        Task task = Task.builder()
-                .id("task-id")
-                .description("Big chore")
-                .weight(Task.TaskWeight.HIGH)
-                .status(Task.TaskStatus.PENDING)
-                .createdAt(Instant.now())
-                .build();
+        Task task =
+                Task.builder()
+                        .id("task-id")
+                        .description("Big chore")
+                        .weight(Task.TaskWeight.HIGH)
+                        .status(Task.TaskStatus.PENDING)
+                        .createdAt(Instant.now())
+                        .build();
 
         // Then
         assertEquals(Task.TaskWeight.HIGH, task.getWeight());

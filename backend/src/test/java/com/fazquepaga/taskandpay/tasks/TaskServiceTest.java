@@ -2,12 +2,11 @@ package com.fazquepaga.taskandpay.tasks;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.never;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.when;
 
 import com.fazquepaga.taskandpay.identity.User;
 import com.fazquepaga.taskandpay.identity.UserRepository;
@@ -16,10 +15,10 @@ import com.fazquepaga.taskandpay.tasks.dto.CreateTaskRequest;
 import com.google.api.core.ApiFutures;
 import com.google.cloud.firestore.QueryDocumentSnapshot;
 import com.google.cloud.firestore.QuerySnapshot;
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -27,79 +26,74 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import java.math.BigDecimal;
-import java.util.Arrays;
 
 class TaskServiceTest {
 
-        @Mock
-        private TaskRepository taskRepository;
+    @Mock private TaskRepository taskRepository;
 
-        @Mock
-        private UserRepository userRepository;
+    @Mock private UserRepository userRepository;
 
-        @Mock
-        private com.fazquepaga.taskandpay.subscription.SubscriptionService subscriptionService;
+    @Mock private com.fazquepaga.taskandpay.subscription.SubscriptionService subscriptionService;
 
-        @Mock
-        private com.fazquepaga.taskandpay.allowance.LedgerService ledgerService;
+    @Mock private com.fazquepaga.taskandpay.allowance.LedgerService ledgerService;
 
-        @Mock
-        private jakarta.inject.Provider<com.fazquepaga.taskandpay.allowance.AllowanceService> allowanceServiceProvider;
+    @Mock
+    private jakarta.inject.Provider<com.fazquepaga.taskandpay.allowance.AllowanceService>
+            allowanceServiceProvider;
 
-        @Mock
-        private com.fazquepaga.taskandpay.allowance.AllowanceService allowanceService;
+    @Mock private com.fazquepaga.taskandpay.allowance.AllowanceService allowanceService;
 
-        @InjectMocks
-        private TaskService taskService;
+    @InjectMocks private TaskService taskService;
 
-        @BeforeEach
-        void setUp() {
-                MockitoAnnotations.openMocks(this);
-                when(allowanceServiceProvider.get()).thenReturn(allowanceService);
-        }
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
+        when(allowanceServiceProvider.get()).thenReturn(allowanceService);
+    }
 
-        @Test
-        void shouldCreateTask() throws ExecutionException, InterruptedException {
+    @Test
+    void shouldCreateTask() throws ExecutionException, InterruptedException {
 
-                // Given
-                String userId = "user-id";
-                String parentId = "parent-id";
+        // Given
+        String userId = "user-id";
+        String parentId = "parent-id";
 
-                CreateTaskRequest request = new CreateTaskRequest();
-                request.setDescription("Test Task");
-                request.setType(Task.TaskType.ONE_TIME);
-                request.setWeight(Task.TaskWeight.MEDIUM);
-                request.setRequiresProof(false);
+        CreateTaskRequest request = new CreateTaskRequest();
+        request.setDescription("Test Task");
+        request.setType(Task.TaskType.ONE_TIME);
+        request.setWeight(Task.TaskWeight.MEDIUM);
+        request.setRequiresProof(false);
 
-                User child = User.builder()
-                                .id(userId)
-                                .role(User.Role.CHILD)
-                                .parentId(parentId)
-                                .build();
+        User child = User.builder().id(userId).role(User.Role.CHILD).parentId(parentId).build();
 
-                User parent = User.builder()
-                                .id(parentId)
-                                .role(User.Role.PARENT)
-                                .subscriptionTier(User.SubscriptionTier.FREE)
-                                .build();
+        User parent =
+                User.builder()
+                        .id(parentId)
+                        .role(User.Role.PARENT)
+                        .subscriptionTier(User.SubscriptionTier.FREE)
+                        .build();
 
-                when(userRepository.findByIdSync(userId)).thenReturn(child);
-                when(userRepository.findByIdSync(parentId)).thenReturn(parent);
+        when(userRepository.findByIdSync(userId)).thenReturn(child);
+        when(userRepository.findByIdSync(parentId)).thenReturn(parent);
 
-                doAnswer(invocation -> {
-                        Task taskToSave = invocation.getArgument(1);
-                        taskToSave.setId("new-task-id");
-                        return ApiFutures.immediateFuture(null);
-                }).when(taskRepository).save(eq(userId), any(Task.class));
+        doAnswer(
+                        invocation -> {
+                            Task taskToSave = invocation.getArgument(1);
+                            taskToSave.setId("new-task-id");
+                            return ApiFutures.immediateFuture(null);
+                        })
+                .when(taskRepository)
+                .save(eq(userId), any(Task.class));
 
-                // Mock the behavior of getTasksByUserId to return the newly created task
-                QuerySnapshot querySnapshot = Mockito.mock(QuerySnapshot.class);
-                QueryDocumentSnapshot documentSnapshot = Mockito.mock(QueryDocumentSnapshot.class);
-                when(taskRepository.findTasksByUserId(userId)).thenReturn(ApiFutures.immediateFuture(querySnapshot));
-                when(querySnapshot.getDocuments()).thenReturn(Collections.singletonList(documentSnapshot));
-                
-                Task createdTask = Task.builder()
+        // Mock the behavior of getTasksByUserId to return the newly created task
+        QuerySnapshot querySnapshot = Mockito.mock(QuerySnapshot.class);
+        QueryDocumentSnapshot documentSnapshot = Mockito.mock(QueryDocumentSnapshot.class);
+        when(taskRepository.findTasksByUserId(userId))
+                .thenReturn(ApiFutures.immediateFuture(querySnapshot));
+        when(querySnapshot.getDocuments()).thenReturn(Collections.singletonList(documentSnapshot));
+
+        Task createdTask =
+                Task.builder()
                         .id("new-task-id")
                         .description("Test Task")
                         .type(Task.TaskType.ONE_TIME)
@@ -108,85 +102,86 @@ class TaskServiceTest {
                         .status(Task.TaskStatus.PENDING)
                         .createdAt(Instant.now())
                         .build();
-                when(documentSnapshot.toObject(Task.class)).thenReturn(createdTask);
+        when(documentSnapshot.toObject(Task.class)).thenReturn(createdTask);
 
-                // When
-                Task result = taskService.createTask(userId, request);
+        // When
+        Task result = taskService.createTask(userId, request);
 
-                // Then
-                assertNotNull(result);
-                assertEquals(Task.TaskStatus.PENDING, result.getStatus());
-                assertNotNull(result.getCreatedAt());
-                assertEquals("Test Task", result.getDescription());
-                assertEquals("new-task-id", result.getId());
-        }
+        // Then
+        assertNotNull(result);
+        assertEquals(Task.TaskStatus.PENDING, result.getStatus());
+        assertNotNull(result.getCreatedAt());
+        assertEquals("Test Task", result.getDescription());
+        assertEquals("new-task-id", result.getId());
+    }
 
-        @Test
-        void shouldGetTasksByUserId() throws ExecutionException, InterruptedException {
+    @Test
+    void shouldGetTasksByUserId() throws ExecutionException, InterruptedException {
 
-                // Given
+        // Given
 
-                String userId = "user-id";
+        String userId = "user-id";
 
-                Task task = Task.builder()
-                                .id("task-id")
-                                .description("My Task")
-                                .status(Task.TaskStatus.PENDING)
-                                .createdAt(Instant.now())
-                                .build();
+        Task task =
+                Task.builder()
+                        .id("task-id")
+                        .description("My Task")
+                        .status(Task.TaskStatus.PENDING)
+                        .createdAt(Instant.now())
+                        .build();
 
-                // Mock Firestore response
+        // Mock Firestore response
 
-                QuerySnapshot querySnapshot = Mockito.mock(QuerySnapshot.class);
+        QuerySnapshot querySnapshot = Mockito.mock(QuerySnapshot.class);
 
-                QueryDocumentSnapshot documentSnapshot = Mockito.mock(QueryDocumentSnapshot.class);
+        QueryDocumentSnapshot documentSnapshot = Mockito.mock(QueryDocumentSnapshot.class);
 
-                when(taskRepository.findTasksByUserId(userId))
-                                .thenReturn(ApiFutures.immediateFuture(querySnapshot));
+        when(taskRepository.findTasksByUserId(userId))
+                .thenReturn(ApiFutures.immediateFuture(querySnapshot));
 
-                when(querySnapshot.getDocuments()).thenReturn(Collections.singletonList(documentSnapshot));
+        when(querySnapshot.getDocuments()).thenReturn(Collections.singletonList(documentSnapshot));
 
-                when(documentSnapshot.toObject(Task.class)).thenReturn(task);
+        when(documentSnapshot.toObject(Task.class)).thenReturn(task);
 
-                // When
+        // When
 
-                List<Task> result = taskService.getTasksByUserId(userId);
+        List<Task> result = taskService.getTasksByUserId(userId);
 
-                // Then
+        // Then
 
-                assertNotNull(result);
+        assertNotNull(result);
 
-                assertEquals(1, result.size());
+        assertEquals(1, result.size());
 
-                assertEquals("task-id", result.get(0).getId());
+        assertEquals("task-id", result.get(0).getId());
 
-                assertEquals("My Task", result.get(0).getDescription());
-        }
+        assertEquals("My Task", result.get(0).getDescription());
+    }
 
-        @Test
-        void shouldReturnEmptyListWhenNoTasksFound() throws ExecutionException, InterruptedException {
+    @Test
+    void shouldReturnEmptyListWhenNoTasksFound() throws ExecutionException, InterruptedException {
 
-                // Given
+        // Given
 
-                String userId = "user-with-no-tasks";
+        String userId = "user-with-no-tasks";
 
-                QuerySnapshot querySnapshot = Mockito.mock(QuerySnapshot.class);
+        QuerySnapshot querySnapshot = Mockito.mock(QuerySnapshot.class);
 
-                when(taskRepository.findTasksByUserId(userId))
-                                .thenReturn(ApiFutures.immediateFuture(querySnapshot));
+        when(taskRepository.findTasksByUserId(userId))
+                .thenReturn(ApiFutures.immediateFuture(querySnapshot));
 
-                when(querySnapshot.getDocuments()).thenReturn(Collections.emptyList());
+        when(querySnapshot.getDocuments()).thenReturn(Collections.emptyList());
 
-                // When
+        // When
 
-                List<Task> result = taskService.getTasksByUserId(userId);
+        List<Task> result = taskService.getTasksByUserId(userId);
 
-                // Then
+        // Then
 
-                assertNotNull(result);
+        assertNotNull(result);
 
-                assertTrue(result.isEmpty());
-        }
+        assertTrue(result.isEmpty());
+    }
 
     @Test
     void shouldApproveTask() throws ExecutionException, InterruptedException {
@@ -201,27 +196,31 @@ class TaskServiceTest {
 
         when(userRepository.findByIdSync(parentId)).thenReturn(parent);
         when(userRepository.findByIdSync(childId)).thenReturn(child);
-        
+
         QuerySnapshot querySnapshot = Mockito.mock(QuerySnapshot.class);
         QueryDocumentSnapshot documentSnapshot = Mockito.mock(QueryDocumentSnapshot.class);
-        when(taskRepository.findTasksByUserId(childId)).thenReturn(ApiFutures.immediateFuture(querySnapshot));
+        when(taskRepository.findTasksByUserId(childId))
+                .thenReturn(ApiFutures.immediateFuture(querySnapshot));
         when(querySnapshot.getDocuments()).thenReturn(Collections.singletonList(documentSnapshot));
         when(documentSnapshot.toObject(Task.class)).thenReturn(task);
-        
-        when(allowanceServiceProvider.get().calculateValueForTask(childId, taskId)).thenReturn(new BigDecimal("10.00"));
+
+        when(allowanceServiceProvider.get().calculateValueForTask(childId, taskId))
+                .thenReturn(new BigDecimal("10.00"));
         when(taskRepository.save(childId, task)).thenReturn(ApiFutures.immediateFuture(null));
-        
+
         // When
         Task result = taskService.approveTask(childId, taskId, parentId);
 
         // Then
         assertEquals(Task.TaskStatus.APPROVED, result.getStatus());
         verify(taskRepository).save(childId, task);
-        verify(ledgerService).addTransaction(eq(childId), any(BigDecimal.class), anyString(), any());
+        verify(ledgerService)
+                .addTransaction(eq(childId), any(BigDecimal.class), anyString(), any());
     }
 
     @Test
-    void shouldThrowExceptionWhenApproveTaskWithInvalidParent() throws ExecutionException, InterruptedException {
+    void shouldThrowExceptionWhenApproveTaskWithInvalidParent()
+            throws ExecutionException, InterruptedException {
         // Given
         String childId = "child-id";
         String taskId = "task-id";
@@ -230,13 +229,16 @@ class TaskServiceTest {
         when(userRepository.findByIdSync(parentId)).thenReturn(null);
 
         // When & Then
-        assertThrows(IllegalArgumentException.class, () -> {
-            taskService.approveTask(childId, taskId, parentId);
-        });
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> {
+                    taskService.approveTask(childId, taskId, parentId);
+                });
     }
 
     @Test
-    void shouldThrowExceptionWhenApproveTaskAndChildNotBelongToParent() throws ExecutionException, InterruptedException {
+    void shouldThrowExceptionWhenApproveTaskAndChildNotBelongToParent()
+            throws ExecutionException, InterruptedException {
         // Given
         String childId = "child-id";
         String taskId = "task-id";
@@ -250,13 +252,16 @@ class TaskServiceTest {
         when(userRepository.findByIdSync(childId)).thenReturn(child);
 
         // When & Then
-        assertThrows(IllegalArgumentException.class, () -> {
-            taskService.approveTask(childId, taskId, parentId);
-        });
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> {
+                    taskService.approveTask(childId, taskId, parentId);
+                });
     }
 
     @Test
-    void shouldThrowExceptionWhenApproveTaskAndTaskNotFound() throws ExecutionException, InterruptedException {
+    void shouldThrowExceptionWhenApproveTaskAndTaskNotFound()
+            throws ExecutionException, InterruptedException {
         // Given
         String childId = "child-id";
         String taskId = "task-id";
@@ -267,19 +272,23 @@ class TaskServiceTest {
 
         when(userRepository.findByIdSync(parentId)).thenReturn(parent);
         when(userRepository.findByIdSync(childId)).thenReturn(child);
-        
+
         QuerySnapshot querySnapshot = Mockito.mock(QuerySnapshot.class);
-        when(taskRepository.findTasksByUserId(childId)).thenReturn(ApiFutures.immediateFuture(querySnapshot));
+        when(taskRepository.findTasksByUserId(childId))
+                .thenReturn(ApiFutures.immediateFuture(querySnapshot));
         when(querySnapshot.getDocuments()).thenReturn(Collections.emptyList());
 
         // When & Then
-        assertThrows(IllegalArgumentException.class, () -> {
-            taskService.approveTask(childId, taskId, parentId);
-        });
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> {
+                    taskService.approveTask(childId, taskId, parentId);
+                });
     }
 
     @Test
-    void shouldThrowExceptionWhenApproveTaskAndTaskAlreadyApproved() throws ExecutionException, InterruptedException {
+    void shouldThrowExceptionWhenApproveTaskAndTaskAlreadyApproved()
+            throws ExecutionException, InterruptedException {
         // Given
         String childId = "child-id";
         String taskId = "task-id";
@@ -291,34 +300,41 @@ class TaskServiceTest {
 
         when(userRepository.findByIdSync(parentId)).thenReturn(parent);
         when(userRepository.findByIdSync(childId)).thenReturn(child);
-        
+
         QuerySnapshot querySnapshot = Mockito.mock(QuerySnapshot.class);
         QueryDocumentSnapshot documentSnapshot = Mockito.mock(QueryDocumentSnapshot.class);
-        when(taskRepository.findTasksByUserId(childId)).thenReturn(ApiFutures.immediateFuture(querySnapshot));
+        when(taskRepository.findTasksByUserId(childId))
+                .thenReturn(ApiFutures.immediateFuture(querySnapshot));
         when(querySnapshot.getDocuments()).thenReturn(Collections.singletonList(documentSnapshot));
         when(documentSnapshot.toObject(Task.class)).thenReturn(task);
 
         // When & Then
-        assertThrows(IllegalStateException.class, () -> {
-            taskService.approveTask(childId, taskId, parentId);
-        });
+        assertThrows(
+                IllegalStateException.class,
+                () -> {
+                    taskService.approveTask(childId, taskId, parentId);
+                });
     }
 
     @Test
-    void shouldThrowExceptionWhenCreateTaskAndChildNotFound() throws ExecutionException, InterruptedException {
+    void shouldThrowExceptionWhenCreateTaskAndChildNotFound()
+            throws ExecutionException, InterruptedException {
         // Given
         String userId = "user-id";
         CreateTaskRequest request = new CreateTaskRequest();
         when(userRepository.findByIdSync(userId)).thenReturn(null);
 
         // When & Then
-        assertThrows(IllegalArgumentException.class, () -> {
-            taskService.createTask(userId, request);
-        });
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> {
+                    taskService.createTask(userId, request);
+                });
     }
 
     @Test
-    void shouldThrowExceptionWhenCreateTaskAndParentNotFound() throws ExecutionException, InterruptedException {
+    void shouldThrowExceptionWhenCreateTaskAndParentNotFound()
+            throws ExecutionException, InterruptedException {
         // Given
         String userId = "user-id";
         String parentId = "parent-id";
@@ -329,13 +345,16 @@ class TaskServiceTest {
         when(userRepository.findByIdSync(parentId)).thenReturn(null);
 
         // When & Then
-        assertThrows(IllegalArgumentException.class, () -> {
-            taskService.createTask(userId, request);
-        });
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> {
+                    taskService.createTask(userId, request);
+                });
     }
 
     @Test
-    void shouldThrowExceptionWhenCreateTaskAndSubscriptionLimitReached() throws ExecutionException, InterruptedException {
+    void shouldThrowExceptionWhenCreateTaskAndSubscriptionLimitReached()
+            throws ExecutionException, InterruptedException {
         // Given
         String userId = "user-id";
         String parentId = "parent-id";
@@ -350,13 +369,16 @@ class TaskServiceTest {
         when(subscriptionService.canCreateTask(parent, 0)).thenReturn(false);
 
         QuerySnapshot querySnapshot = Mockito.mock(QuerySnapshot.class);
-        when(taskRepository.findTasksByUserId(userId)).thenReturn(ApiFutures.immediateFuture(querySnapshot));
+        when(taskRepository.findTasksByUserId(userId))
+                .thenReturn(ApiFutures.immediateFuture(querySnapshot));
         when(querySnapshot.getDocuments()).thenReturn(Collections.emptyList());
 
         // When & Then
-        assertThrows(SubscriptionLimitReachedException.class, () -> {
-            taskService.createTask(userId, request);
-        });
+        assertThrows(
+                SubscriptionLimitReachedException.class,
+                () -> {
+                    taskService.createTask(userId, request);
+                });
     }
 
     @Test

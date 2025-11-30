@@ -8,22 +8,19 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.ai.chat.messages.AssistantMessage;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.model.Generation;
 import org.springframework.ai.chat.prompt.Prompt;
-import org.springframework.ai.chat.messages.AssistantMessage;
 
 class AiValidatorImplTest {
 
-    @Mock
-    private ChatModel chatModel;
+    @Mock private ChatModel chatModel;
 
-    @Mock
-    private ChatResponse chatResponse;
+    @Mock private ChatResponse chatResponse;
 
-    @Mock
-    private Generation generation;
+    @Mock private Generation generation;
 
     private AiValidatorImpl aiValidator;
 
@@ -36,7 +33,7 @@ class AiValidatorImplTest {
     @Test
     void shouldReturnTrueWhenImageMatchesTask() {
         // Given
-        byte[] image = new byte[] { 1, 2, 3 };
+        byte[] image = new byte[] {1, 2, 3};
         String taskDescription = "Clean your room";
 
         when(chatModel.call(any(Prompt.class))).thenReturn(chatResponse);
@@ -54,7 +51,7 @@ class AiValidatorImplTest {
     @Test
     void shouldReturnFalseWhenImageDoesNotMatchTask() {
         // Given
-        byte[] image = new byte[] { 1, 2, 3 };
+        byte[] image = new byte[] {1, 2, 3};
         String taskDescription = "Do homework";
 
         when(chatModel.call(any(Prompt.class))).thenReturn(chatResponse);
@@ -71,7 +68,7 @@ class AiValidatorImplTest {
     @Test
     void shouldHandleYesWithWhitespace() {
         // Given
-        byte[] image = new byte[] { 1, 2, 3 };
+        byte[] image = new byte[] {1, 2, 3};
         String taskDescription = "Make bed";
 
         when(chatModel.call(any(Prompt.class))).thenReturn(chatResponse);
@@ -88,7 +85,7 @@ class AiValidatorImplTest {
     @Test
     void shouldHandleMixedCaseResponse() {
         // Given
-        byte[] image = new byte[] { 1, 2, 3 };
+        byte[] image = new byte[] {1, 2, 3};
         String taskDescription = "Wash dishes";
 
         when(chatModel.call(any(Prompt.class))).thenReturn(chatResponse);
@@ -105,7 +102,7 @@ class AiValidatorImplTest {
     @Test
     void shouldReturnFalseForUnexpectedResponse() {
         // Given
-        byte[] image = new byte[] { 1, 2, 3 };
+        byte[] image = new byte[] {1, 2, 3};
         String taskDescription = "Take out trash";
 
         when(chatModel.call(any(Prompt.class))).thenReturn(chatResponse);

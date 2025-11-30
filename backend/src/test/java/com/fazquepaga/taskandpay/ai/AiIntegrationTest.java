@@ -43,96 +43,99 @@ import org.testcontainers.utility.DockerImageName;
 @Disabled("Integration tests disabled - requires Docker/Testcontainers")
 public class AiIntegrationTest {
 
-        @Container
-        private static final FirestoreEmulatorContainer firestoreEmulator = new FirestoreEmulatorContainer(
-                        DockerImageName.parse("gcr.io/google.com/cloudsdktool/google-cloud-cli:latest")
-                                        .asCompatibleSubstituteFor("google/cloud-sdk"));
+    @Container
+    private static final FirestoreEmulatorContainer firestoreEmulator =
+            new FirestoreEmulatorContainer(
+                    DockerImageName.parse("gcr.io/google.com/cloudsdktool/google-cloud-cli:latest")
+                            .asCompatibleSubstituteFor("google/cloud-sdk"));
 
-        @Container
-        private static final PubSubEmulatorContainer pubsubEmulator = new PubSubEmulatorContainer(
-                        DockerImageName.parse("gcr.io/google.com/cloudsdktool/google-cloud-cli:latest")
-                                        .asCompatibleSubstituteFor("google/cloud-sdk"));
+    @Container
+    private static final PubSubEmulatorContainer pubsubEmulator =
+            new PubSubEmulatorContainer(
+                    DockerImageName.parse("gcr.io/google.com/cloudsdktool/google-cloud-cli:latest")
+                            .asCompatibleSubstituteFor("google/cloud-sdk"));
 
-        @DynamicPropertySource
-        static void emulatorsProperties(DynamicPropertyRegistry registry) {
-                registry.add(
-                                "spring.cloud.gcp.firestore.host-port", firestoreEmulator::getEmulatorEndpoint);
-                registry.add("spring.cloud.gcp.pubsub.emulator-host", pubsubEmulator::getEmulatorEndpoint);
+    @DynamicPropertySource
+    static void emulatorsProperties(DynamicPropertyRegistry registry) {
+        registry.add(
+                "spring.cloud.gcp.firestore.host-port", firestoreEmulator::getEmulatorEndpoint);
+        registry.add("spring.cloud.gcp.pubsub.emulator-host", pubsubEmulator::getEmulatorEndpoint);
+    }
+
+    @TestConfiguration
+    static class TestConfig {
+        @Bean
+        public CredentialsProvider googleCredentials() {
+            return NoCredentialsProvider.create();
         }
+    }
 
-        @TestConfiguration
-        static class TestConfig {
-                @Bean
-                public CredentialsProvider googleCredentials() {
-                        return NoCredentialsProvider.create();
-                }
+    @Autowired private PubSubTemplate pubSubTemplate;
+
+    @Autowired private Firestore firestore;
+
+    @MockBean private ChatModel chatModel;
+
+    @Value("${pubsub.topic-name}")
+    private String topicName;
+
+    @AfterEach
+    void cleanup() throws Exception {
+        // Not the best way to clean up, but it works for tests
+        for (com.google.cloud.firestore.CollectionReference collection :
+                firestore.listCollections()) {
+            for (com.google.cloud.firestore.DocumentReference doc : collection.listDocuments()) {
+                doc.delete().get();
+            }
         }
+    }
 
-        @Autowired
-        private PubSubTemplate pubSubTemplate;
+    @Test
+    void testProofValidationFlow() throws Exception {
+        // 1. Mock the AI response
+        Generation generation = new Generation(new AssistantMessage("yes"));
+        ChatResponse chatResponse = new ChatResponse(List.of(generation));
+        when(chatModel.call(any(Prompt.class))).thenReturn(chatResponse);
 
-        @Autowired
-        private Firestore firestore;
+        // 2. Create user and task in Firestore
+        User child = User.builder().id("child1").name("Test Child").build();
+        Task task =
+                Task.builder()
+                        .id("task1")
+                        .description("Clean room")
+                        .requiresProof(true)
+                        .status(Task.TaskStatus.PENDING)
+                        .build();
 
-        @MockBean
-        private ChatModel chatModel;
+        firestore.collection("users").document("child1").set(child).get();
+        firestore
+                .collection("users")
+                .document("child1")
+                .collection("tasks")
+                .document("task1")
+                .set(task)
+                .get();
 
-        @Value("${pubsub.topic-name}")
-        private String topicName;
+        // 3. Publish event to Pub/Sub
+        ProofSubmittedEvent event =
+                new ProofSubmittedEvent("child1", "task1", "http://example.com/image.jpg");
+        pubSubTemplate.publish(topicName, event);
 
-        @AfterEach
-        void cleanup() throws Exception {
-                // Not the best way to clean up, but it works for tests
-                for (com.google.cloud.firestore.CollectionReference collection : firestore.listCollections()) {
-                        for (com.google.cloud.firestore.DocumentReference doc : collection.listDocuments()) {
-                                doc.delete().get();
-                        }
-                }
-        }
+        // 4. Wait for the listener to process the message
+        TimeUnit.SECONDS.sleep(5);
 
-        @Test
-        void testProofValidationFlow() throws Exception {
-                // 1. Mock the AI response
-                Generation generation = new Generation(new AssistantMessage("yes"));
-                ChatResponse chatResponse = new ChatResponse(List.of(generation));
-                when(chatModel.call(any(Prompt.class))).thenReturn(chatResponse);
-
-                // 2. Create user and task in Firestore
-                User child = User.builder().id("child1").name("Test Child").build();
-                Task task = Task.builder()
-                                .id("task1")
-                                .description("Clean room")
-                                .requiresProof(true)
-                                .status(Task.TaskStatus.PENDING)
-                                .build();
-
-                firestore.collection("users").document("child1").set(child).get();
+        // 5. Verify the task was updated in Firestore
+        com.google.cloud.firestore.DocumentSnapshot updatedTaskDoc =
                 firestore
-                                .collection("users")
-                                .document("child1")
-                                .collection("tasks")
-                                .document("task1")
-                                .set(task)
-                                .get();
+                        .collection("users")
+                        .document("child1")
+                        .collection("tasks")
+                        .document("task1")
+                        .get()
+                        .get();
+        Task updatedTask = updatedTaskDoc.toObject(Task.class);
 
-                // 3. Publish event to Pub/Sub
-                ProofSubmittedEvent event = new ProofSubmittedEvent("child1", "task1", "http://example.com/image.jpg");
-                pubSubTemplate.publish(topicName, event);
-
-                // 4. Wait for the listener to process the message
-                TimeUnit.SECONDS.sleep(5);
-
-                // 5. Verify the task was updated in Firestore
-                com.google.cloud.firestore.DocumentSnapshot updatedTaskDoc = firestore
-                                .collection("users")
-                                .document("child1")
-                                .collection("tasks")
-                                .document("task1")
-                                .get()
-                                .get();
-                Task updatedTask = updatedTaskDoc.toObject(Task.class);
-
-                assertTrue(updatedTask.getAiValidated());
-                assertEquals(Task.TaskStatus.PENDING_APPROVAL, updatedTask.getStatus());
-        }
+        assertTrue(updatedTask.getAiValidated());
+        assertEquals(Task.TaskStatus.PENDING_APPROVAL, updatedTask.getStatus());
+    }
 }

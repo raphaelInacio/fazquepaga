@@ -20,6 +20,6 @@ export const getLedger = async (childId: string, parentId: string): Promise<Ledg
 };
 
 export const getLedgerInsights = async (childId: string, parentId: string): Promise<string> => {
-    const response = await api.get(`/children/${childId}/ledger/insights?parent_id=${parentId}`);
-    return response.data;
+    const response = await api.get<{ insight: string }>(`/children/${childId}/ledger/insights?parent_id=${parentId}`);
+    return response.data.insight;
 };

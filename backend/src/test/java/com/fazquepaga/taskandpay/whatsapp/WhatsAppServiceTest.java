@@ -20,23 +20,18 @@ import java.util.concurrent.ExecutionException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 class WhatsAppServiceTest {
 
-    @Mock
-    private IdentityService identityService;
+    @Mock private IdentityService identityService;
 
-    @Mock
-    private UserRepository userRepository;
+    @Mock private UserRepository userRepository;
 
-    @Mock
-    private TaskService taskService;
+    @Mock private TaskService taskService;
 
-    @Mock
-    private PubSubTemplate pubSubTemplate;
+    @Mock private PubSubTemplate pubSubTemplate;
 
     private WhatsAppService whatsAppService;
 
@@ -45,8 +40,9 @@ class WhatsAppServiceTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        whatsAppService = new WhatsAppService(
-                identityService, userRepository, taskService, pubSubTemplate, TOPIC_NAME);
+        whatsAppService =
+                new WhatsAppService(
+                        identityService, userRepository, taskService, pubSubTemplate, TOPIC_NAME);
     }
 
     @Test
@@ -54,7 +50,8 @@ class WhatsAppServiceTest {
         // Given
         String onboardingCode = "ABC123";
         String phoneNumber = "+1234567890";
-        Map<String, String> payload = Map.of("Body", onboardingCode, "From", "whatsapp:" + phoneNumber);
+        Map<String, String> payload =
+                Map.of("Body", onboardingCode, "From", "whatsapp:" + phoneNumber);
 
         // completeOnboarding is void, so we don't need to mock its return value
         // Just verify it's called
@@ -72,7 +69,8 @@ class WhatsAppServiceTest {
         // Given
         String invalidCode = "INVALID";
         String phoneNumber = "+1234567890";
-        Map<String, String> payload = Map.of("Body", invalidCode, "From", "whatsapp:" + phoneNumber);
+        Map<String, String> payload =
+                Map.of("Body", invalidCode, "From", "whatsapp:" + phoneNumber);
 
         doThrow(new IllegalArgumentException("Invalid code"))
                 .when(identityService)
@@ -91,22 +89,25 @@ class WhatsAppServiceTest {
         // Given
         String phoneNumber = "+1234567890";
         String imageUrl = "https://example.com/image.jpg";
-        Map<String, String> payload = Map.of("From", "whatsapp:" + phoneNumber, "MediaUrl0", imageUrl);
+        Map<String, String> payload =
+                Map.of("From", "whatsapp:" + phoneNumber, "MediaUrl0", imageUrl);
 
-        User child = User.builder()
-                .id("child-id")
-                .name("Test Child")
-                .phoneNumber(phoneNumber)
-                .role(User.Role.CHILD)
-                .build();
+        User child =
+                User.builder()
+                        .id("child-id")
+                        .name("Test Child")
+                        .phoneNumber(phoneNumber)
+                        .role(User.Role.CHILD)
+                        .build();
 
-        Task pendingTask = Task.builder()
-                .id("task-id")
-                .description("Test Task")
-                .status(Task.TaskStatus.PENDING)
-                .requiresProof(true)
-                .createdAt(Instant.now())
-                .build();
+        Task pendingTask =
+                Task.builder()
+                        .id("task-id")
+                        .description("Test Task")
+                        .status(Task.TaskStatus.PENDING)
+                        .requiresProof(true)
+                        .createdAt(Instant.now())
+                        .build();
 
         when(userRepository.findByPhoneNumber(phoneNumber)).thenReturn(child);
         when(taskService.getTasksByUserId("child-id")).thenReturn(List.of(pendingTask));
@@ -120,7 +121,8 @@ class WhatsAppServiceTest {
         verify(userRepository).findByPhoneNumber(phoneNumber);
         verify(taskService).getTasksByUserId("child-id");
 
-        ArgumentCaptor<ProofSubmittedEvent> eventCaptor = ArgumentCaptor.forClass(ProofSubmittedEvent.class);
+        ArgumentCaptor<ProofSubmittedEvent> eventCaptor =
+                ArgumentCaptor.forClass(ProofSubmittedEvent.class);
         verify(pubSubTemplate).publish(eq(TOPIC_NAME), eventCaptor.capture());
 
         ProofSubmittedEvent capturedEvent = eventCaptor.getValue();
@@ -135,7 +137,8 @@ class WhatsAppServiceTest {
         // Given
         String phoneNumber = "+9999999999";
         String imageUrl = "https://example.com/image.jpg";
-        Map<String, String> payload = Map.of("From", "whatsapp:" + phoneNumber, "MediaUrl0", imageUrl);
+        Map<String, String> payload =
+                Map.of("From", "whatsapp:" + phoneNumber, "MediaUrl0", imageUrl);
 
         when(userRepository.findByPhoneNumber(phoneNumber)).thenReturn(null);
 
@@ -153,14 +156,16 @@ class WhatsAppServiceTest {
         // Given
         String phoneNumber = "+1234567890";
         String imageUrl = "https://example.com/image.jpg";
-        Map<String, String> payload = Map.of("From", "whatsapp:" + phoneNumber, "MediaUrl0", imageUrl);
+        Map<String, String> payload =
+                Map.of("From", "whatsapp:" + phoneNumber, "MediaUrl0", imageUrl);
 
-        User child = User.builder()
-                .id("child-id")
-                .name("Test Child")
-                .phoneNumber(phoneNumber)
-                .role(User.Role.CHILD)
-                .build();
+        User child =
+                User.builder()
+                        .id("child-id")
+                        .name("Test Child")
+                        .phoneNumber(phoneNumber)
+                        .role(User.Role.CHILD)
+                        .build();
 
         when(userRepository.findByPhoneNumber(phoneNumber)).thenReturn(child);
         when(taskService.getTasksByUserId("child-id")).thenReturn(Collections.emptyList());
@@ -180,22 +185,25 @@ class WhatsAppServiceTest {
         // Given
         String phoneNumber = "+1234567890";
         String imageUrl = "https://example.com/image.jpg";
-        Map<String, String> payload = Map.of("From", "whatsapp:" + phoneNumber, "MediaUrl0", imageUrl);
+        Map<String, String> payload =
+                Map.of("From", "whatsapp:" + phoneNumber, "MediaUrl0", imageUrl);
 
-        User child = User.builder()
-                .id("child-id")
-                .name("Test Child")
-                .phoneNumber(phoneNumber)
-                .role(User.Role.CHILD)
-                .build();
+        User child =
+                User.builder()
+                        .id("child-id")
+                        .name("Test Child")
+                        .phoneNumber(phoneNumber)
+                        .role(User.Role.CHILD)
+                        .build();
 
-        Task taskWithoutProof = Task.builder()
-                .id("task-id")
-                .description("Test Task")
-                .status(Task.TaskStatus.PENDING)
-                .requiresProof(false)
-                .createdAt(Instant.now())
-                .build();
+        Task taskWithoutProof =
+                Task.builder()
+                        .id("task-id")
+                        .description("Test Task")
+                        .status(Task.TaskStatus.PENDING)
+                        .requiresProof(false)
+                        .createdAt(Instant.now())
+                        .build();
 
         when(userRepository.findByPhoneNumber(phoneNumber)).thenReturn(child);
         when(taskService.getTasksByUserId("child-id")).thenReturn(List.of(taskWithoutProof));

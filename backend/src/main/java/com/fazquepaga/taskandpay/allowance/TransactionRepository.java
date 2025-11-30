@@ -20,9 +20,13 @@ public class TransactionRepository {
         firestore.collection("transactions").document(transaction.getId()).set(transaction);
     }
 
-    public QuerySnapshot findByChildId(String childId) throws ExecutionException, InterruptedException {
+    public QuerySnapshot findByChildId(String childId)
+            throws ExecutionException, InterruptedException {
         CollectionReference transactions = firestore.collection("transactions");
-        Query query = transactions.whereEqualTo("childId", childId).orderBy("date", Query.Direction.DESCENDING);
+        Query query =
+                transactions
+                        .whereEqualTo("childId", childId)
+                        .orderBy("date", Query.Direction.DESCENDING);
         return query.get().get();
     }
 }

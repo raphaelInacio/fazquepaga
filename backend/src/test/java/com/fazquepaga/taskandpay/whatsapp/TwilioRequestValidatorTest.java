@@ -11,8 +11,7 @@ import org.mockito.MockitoAnnotations;
 
 class TwilioRequestValidatorTest {
 
-    @Mock
-    private HttpServletRequest request;
+    @Mock private HttpServletRequest request;
 
     private TwilioRequestValidator twilioRequestValidator;
 

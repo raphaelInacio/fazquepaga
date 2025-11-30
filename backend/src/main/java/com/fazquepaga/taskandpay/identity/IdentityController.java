@@ -1,5 +1,7 @@
 package com.fazquepaga.taskandpay.identity;
 
+import com.fazquepaga.taskandpay.identity.dto.ChildLoginRequest;
+import com.fazquepaga.taskandpay.identity.dto.ChildLoginResponse;
 import com.fazquepaga.taskandpay.identity.dto.CreateChildRequest;
 import com.fazquepaga.taskandpay.identity.dto.CreateParentRequest;
 import java.util.List;
@@ -24,6 +26,15 @@ public class IdentityController {
             throws ExecutionException, InterruptedException {
         User parent = identityService.registerParent(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(parent);
+    }
+
+    @PostMapping("/children/login")
+    public ResponseEntity<ChildLoginResponse> childLogin(@RequestBody ChildLoginRequest request)
+            throws ExecutionException, InterruptedException {
+        User child = identityService.authenticateChildByCode(request.getCode());
+        ChildLoginResponse response =
+                ChildLoginResponse.builder().child(child).message("Login successful").build();
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/children")

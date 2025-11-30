@@ -9,6 +9,8 @@ import RegisterParent from "./pages/RegisterParent";
 import AddChild from "./pages/AddChild";
 import Dashboard from "./pages/Dashboard";
 import ChildTasks from "./pages/ChildTasks";
+import ChildLogin from "./pages/ChildLogin";
+import ChildPortal from "./pages/ChildPortal";
 import { GiftCardStorePage } from "./pages/GiftCardStorePage";
 import { LanguageSwitcher } from "./components/LanguageSwitcher";
 
@@ -31,6 +33,8 @@ const App = () => (
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/child/:childId/tasks" element={<ChildTasks />} />
           <Route path="/gift-cards" element={<GiftCardStorePage />} />
+          <Route path="/child-login" element={<ChildLogin />} />
+          <Route path="/child-portal" element={<ChildPortal />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

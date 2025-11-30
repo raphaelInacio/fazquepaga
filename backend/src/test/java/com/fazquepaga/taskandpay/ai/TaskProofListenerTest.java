@@ -15,7 +15,6 @@ import com.google.cloud.spring.pubsub.support.GcpPubSubHeaders;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -26,23 +25,17 @@ import org.springframework.messaging.MessageHeaders;
 
 class TaskProofListenerTest {
 
-    @Mock
-    private ObjectMapper objectMapper;
+    @Mock private ObjectMapper objectMapper;
 
-    @Mock
-    private AiValidator aiValidator;
+    @Mock private AiValidator aiValidator;
 
-    @Mock
-    private TaskRepository taskRepository;
+    @Mock private TaskRepository taskRepository;
 
-    @Mock
-    private Message<?> message;
+    @Mock private Message<?> message;
 
-    @Mock
-    private BasicAcknowledgeablePubsubMessage pubsubMessage;
+    @Mock private BasicAcknowledgeablePubsubMessage pubsubMessage;
 
-    @Mock
-    private DocumentSnapshot documentSnapshot;
+    @Mock private DocumentSnapshot documentSnapshot;
 
     private TaskProofListener taskProofListener;
 
@@ -63,16 +56,23 @@ class TaskProofListenerTest {
         String imageUrl = "https://example.com/image.jpg";
 
         ProofSubmittedEvent event = new ProofSubmittedEvent(childId, taskId, imageUrl);
-        String payload = "{\"childId\":\"" + childId + "\",\"taskId\":\"" + taskId + "\",\"imageUrl\":\"" + imageUrl
-                + "\"}";
+        String payload =
+                "{\"childId\":\""
+                        + childId
+                        + "\",\"taskId\":\""
+                        + taskId
+                        + "\",\"imageUrl\":\""
+                        + imageUrl
+                        + "\"}";
 
-        Task task = Task.builder()
-                .id(taskId)
-                .description("Clean room")
-                .status(Task.TaskStatus.PENDING)
-                .requiresProof(true)
-                .createdAt(Instant.now())
-                .build();
+        Task task =
+                Task.builder()
+                        .id(taskId)
+                        .description("Clean room")
+                        .status(Task.TaskStatus.PENDING)
+                        .requiresProof(true)
+                        .createdAt(Instant.now())
+                        .build();
 
         Map<String, Object> headers = new HashMap<>();
         headers.put(GcpPubSubHeaders.ORIGINAL_MESSAGE, pubsubMessage);
@@ -80,10 +80,13 @@ class TaskProofListenerTest {
         doReturn(payload.getBytes()).when(message).getPayload();
         when(message.getHeaders()).thenReturn(new MessageHeaders(headers));
         when(objectMapper.readValue(payload, ProofSubmittedEvent.class)).thenReturn(event);
-        when(taskRepository.findById(childId, taskId)).thenReturn(ApiFutures.immediateFuture(documentSnapshot));
+        when(taskRepository.findById(childId, taskId))
+                .thenReturn(ApiFutures.immediateFuture(documentSnapshot));
         when(documentSnapshot.toObject(Task.class)).thenReturn(task);
-        when(aiValidator.validateTaskCompletionImage(any(byte[].class), eq("Clean room"))).thenReturn(true);
-        when(taskRepository.save(eq(childId), any(Task.class))).thenReturn(ApiFutures.immediateFuture(null));
+        when(aiValidator.validateTaskCompletionImage(any(byte[].class), eq("Clean room")))
+                .thenReturn(true);
+        when(taskRepository.save(eq(childId), any(Task.class)))
+                .thenReturn(ApiFutures.immediateFuture(null));
 
         // When
         messageHandler.handleMessage(message);
@@ -101,7 +104,12 @@ class TaskProofListenerTest {
         // Given
         String childId = "child-123";
         String taskId = "non-existent";
-        String payload = "{\"childId\":\"" + childId + "\",\"taskId\":\"" + taskId + "\",\"imageUrl\":\"url\"}";
+        String payload =
+                "{\"childId\":\""
+                        + childId
+                        + "\",\"taskId\":\""
+                        + taskId
+                        + "\",\"imageUrl\":\"url\"}";
         ProofSubmittedEvent event = new ProofSubmittedEvent(childId, taskId, "url");
 
         Map<String, Object> headers = new HashMap<>();
@@ -110,7 +118,8 @@ class TaskProofListenerTest {
         doReturn(payload.getBytes()).when(message).getPayload();
         when(message.getHeaders()).thenReturn(new MessageHeaders(headers));
         when(objectMapper.readValue(payload, ProofSubmittedEvent.class)).thenReturn(event);
-        when(taskRepository.findById(childId, taskId)).thenReturn(ApiFutures.immediateFuture(documentSnapshot));
+        when(taskRepository.findById(childId, taskId))
+                .thenReturn(ApiFutures.immediateFuture(documentSnapshot));
         when(documentSnapshot.toObject(Task.class)).thenReturn(null);
 
         // When
@@ -130,16 +139,23 @@ class TaskProofListenerTest {
         String imageUrl = "https://example.com/image.jpg";
 
         ProofSubmittedEvent event = new ProofSubmittedEvent(childId, taskId, imageUrl);
-        String payload = "{\"childId\":\"" + childId + "\",\"taskId\":\"" + taskId + "\",\"imageUrl\":\"" + imageUrl
-                + "\"}";
+        String payload =
+                "{\"childId\":\""
+                        + childId
+                        + "\",\"taskId\":\""
+                        + taskId
+                        + "\",\"imageUrl\":\""
+                        + imageUrl
+                        + "\"}";
 
-        Task task = Task.builder()
-                .id(taskId)
-                .description("Do homework")
-                .status(Task.TaskStatus.PENDING)
-                .requiresProof(true)
-                .createdAt(Instant.now())
-                .build();
+        Task task =
+                Task.builder()
+                        .id(taskId)
+                        .description("Do homework")
+                        .status(Task.TaskStatus.PENDING)
+                        .requiresProof(true)
+                        .createdAt(Instant.now())
+                        .build();
 
         Map<String, Object> headers = new HashMap<>();
         headers.put(GcpPubSubHeaders.ORIGINAL_MESSAGE, pubsubMessage);
@@ -147,10 +163,13 @@ class TaskProofListenerTest {
         doReturn(payload.getBytes()).when(message).getPayload();
         when(message.getHeaders()).thenReturn(new MessageHeaders(headers));
         when(objectMapper.readValue(payload, ProofSubmittedEvent.class)).thenReturn(event);
-        when(taskRepository.findById(childId, taskId)).thenReturn(ApiFutures.immediateFuture(documentSnapshot));
+        when(taskRepository.findById(childId, taskId))
+                .thenReturn(ApiFutures.immediateFuture(documentSnapshot));
         when(documentSnapshot.toObject(Task.class)).thenReturn(task);
-        when(aiValidator.validateTaskCompletionImage(any(byte[].class), eq("Do homework"))).thenReturn(false);
-        when(taskRepository.save(eq(childId), any(Task.class))).thenReturn(ApiFutures.immediateFuture(null));
+        when(aiValidator.validateTaskCompletionImage(any(byte[].class), eq("Do homework")))
+                .thenReturn(false);
+        when(taskRepository.save(eq(childId), any(Task.class)))
+                .thenReturn(ApiFutures.immediateFuture(null));
 
         // When
         messageHandler.handleMessage(message);

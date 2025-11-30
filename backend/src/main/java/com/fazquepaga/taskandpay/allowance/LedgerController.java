@@ -1,7 +1,6 @@
 package com.fazquepaga.taskandpay.allowance;
 
 import com.fazquepaga.taskandpay.identity.UserRepository;
-import java.security.Principal;
 import java.util.concurrent.ExecutionException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;

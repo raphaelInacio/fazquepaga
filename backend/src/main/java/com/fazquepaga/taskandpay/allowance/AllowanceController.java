@@ -1,7 +1,6 @@
 package com.fazquepaga.taskandpay.allowance;
 
 import java.math.BigDecimal;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import org.springframework.http.ResponseEntity;
@@ -39,5 +38,15 @@ public class AllowanceController {
             throws ExecutionException, InterruptedException {
         LedgerResponse response = ledgerService.getTransactions(childId, parentId);
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/children/{childId}/ledger/insights")
+    public ResponseEntity<Map<String, String>> getLedgerInsights(
+            @PathVariable String childId, @RequestParam("parent_id") String parentId)
+            throws ExecutionException, InterruptedException {
+        // Validate that the child belongs to the parent
+        ledgerService.getTransactions(childId, parentId); // This will throw if unauthorized
+        String insights = ledgerService.getInsights(childId);
+        return ResponseEntity.ok(Map.of("insight", insights));
     }
 }

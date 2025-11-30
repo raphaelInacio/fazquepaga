@@ -20,14 +20,11 @@ import org.mockito.MockitoAnnotations;
 
 class LedgerServiceTest {
 
-    @Mock
-    private TransactionRepository transactionRepository;
+    @Mock private TransactionRepository transactionRepository;
 
-    @Mock
-    private UserRepository userRepository;
+    @Mock private UserRepository userRepository;
 
-    @Mock
-    private AiInsightService aiInsightService;
+    @Mock private AiInsightService aiInsightService;
 
     private LedgerService ledgerService;
 
@@ -38,17 +35,15 @@ class LedgerServiceTest {
     }
 
     @Test
-    void addTransaction_Credit_ShouldUpdateBalance() throws ExecutionException, InterruptedException {
+    void addTransaction_Credit_ShouldUpdateBalance()
+            throws ExecutionException, InterruptedException {
         // Given
         String childId = "child-1";
         BigDecimal amount = BigDecimal.valueOf(10.0);
         String description = "Task Reward";
         Transaction.TransactionType type = Transaction.TransactionType.CREDIT;
 
-        User child = User.builder()
-                .id(childId)
-                .balance(BigDecimal.ZERO)
-                .build();
+        User child = User.builder().id(childId).balance(BigDecimal.ZERO).build();
 
         when(userRepository.findByIdSync(childId)).thenReturn(child);
         when(userRepository.save(any(User.class))).thenReturn(ApiFutures.immediateFuture(null));
@@ -58,11 +53,13 @@ class LedgerServiceTest {
 
         // Then
         verify(transactionRepository).save(any(Transaction.class));
-        verify(userRepository).save(argThat(user -> user.getBalance().compareTo(BigDecimal.valueOf(10.0)) == 0));
+        verify(userRepository)
+                .save(argThat(user -> user.getBalance().compareTo(BigDecimal.valueOf(10.0)) == 0));
     }
 
     @Test
-    void getTransactions_ShouldReturnLedgerResponse() throws ExecutionException, InterruptedException {
+    void getTransactions_ShouldReturnLedgerResponse()
+            throws ExecutionException, InterruptedException {
         // Given
         String childId = "child-1";
         QuerySnapshot querySnapshot = mock(QuerySnapshot.class);
