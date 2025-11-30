@@ -12,20 +12,20 @@ const features = [
   },
   {
     icon: Smartphone,
-    title: "WhatsApp Integrado",
-    description: "Seus filhos completam tarefas enviando fotos pelo WhatsApp. Simples, rápido e prático.",
+    title: "Portal da Criança",
+    description: "Uma área exclusiva para seus filhos verem tarefas, acompanharem o saldo e se divertirem com o Modo Aventura.",
     image: whatsappImage,
+  },
+  {
+    icon: Shield,
+    title: "Aprovação dos Pais",
+    description: "Você no controle. Revise e aprove tarefas concluídas antes de liberar a mesada.",
+    image: null,
   },
   {
     icon: Calculator,
     title: "Mesada Automática",
     description: "Sistema inteligente que calcula o valor de cada tarefa baseado em importância e frequência.",
-    image: null,
-  },
-  {
-    icon: Shield,
-    title: "Seguro e Confiável",
-    description: "Seus dados e os de sua família protegidos com as melhores práticas de segurança.",
     image: null,
   },
 ];

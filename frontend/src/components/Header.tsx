@@ -1,10 +1,17 @@
 import { Button } from "@/components/ui/button";
-import { Menu, X } from "lucide-react";
+import { Menu, X, User, Baby } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 export const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const navigate = useNavigate();
 
   return (
@@ -31,7 +38,7 @@ export const Header = () => {
           </nav>
 
           <div className="hidden md:flex items-center gap-4">
-            <Button variant="ghost" onClick={() => navigate("/dashboard")}>
+            <Button variant="ghost" onClick={() => setIsLoginModalOpen(true)}>
               Entrar
             </Button>
             <Button variant="default" onClick={() => navigate("/register")}>
@@ -60,7 +67,7 @@ export const Header = () => {
                 Preços
               </a>
               <div className="flex flex-col gap-2 pt-2">
-                <Button variant="ghost" className="w-full" onClick={() => navigate("/dashboard")}>
+                <Button variant="ghost" className="w-full" onClick={() => setIsLoginModalOpen(true)}>
                   Entrar
                 </Button>
                 <Button variant="default" className="w-full" onClick={() => navigate("/register")}>
@@ -71,6 +78,43 @@ export const Header = () => {
           </div>
         )}
       </div>
+
+      <Dialog open={isLoginModalOpen} onOpenChange={setIsLoginModalOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-center text-2xl font-bold mb-4">Como você quer entrar?</DialogTitle>
+          </DialogHeader>
+          <div className="grid grid-cols-2 gap-4">
+            <Button
+              variant="outline"
+              className="h-32 flex flex-col gap-4 hover:border-primary hover:bg-primary/5 transition-all"
+              onClick={() => {
+                setIsLoginModalOpen(false);
+                navigate("/dashboard");
+              }}
+            >
+              <div className="p-3 rounded-full bg-primary/10 text-primary">
+                <User className="w-8 h-8" />
+              </div>
+              <span className="font-semibold text-lg">Sou Pai/Mãe</span>
+            </Button>
+
+            <Button
+              variant="outline"
+              className="h-32 flex flex-col gap-4 hover:border-purple-500 hover:bg-purple-50 transition-all"
+              onClick={() => {
+                setIsLoginModalOpen(false);
+                navigate("/child-login");
+              }}
+            >
+              <div className="p-3 rounded-full bg-purple-100 text-purple-600">
+                <Baby className="w-8 h-8" />
+              </div>
+              <span className="font-semibold text-lg">Sou Filho(a)</span>
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </header>
   );
 };

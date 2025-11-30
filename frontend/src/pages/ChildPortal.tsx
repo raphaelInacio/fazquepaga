@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { childAuthService } from "@/services/childAuthService";
+import { childService } from "@/services/childService";
 import { taskService } from "@/services/taskService";
 import { aiService, AdventureTask } from "@/services/aiService";
 import { Task } from "@/types";
@@ -49,6 +50,17 @@ export default function ChildPortal() {
         }
     }
 
+    async function refreshChildData() {
+        if (!child) return;
+        try {
+            const updatedChild = await childService.getChild(child.id, child.parentId);
+            setChild(updatedChild);
+            localStorage.setItem('fazquepaga_child', JSON.stringify(updatedChild));
+        } catch (error) {
+            console.error("Failed to refresh child data", error);
+        }
+    }
+
     async function handleCompleteTask(taskId: string | undefined) {
         if (!child || !taskId) return;
 
@@ -56,6 +68,7 @@ export default function ChildPortal() {
             await taskService.completeTask(taskId, child.id);
             toast.success("Parabéns! Tarefa concluída! 🎉");
             loadTasks(child.id);
+            refreshChildData();
         } catch (error) {
             toast.error("Erro ao completar tarefa");
             console.error(error);

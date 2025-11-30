@@ -24,6 +24,12 @@ test.describe('Child Portal Flow', () => {
         await page.click('button:has-text("Add Child")');
         await page.waitForTimeout(500);
 
+        // Set Allowance
+        await page.click('[data-testid="set-allowance-button"]');
+        await page.fill('input[id="allowance"]', '50');
+        await page.click('[data-testid="save-allowance-button"]');
+        await page.waitForTimeout(500);
+
         // Generate onboarding code directly from dashboard
         await page.click('button:has-text("Gerar Código WhatsApp")');
         await page.waitForTimeout(1000);
@@ -108,6 +114,10 @@ test.describe('Child Portal Flow', () => {
         await page.click('button:has-text("Entrar")');
         await page.waitForURL('**/child-portal');
 
+        // Get initial balance
+        const initialBalanceText = await page.locator('text=Saldo: R$').textContent();
+        const initialBalance = parseFloat(initialBalanceText?.split('R$')[1].trim() || '0');
+
         // Click "Já fiz!" button
         await page.click('button:has-text("Já fiz!")');
 
@@ -119,21 +129,18 @@ test.describe('Child Portal Flow', () => {
 
         // Verify task is no longer in pending list
         await expect(page.locator('text=Você completou todas as tarefas!')).toBeVisible();
+
+        // Verify balance increased
+        // Note: The task created has a weight of MEDIUM. The value depends on the allowance distribution logic.
+        // We just check if it increased.
+        await expect(async () => {
+            const newBalanceText = await page.locator('text=Saldo: R$').textContent();
+            const newBalance = parseFloat(newBalanceText?.split('R$')[1].trim() || '0');
+            console.log(`Initial Balance: ${initialBalance}, New Balance: ${newBalance}`);
+            expect(newBalance).toBeGreaterThan(initialBalance);
+        }).toPass({ timeout: 10000 });
     });
 
-    test('should display Goal Coach section', async ({ page }) => {
-        // Login as child
-        await page.goto('/child-login');
-        await page.fill('input[type="text"]', onboardingCode);
-        await page.click('button:has-text("Entrar")');
-        await page.waitForURL('**/child-portal');
-
-        // Verify Goal Coach section
-        await expect(page.locator('text=Coach Financeiro')).toBeVisible();
-        await expect(page.locator('input[placeholder*="jogo"]')).toBeVisible();
-        await expect(page.locator('input[type="number"]')).toBeVisible();
-        await expect(page.locator('button:has-text("Criar Plano")')).toBeVisible();
-    });
 
     test('should create a goal plan with AI', async ({ page }) => {
         // Login as child

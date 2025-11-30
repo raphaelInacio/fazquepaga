@@ -219,7 +219,7 @@ export default function Dashboard() {
                                                 }
                                             }}>
                                                 <DialogTrigger asChild>
-                                                    <Button variant="outline" size="sm" className="w-full">
+                                                    <Button variant="outline" size="sm" className="w-full" data-testid="set-allowance-button">
                                                         {t("dashboard.setAllowance")}
                                                     </Button>
                                                 </DialogTrigger>
@@ -242,7 +242,7 @@ export default function Dashboard() {
                                                             />
                                                         </div>
                                                     </div>
-                                                    <Button onClick={handleSetAllowance}>{t("dashboard.save")}</Button>
+                                                    <Button onClick={handleSetAllowance} data-testid="save-allowance-button">{t("dashboard.save")}</Button>
                                                 </DialogContent>
                                             </Dialog>
                                             <Button
