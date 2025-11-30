@@ -23,6 +23,7 @@ import java.util.concurrent.ExecutionException;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.when;
 
 /**
@@ -42,19 +43,22 @@ class TaskServiceSubscriptionTest {
         @Mock
         private com.fazquepaga.taskandpay.allowance.LedgerService ledgerService;
 
+        @Mock
+        private com.fazquepaga.taskandpay.allowance.AllowanceService allowanceService;
 
-        
         @Mock
         private jakarta.inject.Provider<com.fazquepaga.taskandpay.allowance.AllowanceService> allowanceServiceProvider;
-        
+
         private TaskService taskService;
-        
+
         @BeforeEach
         void setUp() {
                 MockitoAnnotations.openMocks(this);
+                when(allowanceServiceProvider.get()).thenReturn(allowanceService);
                 taskService = new TaskService(taskRepository, userRepository, subscriptionService, ledgerService,
                                 allowanceServiceProvider);
         }
+
         @Test
         void testCreateRecurringTask_FreeUserWithinLimit_ShouldSucceed()
                         throws ExecutionException, InterruptedException {
@@ -81,17 +85,25 @@ class TaskServiceSubscriptionTest {
                 request.setWeight(Task.TaskWeight.MEDIUM);
                 request.setRequiresProof(false);
 
+                Task createdTask = Task.builder().id("new-task-id").description("Daily Task").build();
+
                 when(userRepository.findByIdSync(childId)).thenReturn(child);
                 when(userRepository.findByIdSync(parentId)).thenReturn(parent);
                 when(subscriptionService.canCreateTask(parent, 0)).thenReturn(true);
-                when(taskRepository.save(eq(childId), any(Task.class)))
-                                .thenReturn(ApiFutures.immediateFuture(null));
+                
+                doAnswer(invocation -> {
+                        Task taskToSave = invocation.getArgument(1);
+                        taskToSave.setId("new-task-id");
+                        return ApiFutures.immediateFuture(null);
+                }).when(taskRepository).save(eq(childId), any(Task.class));
 
-                // Mock empty task list (0 recurring tasks)
+                // Mock task list for counting and for returning the created task
                 QuerySnapshot querySnapshot = Mockito.mock(QuerySnapshot.class);
+                QueryDocumentSnapshot documentSnapshot = Mockito.mock(QueryDocumentSnapshot.class);
                 when(taskRepository.findTasksByUserId(childId))
                                 .thenReturn(ApiFutures.immediateFuture(querySnapshot));
-                when(querySnapshot.getDocuments()).thenReturn(Collections.emptyList());
+                when(querySnapshot.getDocuments()).thenReturn(Collections.singletonList(documentSnapshot));
+                when(documentSnapshot.toObject(Task.class)).thenReturn(createdTask);
 
                 // When
                 Task result = taskService.createTask(childId, request);
@@ -183,10 +195,22 @@ class TaskServiceSubscriptionTest {
                 request.setWeight(Task.TaskWeight.HIGH);
                 request.setRequiresProof(true);
 
+                Task createdTask = Task.builder().id("one-time-task-id").description("One-time Task").build();
+
                 when(userRepository.findByIdSync(childId)).thenReturn(child);
                 when(userRepository.findByIdSync(parentId)).thenReturn(parent);
-                when(taskRepository.save(eq(childId), any(Task.class)))
-                                .thenReturn(ApiFutures.immediateFuture(null));
+                
+                doAnswer(invocation -> {
+                        Task taskToSave = invocation.getArgument(1);
+                        taskToSave.setId("one-time-task-id");
+                        return ApiFutures.immediateFuture(null);
+                }).when(taskRepository).save(eq(childId), any(Task.class));
+                
+                QuerySnapshot querySnapshot = Mockito.mock(QuerySnapshot.class);
+                QueryDocumentSnapshot documentSnapshot = Mockito.mock(QueryDocumentSnapshot.class);
+                when(taskRepository.findTasksByUserId(childId)).thenReturn(ApiFutures.immediateFuture(querySnapshot));
+                when(querySnapshot.getDocuments()).thenReturn(Collections.singletonList(documentSnapshot));
+                when(documentSnapshot.toObject(Task.class)).thenReturn(createdTask);
 
                 // When
                 Task result = taskService.createTask(childId, request);
@@ -225,24 +249,35 @@ class TaskServiceSubscriptionTest {
                 request.setRequiresProof(false);
                 request.setDayOfWeek(1);
 
+                Task createdTask = Task.builder().id("100th-task-id").description("100th Weekly Task").build();
+
                 when(userRepository.findByIdSync(childId)).thenReturn(child);
                 when(userRepository.findByIdSync(parentId)).thenReturn(parent);
                 when(subscriptionService.canCreateTask(parent, 99)).thenReturn(true);
-                when(taskRepository.save(eq(childId), any(Task.class)))
-                                .thenReturn(ApiFutures.immediateFuture(null));
+                
+                doAnswer(invocation -> {
+                        Task taskToSave = invocation.getArgument(1);
+                        taskToSave.setId("100th-task-id");
+                        return ApiFutures.immediateFuture(null);
+                }).when(taskRepository).save(eq(childId), any(Task.class));
 
-                // Mock 99 existing recurring tasks
-                QuerySnapshot querySnapshot = Mockito.mock(QuerySnapshot.class);
-                when(taskRepository.findTasksByUserId(childId))
-                                .thenReturn(ApiFutures.immediateFuture(querySnapshot));
-
-                // Create mock documents that return Task objects with type
+                // Mock for counting recurring tasks
+                QuerySnapshot countQuerySnapshot = Mockito.mock(QuerySnapshot.class);
                 QueryDocumentSnapshot mockDoc = Mockito.mock(QueryDocumentSnapshot.class);
                 Task weeklyTask = Task.builder().type(Task.TaskType.WEEKLY).build();
                 when(mockDoc.toObject(Task.class)).thenReturn(weeklyTask);
-
-                when(querySnapshot.getDocuments())
+                when(countQuerySnapshot.getDocuments())
                                 .thenReturn(Collections.nCopies(99, mockDoc));
+
+                // Mock for getting the created task
+                QuerySnapshot getQuerySnapshot = Mockito.mock(QuerySnapshot.class);
+                QueryDocumentSnapshot getDocSnapshot = Mockito.mock(QueryDocumentSnapshot.class);
+                when(getDocSnapshot.toObject(Task.class)).thenReturn(createdTask);
+                when(getQuerySnapshot.getDocuments()).thenReturn(Collections.singletonList(getDocSnapshot));
+
+                when(taskRepository.findTasksByUserId(childId))
+                                .thenReturn(ApiFutures.immediateFuture(countQuerySnapshot))
+                                .thenReturn(ApiFutures.immediateFuture(getQuerySnapshot));
 
                 // When
                 Task result = taskService.createTask(childId, request);
