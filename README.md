@@ -9,25 +9,26 @@ The core problem it solves is the difficulty of consistently managing and encour
 The application is divided into focused domain modules:
 
 *   **User Management**: Secure registration and profile management for parents and children.
-*   **Task Management with Multiple Types**:
-    *   **Daily Tasks**: Recurring tasks that happen every day.
-    *   **Weekly Tasks**: Activities scheduled for specific days of the week.
-    *   **One-time Tasks**: Single goals or special events.
+*   **Task Management**:
+    *   **Types**: Daily, Weekly, and One-time tasks.
+    *   **Parent Approval**: Dedicated UI for parents to review and approve tasks completed by children.
+    *   **Proof Requirement**: Option to require proof (e.g., photo) for task completion.
 *   **Allowance Calculation Engine**:
-    *   Parents define a total monthly allowance.
-    *   Parents assign a weight (e.g., Low, Medium, High) to each task.
-    *   The system automatically calculates the value of each task based on its weight.
+    *   Automatic calculation of task values based on total monthly allowance and task weight.
 *   **Artificial Intelligence Features**:
-    *   **Task Suggestion**: An LLM provides parents with ideas for age-appropriate tasks.
-    *   **Image Validation**: A vision-capable LLM performs a preliminary check on photos sent via WhatsApp to confirm they match the completed task.
-*   **Completion Flow**:
-    *   **WhatsApp Integration**: Children can send a photo to a specific number to mark a visual task as complete.
-    *   **Manual Approval**: Parents can manually approve non-visual tasks or override the AI's validation through the web dashboard.
+    *   **Task Suggestion**: AI-powered suggestions for age-appropriate tasks.
+    *   **Image Validation**: AI analysis of photos sent via WhatsApp to verify task completion.
+    *   **Adventure Mode**: Gamified task descriptions for children using AI.
+    *   **Goal Coach**: AI-driven financial planning advice for children's savings goals.
+*   **Child Portal**:
+    *   Mobile-first interface for children to view tasks, track balance, and complete tasks.
+    *   **Gamification**: Adventure Mode and fun stats.
 *   **Financial Record**:
-    *   A simple and clear statement showing completed tasks and the allowance earned.
+    *   **Ledger**: Detailed transaction history (credits and debits).
+    *   **Gift Card Store**: (Premium) Redeem balance for real-world rewards.
 *   **Plans and Monetization (Freemium)**:
-    *   **Free Plan**: Limited to 5 recurring tasks, 1 child, and manual task approval.
-    *   **Premium Plan**: Unlimited recurring tasks, AI-powered features (task suggestions, visual validation), and a Reward Store to exchange balance for Gift Cards.
+    *   **Free Plan**: Limited to 5 recurring tasks, 1 child.
+    *   **Premium Plan**: Unlimited tasks, AI features, Gift Card Store.
 
 ## 🛠️ Tech Stack
 
@@ -85,7 +86,20 @@ The application is divided into focused domain modules:
     npm install
     npm run dev
     ```
-    The frontend application will be available at `http://localhost:5173` and will connect to the backend API.
+    The frontend application will be available at `http://localhost:5173`.
+
+## 🌐 Frontend Routes
+
+| Route | Description |
+| :--- | :--- |
+| `/` | Landing Page |
+| `/register` | Parent Registration |
+| `/add-child` | Add Child Form |
+| `/dashboard` | Parent Dashboard (Main Hub) |
+| `/child/:childId/tasks` | Child Task Management (Parent View) |
+| `/gift-cards` | Gift Card Store (Redemption) |
+| `/child-login` | Child Login (via Code) |
+| `/child-portal` | Child Portal (Task Completion & Gamification) |
 
 ## 📂 Project Structure
 
@@ -96,16 +110,22 @@ The project is a monorepo with two main parts:
 ├── backend/      # Spring Boot modular monolith
 │   ├── src/main/java/com/fazquepaga/taskandpay
 │   │   ├── ai/           # AI integration (Gemini)
-│   │   ├── allowance/    # Allowance calculation logic
-│   │   ├── identity/     # User management
-│   │   ├── tasks/        # Task management
+│   │   ├── allowance/    # Allowance calculation & Ledger
+│   │   ├── config/       # App configuration (Security, CORS)
+│   │   ├── giftcard/     # Gift Card Store logic
+│   │   ├── identity/     # User management (Parent/Child)
+│   │   ├── shared/       # Shared utilities & exceptions
+│   │   ├── subscription/ # Plan limits & logic
+│   │   ├── tasks/        # Task management domain
 │   │   └── whatsapp/     # Twilio/WhatsApp integration
 │   ├── pom.xml
 │   └── docker-compose.yml
 └── frontend/     # React web application
     ├── src/
-    │   ├── components/
-    │   ├── pages/
-    │   └── services/
+    │   ├── components/   # Reusable UI components
+    │   ├── lib/          # Utilities (API client, utils)
+    │   ├── pages/        # Application pages/routes
+    │   ├── services/     # API service layers
+    │   └── types/        # TypeScript definitions
     └── package.json
 ```

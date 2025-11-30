@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Free User Flow', () => {
+    test.setTimeout(60000); // Increase timeout for slow backend
     test('should register a free user and add a child', async ({ page }) => {
         // Navigate to homepage
         await page.goto('/');

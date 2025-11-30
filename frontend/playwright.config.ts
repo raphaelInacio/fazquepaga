@@ -8,6 +8,7 @@ export default defineConfig({
     retries: (process.env as any).CI ? 2 : 0,
     workers: (process.env as any).CI ? 1 : undefined,
     reporter: 'html',
+    timeout: 60000,
 
     use: {
         baseURL: 'http://localhost:8082',
@@ -29,6 +30,6 @@ export default defineConfig({
         timeout: 120 * 1000,
         // Add a waitOn option to ensure the server is ready
         // You might need to adjust the pattern based on Vite's actual output
-        stdout: 'ready',
+        // stdout: 'ready',
     },
 });

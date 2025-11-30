@@ -7,7 +7,7 @@ test.describe('Financial Ledger with AI Insights', () => {
     test.beforeAll(async ({ browser }) => {
         // Setup: Create parent, child, and approved tasks
         const page = await browser.newPage();
-        await page.goto('http://localhost:8080');
+        await page.goto('/');
 
         // Register parent
         await page.click('text=Cadastrar');

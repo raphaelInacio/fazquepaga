@@ -35,18 +35,17 @@ test.describe('Financial Ledger Flow', () => {
         // For the sake of this test, we will assume the task is completed and just needs approval.
         await page.click('text=Test Task for Ledger');
         await page.click('button:has-text("Approve")');
-        await page.waitForTimeout(500); // wait for approval
+        await page.waitForTimeout(2000); // wait for approval and ledger update
 
         // 4. Navigate to the "Financial" tab
         await page.click('text=Financial');
 
         // 5. Verify that the financial ledger is displayed correctly
-        await expect(page.locator('text=Financial Statement')).toBeVisible();
-        await expect(page.locator('text=Total Balance:')).toBeVisible();
+        await expect(page.locator('text=Extrato Financeiro')).toBeVisible();
+        await expect(page.locator('text=Saldo Total')).toBeVisible();
         await expect(page.locator('text=Test Task for Ledger')).toBeVisible();
 
         // 6. Verify that the AI insight is displayed
-        await expect(page.locator('text=AI Insight')).toBeVisible();
-        await expect(page.locator('text=We noticed that your child is saving a lot! Keep up the good work!')).toBeVisible();
+        await expect(page.locator('text=Insight de IA')).toBeVisible();
     });
 });

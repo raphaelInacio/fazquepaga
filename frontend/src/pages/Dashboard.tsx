@@ -2,13 +2,14 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { User as UserIcon, Gift, Loader2, QrCode, Plus, Sparkles } from "lucide-react";
-import { User } from "@/types";
+import { User, Task } from "@/types";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { childService } from "@/services/childService";
+import { taskService } from "@/services/taskService";
 import { toast } from "sonner";
 
 export default function Dashboard() {
@@ -21,6 +22,7 @@ export default function Dashboard() {
     const [isLoading, setIsLoading] = useState(true);
     const [onboardingCode, setOnboardingCode] = useState<string | null>(null);
     const [selectedChildForCode, setSelectedChildForCode] = useState<string | null>(null);
+    const [pendingTasks, setPendingTasks] = useState<{ childId: string, childName: string, task: Task }[]>([]);
 
     useEffect(() => {
         const parentId = localStorage.getItem("parentId");
@@ -36,6 +38,24 @@ export default function Dashboard() {
             try {
                 const childrenData = await childService.getChildren(parentId);
                 setChildren(childrenData);
+
+                // Fetch pending tasks for all children
+                const allPendingTasks: { childId: string, childName: string, task: Task }[] = [];
+                for (const child of childrenData) {
+                    if (child.id) {
+                        const tasks = await taskService.getTasks(child.id);
+                        const pending = tasks.filter(t => t.status === 'PENDING_APPROVAL');
+                        pending.forEach(task => {
+                            allPendingTasks.push({
+                                childId: child.id!,
+                                childName: child.name,
+                                task
+                            });
+                        });
+                    }
+                }
+                setPendingTasks(allPendingTasks);
+
             } catch (error) {
                 console.error("Failed to fetch children", error);
                 toast.error("Failed to load your children's data.");
@@ -86,6 +106,27 @@ export default function Dashboard() {
         }
     };
 
+    const handleApproveTask = async (childId: string, taskId: string) => {
+        const parentId = localStorage.getItem("parentId");
+        if (!parentId) return;
+
+        try {
+            await taskService.approveTask(childId, taskId, parentId);
+            toast.success("Tarefa aprovada!");
+
+            // Remove from local state
+            setPendingTasks(prev => prev.filter(item => item.task.id !== taskId));
+
+            // Refresh children to update balance if needed (optional, but good for consistency)
+            const childrenData = await childService.getChildren(parentId);
+            setChildren(childrenData);
+
+        } catch (error) {
+            toast.error("Erro ao aprovar tarefa");
+            console.error(error);
+        }
+    };
+
     return (
         <div className="min-h-screen bg-gray-50 p-8">
             <div className="max-w-4xl mx-auto space-y-8">
@@ -109,85 +150,125 @@ export default function Dashboard() {
                         <Loader2 className="h-8 w-8 animate-spin text-primary" />
                     </div>
                 ) : (
-                    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                        {children.map((child) => (
-                            <Card
-                                key={child.id}
-                                className="hover:shadow-lg transition-shadow cursor-pointer"
-                                onClick={() => navigate(`/child/${child.id}/tasks`)}
-                            >
-                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                    <CardTitle className="text-xl font-medium">{child.name}</CardTitle>
-                                    <UserIcon className="h-4 w-4 text-muted-foreground" />
+                    <div className="space-y-8">
+                        {/* Pending Approvals Section */}
+                        {pendingTasks.length > 0 && (
+                            <Card className="border-2 border-yellow-400 bg-yellow-50">
+                                <CardHeader>
+                                    <CardTitle className="text-xl font-bold text-yellow-800 flex items-center gap-2">
+                                        <Sparkles className="h-5 w-5" />
+                                        Tarefas Aguardando Aprovação
+                                    </CardTitle>
                                 </CardHeader>
                                 <CardContent>
-                                    <div className="text-2xl font-bold">{child.age || "N/A"} years old</div>
-                                    {child.monthlyAllowance !== undefined && (
-                                        <div className="text-sm text-green-600 font-medium mt-1">
-                                            {t("dashboard.allowance")}: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(child.monthlyAllowance)}
-                                        </div>
-                                    )}
-                                    <p className="text-xs text-muted-foreground mt-1">
-                                        {t("dashboard.viewTasks")}
-                                    </p>
-                                    <div className="mt-4 space-y-2" onClick={(e) => e.stopPropagation()}>
-                                        <Dialog open={selectedChildId === child.id} onOpenChange={(open) => {
-                                            if (open) {
-                                                setSelectedChildId(child.id);
-                                                setAllowanceAmount(child.monthlyAllowance?.toString() || "");
-                                            } else {
-                                                setSelectedChildId(null);
-                                            }
-                                        }}>
-                                            <DialogTrigger asChild>
-                                                <Button variant="outline" size="sm" className="w-full">
-                                                    {t("dashboard.setAllowance")}
-                                                </Button>
-                                            </DialogTrigger>
-                                            <DialogContent>
-                                                <DialogHeader>
-                                                    <DialogTitle>{t("dashboard.setAllowanceTitle", { name: child.name })}</DialogTitle>
-                                                </DialogHeader>
-                                                <div className="grid gap-4 py-4">
-                                                    <div className="grid grid-cols-4 items-center gap-4">
-                                                        <Label htmlFor="allowance" className="text-right">
-                                                            {t("dashboard.amount")}
-                                                        </Label>
-                                                        <Input
-                                                            id="allowance"
-                                                            type="number"
-                                                            value={allowanceAmount}
-                                                            onChange={(e) => setAllowanceAmount(e.target.value)}
-                                                            className="col-span-3"
-                                                            placeholder="0.00"
-                                                        />
-                                                    </div>
+                                    <div className="space-y-4">
+                                        {pendingTasks.map((item) => (
+                                            <div key={item.task.id} className="flex items-center justify-between bg-white p-4 rounded-lg shadow-sm border border-yellow-200">
+                                                <div>
+                                                    <p className="font-semibold text-gray-800">{item.task.description}</p>
+                                                    <p className="text-sm text-gray-500">
+                                                        Feito por: <span className="font-medium text-gray-700">{item.childName}</span>
+                                                    </p>
+                                                    {item.task.proofImageUrl && (
+                                                        <a href={item.task.proofImageUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline">
+                                                            Ver Comprovante
+                                                        </a>
+                                                    )}
                                                 </div>
-                                                <Button onClick={handleSetAllowance}>{t("dashboard.save")}</Button>
-                                            </DialogContent>
-                                        </Dialog>
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            className="w-full"
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                handleGenerateOnboardingCode(child.id);
-                                            }}
-                                        >
-                                            <QrCode className="mr-2 h-4 w-4" /> Gerar Código WhatsApp
-                                        </Button>
+                                                <Button
+                                                    onClick={() => item.task.id && handleApproveTask(item.childId, item.task.id)}
+                                                    className="bg-green-600 hover:bg-green-700 text-white"
+                                                >
+                                                    Aprovar
+                                                </Button>
+                                            </div>
+                                        ))}
                                     </div>
                                 </CardContent>
                             </Card>
-                        ))}
-
-                        {children.length === 0 && !isLoading && (
-                            <div className="col-span-full text-center py-12 text-gray-500">
-                                <p>{t("dashboard.noChildren")}</p>
-                                <p className="mt-2">{t("dashboard.addChild")}</p>
-                            </div>
                         )}
+
+                        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                            {children.map((child) => (
+                                <Card
+                                    key={child.id}
+                                    className="hover:shadow-lg transition-shadow cursor-pointer"
+                                    onClick={() => navigate(`/child/${child.id}/tasks`)}
+                                >
+                                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                        <CardTitle className="text-xl font-medium">{child.name}</CardTitle>
+                                        <UserIcon className="h-4 w-4 text-muted-foreground" />
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div className="text-2xl font-bold">{child.age || "N/A"} years old</div>
+                                        {child.monthlyAllowance !== undefined && (
+                                            <div className="text-sm text-green-600 font-medium mt-1">
+                                                {t("dashboard.allowance")}: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(child.monthlyAllowance)}
+                                            </div>
+                                        )}
+                                        <p className="text-xs text-muted-foreground mt-1">
+                                            {t("dashboard.viewTasks")}
+                                        </p>
+                                        <div className="mt-4 space-y-2" onClick={(e) => e.stopPropagation()}>
+                                            <Dialog open={selectedChildId === child.id} onOpenChange={(open) => {
+                                                if (open) {
+                                                    setSelectedChildId(child.id);
+                                                    setAllowanceAmount(child.monthlyAllowance?.toString() || "");
+                                                } else {
+                                                    setSelectedChildId(null);
+                                                }
+                                            }}>
+                                                <DialogTrigger asChild>
+                                                    <Button variant="outline" size="sm" className="w-full">
+                                                        {t("dashboard.setAllowance")}
+                                                    </Button>
+                                                </DialogTrigger>
+                                                <DialogContent>
+                                                    <DialogHeader>
+                                                        <DialogTitle>{t("dashboard.setAllowanceTitle", { name: child.name })}</DialogTitle>
+                                                    </DialogHeader>
+                                                    <div className="grid gap-4 py-4">
+                                                        <div className="grid grid-cols-4 items-center gap-4">
+                                                            <Label htmlFor="allowance" className="text-right">
+                                                                {t("dashboard.amount")}
+                                                            </Label>
+                                                            <Input
+                                                                id="allowance"
+                                                                type="number"
+                                                                value={allowanceAmount}
+                                                                onChange={(e) => setAllowanceAmount(e.target.value)}
+                                                                className="col-span-3"
+                                                                placeholder="0.00"
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                    <Button onClick={handleSetAllowance}>{t("dashboard.save")}</Button>
+                                                </DialogContent>
+                                            </Dialog>
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                className="w-full"
+                                                data-testid="generate-code-button"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleGenerateOnboardingCode(child.id);
+                                                }}
+                                            >
+                                                <QrCode className="mr-2 h-4 w-4" /> Gerar Código WhatsApp
+                                            </Button>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            ))}
+
+                            {children.length === 0 && !isLoading && (
+                                <div className="col-span-full text-center py-12 text-gray-500">
+                                    <p>{t("dashboard.noChildren")}</p>
+                                    <p className="mt-2">{t("dashboard.addChild")}</p>
+                                </div>
+                            )}
+                        </div>
                     </div>
                 )}
 
