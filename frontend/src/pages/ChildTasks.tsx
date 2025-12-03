@@ -228,8 +228,8 @@ export default function ChildTasks() {
                                 <ArrowLeft className="h-4 w-4" />
                             </Button>
                             <div>
-                                <h1 className="text-3xl font-bold text-gray-900">{child.name}'s Tasks</h1>
-                                <p className="text-gray-500">Age: {child.age || "N/A"} years old</p>
+                                <h1 className="text-3xl font-bold text-gray-900">{t("tasks.title", { childName: child.name })}</h1>
+                                <p className="text-gray-500">{t("childTasks.age", { age: child.age || "N/A" })}</p>
                             </div>
                         </div>
                         <div className="flex gap-2">
@@ -239,11 +239,11 @@ export default function ChildTasks() {
                                 className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white shadow-lg"
                             >
                                 <Sparkles className="h-4 w-4 mr-2" />
-                                {isLoadingAI ? "Generating..." : "✨ Gerar Tarefas com IA"}
+                                {isLoadingAI ? t("childTasks.generating") : t("childTasks.generateAiTasks")}
                             </Button>
                             <Button variant="outline" onClick={() => setIsCreateTaskDialogOpen(true)} data-testid="create-task-button">
                                 <Plus className="h-4 w-4 mr-2" />
-                                Criar Tarefa Manual
+                                {t("childTasks.createManualTask")}
                             </Button>
                         </div>
                     </div>
@@ -253,10 +253,10 @@ export default function ChildTasks() {
                             <CardHeader>
                                 <CardTitle className="flex items-center gap-2">
                                     <Sparkles className="h-5 w-5 text-purple-600" />
-                                    AI Task Suggestions
+                                    {t("childTasks.aiSuggestions.title")}
                                 </CardTitle>
                                 <CardDescription>
-                                    Click "Adicionar" to create any of these age-appropriate tasks
+                                    {t("childTasks.aiSuggestions.description")}
                                 </CardDescription>
                             </CardHeader>
                             <CardContent>
@@ -272,7 +272,7 @@ export default function ChildTasks() {
                                                 size="sm"
                                                 className="bg-purple-600 hover:bg-purple-700"
                                             >
-                                                ➕ Adicionar
+                                                {t("childTasks.aiSuggestions.add")}
                                             </Button>
                                         </div>
                                     ))}
@@ -283,33 +283,33 @@ export default function ChildTasks() {
 
                     <Tabs defaultValue="tasks" className="w-full">
                         <TabsList className="grid w-full grid-cols-2">
-                            <TabsTrigger value="tasks">Tasks</TabsTrigger>
-                            <TabsTrigger value="financial">Financial</TabsTrigger>
+                            <TabsTrigger value="tasks">{t("childTasks.tabs.tasks")}</TabsTrigger>
+                            <TabsTrigger value="financial">{t("childTasks.tabs.financial")}</TabsTrigger>
                         </TabsList>
                         <TabsContent value="tasks">
                             <Card>
                                 <CardHeader>
                                     <div className="flex items-center justify-between">
-                                        <CardTitle>Tasks</CardTitle>
+                                        <CardTitle>{t("childTasks.tabs.tasks")}</CardTitle>
                                         <Select value={filterStatus} onValueChange={setFilterStatus}>
                                             <SelectTrigger className="w-[180px]">
-                                                <SelectValue placeholder="Filter by status" />
+                                                <SelectValue placeholder={t("childTasks.filter.all")} />
                                             </SelectTrigger>
                                             <SelectContent>
-                                                <SelectItem value="ALL">All Tasks</SelectItem>
-                                                <SelectItem value="PENDING">Pending</SelectItem>
-                                                <SelectItem value="PENDING_APPROVAL">Pending Approval</SelectItem>
-                                                <SelectItem value="APPROVED">Approved</SelectItem>
+                                                <SelectItem value="ALL">{t("childTasks.filter.all")}</SelectItem>
+                                                <SelectItem value="PENDING">{t("childTasks.filter.pending")}</SelectItem>
+                                                <SelectItem value="PENDING_APPROVAL">{t("childTasks.filter.pendingApproval")}</SelectItem>
+                                                <SelectItem value="APPROVED">{t("childTasks.filter.approved")}</SelectItem>
                                             </SelectContent>
                                         </Select>
                                     </div>
                                 </CardHeader>
                                 <CardContent>
                                     {isLoadingTasks ? (
-                                        <div className="text-center py-8 text-gray-500">Loading tasks...</div>
+                                        <div className="text-center py-8 text-gray-500">{t("tasks.loading")}</div>
                                     ) : filteredTasks.length === 0 ? (
                                         <div className="text-center py-8 text-gray-500">
-                                            No tasks found. Create your first task!
+                                            {t("childTasks.noTasks")}
                                         </div>
                                     ) : (
                                         <div className="space-y-4">
@@ -334,10 +334,10 @@ export default function ChildTasks() {
                                                                     {task.type}
                                                                 </span>
                                                                 {task.requiresProof && (
-                                                                    <span className="text-purple-600">📸 Proof Required</span>
+                                                                    <span className="text-purple-600">{t("childTasks.proofRequired")}</span>
                                                                 )}
                                                                 {task.aiValidated && (
-                                                                    <span className="text-green-600">✓ AI Validated</span>
+                                                                    <span className="text-green-600">{t("childTasks.aiValidated")}</span>
                                                                 )}
                                                             </div>
                                                         </div>
@@ -362,15 +362,15 @@ export default function ChildTasks() {
                         <TabsContent value="financial">
                             <Card className="mb-6">
                                 <CardHeader>
-                                    <CardTitle>Mesada Prevista</CardTitle>
+                                    <CardTitle>{t("childTasks.financial.predictedAllowance")}</CardTitle>
                                     <CardDescription>
-                                        Valor estimado baseado nas tarefas pendentes e aprovadas
+                                        {t("childTasks.financial.estimatedValue")}
                                     </CardDescription>
                                 </CardHeader>
                                 <CardContent>
                                     {isLoadingAllowance ? (
                                         <div className="text-center py-4">
-                                            <span className="text-gray-500">Calculando...</span>
+                                            <span className="text-gray-500">{t("childTasks.financial.calculating")}</span>
                                         </div>
                                     ) : (
                                         <div className="text-center">
@@ -381,7 +381,7 @@ export default function ChildTasks() {
                                                 }).format(predictedAllowance)}
                                             </div>
                                             <p className="text-sm text-gray-500 mt-2">
-                                                Este mês
+                                                {t("childTasks.financial.thisMonth")}
                                             </p>
                                         </div>
                                     )}
@@ -393,17 +393,17 @@ export default function ChildTasks() {
                 </div>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>Review Task</DialogTitle>
+                        <DialogTitle>{t("childTasks.review.title")}</DialogTitle>
                         <DialogDescription>{selectedTaskForReview?.description}</DialogDescription>
                     </DialogHeader>
                     {selectedTaskForReview?.aiValidated && (
                         <div className="my-4 p-3 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm">
-                            <p>✅ Our AI has pre-validated this task and believes it has been completed.</p>
+                            <p>{t("childTasks.review.aiValidatedMessage")}</p>
                         </div>
                     )}
                     {selectedTaskForReview?.requiresProof && (
                         <div className="my-4">
-                            <p className="font-semibold mb-2">Proof:</p>
+                            <p className="font-semibold mb-2">{t("childTasks.review.proof")}</p>
                             {selectedTaskForReview?.proofImageUrl ? (
                                 <img
                                     src={selectedTaskForReview.proofImageUrl}
@@ -412,35 +412,35 @@ export default function ChildTasks() {
                                 />
                             ) : (
                                 <div className="w-full h-48 bg-gray-200 rounded-md flex items-center justify-center">
-                                    <span className="text-gray-500">No proof image submitted yet</span>
+                                    <span className="text-gray-500">{t("childTasks.review.noProof")}</span>
                                 </div>
                             )}
                         </div>
                     )}
                     <DialogFooter>
-                        <Button variant="outline" onClick={() => setIsReviewDialogOpen(false)}>Cancel</Button>
-                        <Button onClick={handleApproveTask}>Approve</Button>
+                        <Button variant="outline" onClick={() => setIsReviewDialogOpen(false)}>{t("common.cancel")}</Button>
+                        <Button onClick={handleApproveTask}>{t("dashboard.pendingApprovals.approve")}</Button>
                     </DialogFooter>
                 </DialogContent>
             </div>
             <Dialog open={isCreateTaskDialogOpen} onOpenChange={setIsCreateTaskDialogOpen}>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>Create New Task</DialogTitle>
-                        <DialogDescription>Add a new task for {child.name}</DialogDescription>
+                        <DialogTitle>{t("childTasks.create.title")}</DialogTitle>
+                        <DialogDescription>{t("childTasks.create.description", { name: child.name })}</DialogDescription>
                     </DialogHeader>
                     <div className="space-y-4 py-4">
                         <div className="space-y-2">
-                            <Label>Description</Label>
+                            <Label>{t("childTasks.create.label.description")}</Label>
                             <Input
                                 name="description"
                                 value={newTask.description}
                                 onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
-                                placeholder="e.g. Clean room"
+                                placeholder={t("childTasks.create.placeholder.description")}
                             />
                         </div>
                         <div className="space-y-2">
-                            <Label>Type</Label>
+                            <Label>{t("childTasks.create.label.type")}</Label>
                             <Select
                                 value={newTask.type}
                                 onValueChange={(value) => setNewTask({ ...newTask, type: value as any })}
@@ -449,14 +449,14 @@ export default function ChildTasks() {
                                     <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="ONE_TIME">One Time</SelectItem>
-                                    <SelectItem value="DAILY">Daily</SelectItem>
-                                    <SelectItem value="WEEKLY">Weekly</SelectItem>
+                                    <SelectItem value="ONE_TIME">{t("childTasks.create.type.oneTime")}</SelectItem>
+                                    <SelectItem value="DAILY">{t("childTasks.create.type.daily")}</SelectItem>
+                                    <SelectItem value="WEEKLY">{t("childTasks.create.type.weekly")}</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
                         <div className="space-y-2">
-                            <Label>Weight</Label>
+                            <Label>{t("childTasks.create.label.weight")}</Label>
                             <Select
                                 value={newTask.weight}
                                 onValueChange={(value) => setNewTask({ ...newTask, weight: value as any })}
@@ -465,9 +465,9 @@ export default function ChildTasks() {
                                     <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="LOW">Low</SelectItem>
-                                    <SelectItem value="MEDIUM">Medium</SelectItem>
-                                    <SelectItem value="HIGH">High</SelectItem>
+                                    <SelectItem value="LOW">{t("childTasks.create.weight.low")}</SelectItem>
+                                    <SelectItem value="MEDIUM">{t("childTasks.create.weight.medium")}</SelectItem>
+                                    <SelectItem value="HIGH">{t("childTasks.create.weight.high")}</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
@@ -480,12 +480,12 @@ export default function ChildTasks() {
                                     setNewTask({ ...newTask, requiresProof: checked as boolean })
                                 }
                             />
-                            <Label htmlFor="requiresProof">Requires Proof?</Label>
+                            <Label htmlFor="requiresProof">{t("childTasks.create.requiresProof")}</Label>
                         </div>
                     </div>
                     <DialogFooter>
-                        <Button variant="outline" onClick={() => setIsCreateTaskDialogOpen(false)}>Cancel</Button>
-                        <Button onClick={handleCreateTask} data-testid="create-task-submit-button">Create Task</Button>
+                        <Button variant="outline" onClick={() => setIsCreateTaskDialogOpen(false)}>{t("common.cancel")}</Button>
+                        <Button onClick={handleCreateTask} data-testid="create-task-submit-button">{t("childTasks.create.submit")}</Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>

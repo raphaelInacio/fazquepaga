@@ -13,6 +13,18 @@
         "next": "Next",
         "close": "Close"
     },
+    "header": {
+        "resources": "Features",
+        "howItWorks": "How it Works",
+        "pricing": "Pricing",
+        "login": "Login",
+        "register": "Register",
+        "loginModal": {
+            "title": "How do you want to login?",
+            "parent": "I'm a Parent",
+            "child": "I'm a Child"
+        }
+    },
     "auth": {
         "register": {
             "title": "Create Parent Account",
@@ -53,7 +65,23 @@
         "allowance": "Allowance",
         "setAllowanceTitle": "Set Monthly Allowance for {{name}}",
         "amount": "Amount",
-        "save": "Save"
+        "save": "Save",
+        "rewardsStore": "Rewards Store",
+        "pendingApprovals": {
+            "title": "Tasks Awaiting Approval",
+            "madeBy": "Made by",
+            "viewProof": "View Proof",
+            "approve": "Approve",
+            "success": "Task approved!",
+            "error": "Error approving task"
+        },
+        "generateCode": "Generate WhatsApp Code",
+        "onboardingCode": {
+            "title": "WhatsApp Registration Code",
+            "instruction": "The child must send this code to the system's WhatsApp to complete registration.",
+            "copy": "Copy Code",
+            "copied": "Code copied!"
+        }
     },
     "tasks": {
         "title": "{{childName}}'s Tasks",
@@ -97,6 +125,107 @@
             "error": "Failed to generate onboarding code",
             "code": "Code: {{code}}"
         }
+    },
+    "childTasks": {
+        "age": "Age: {{age}} years old",
+        "generateAiTasks": "✨ Generate Tasks with AI",
+        "generating": "Generating...",
+        "createManualTask": "Create Manual Task",
+        "aiSuggestions": {
+            "title": "AI Task Suggestions",
+            "description": "Click \"Add\" to create any of these age-appropriate tasks",
+            "add": "➕ Add"
+        },
+        "tabs": {
+            "tasks": "Tasks",
+            "financial": "Financial"
+        },
+        "filter": {
+            "all": "All Tasks",
+            "pending": "Pending",
+            "pendingApproval": "Pending Approval",
+            "approved": "Approved"
+        },
+        "noTasks": "No tasks found. Create your first task!",
+        "proofRequired": "📸 Proof Required",
+        "aiValidated": "✓ AI Validated",
+        "financial": {
+            "predictedAllowance": "Predicted Allowance",
+            "estimatedValue": "Estimated value based on pending and approved tasks",
+            "calculating": "Calculating...",
+            "thisMonth": "This month"
+        },
+        "review": {
+            "title": "Review Task",
+            "aiValidatedMessage": "✅ Our AI has pre-validated this task and believes it has been completed.",
+            "proof": "Proof:",
+            "noProof": "No proof image submitted yet"
+        },
+        "create": {
+            "title": "Create New Task",
+            "description": "Add a new task for {{name}}",
+            "label": {
+                "description": "Description",
+                "type": "Type",
+                "weight": "Weight"
+            },
+            "placeholder": {
+                "description": "e.g. Clean room"
+            },
+            "type": {
+                "oneTime": "One Time",
+                "daily": "Daily",
+                "weekly": "Weekly"
+            },
+            "weight": {
+                "low": "Low",
+                "medium": "Medium",
+                "high": "High"
+            },
+            "requiresProof": "Requires Proof?",
+            "submit": "Create Task"
+        }
+    },
+    "childLogin": {
+        "enterCode": "Please enter your code!",
+        "welcome": "Welcome! 🎉",
+        "invalidCode": "Invalid code. Ask your parents for a new code!",
+        "title": "Child Portal",
+        "instruction": "Enter the code your parents gave you!",
+        "placeholder": "Enter your code here",
+        "buttonLoading": "Entering... ⏳",
+        "button": "Enter! 🚀"
+    },
+    "childPortal": {
+        "hello": "Hello, {{name}}! 👋",
+        "balance": "Balance: ${{balance}}",
+        "logout": "Logout",
+        "myTasks": "My Tasks 📋",
+        "adventureModeOn": "Adventure Mode ON",
+        "adventureMode": "Adventure Mode",
+        "allTasksCompleted": "You completed all tasks!",
+        "congratulations": "Congratulations!",
+        "alreadyDone": "Done! ✅",
+        "financialCoach": "Financial Coach",
+        "goalQuestion": "What is your goal? 🎯",
+        "goalPlaceholder": "Ex: A new game",
+        "costQuestion": "How much does it cost? 💵",
+        "costPlaceholder": "Ex: 250",
+        "createPlan": "Create Plan! 🚀",
+        "creatingPlan": "Creating plan... ⏳",
+        "achievements": "Your Achievements 🏆",
+        "pendingTasks": "Pending Tasks:",
+        "currentBalance": "Current Balance:",
+        "monthlyAllowance": "Monthly Allowance:",
+        "adventureModeActivated": "Adventure Mode activated! 🗡️",
+        "adventureModeError": "Error activating adventure mode",
+        "normalModeActivated": "Normal mode activated",
+        "fillGoal": "Fill in your goal and the amount!",
+        "planCreated": "Plan created! 🎯",
+        "planError": "Error creating plan",
+        "taskCompleted": "Congratulations! Task completed! 🎉",
+        "taskCompletionError": "Error completing task",
+        "loadError": "Error loading tasks"
     },
     "notFound": {
         "title": "404 - Page Not Found",

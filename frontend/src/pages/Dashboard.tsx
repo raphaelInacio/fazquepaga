@@ -112,7 +112,7 @@ export default function Dashboard() {
 
         try {
             await taskService.approveTask(childId, taskId, parentId);
-            toast.success("Tarefa aprovada!");
+            toast.success(t("dashboard.pendingApprovals.success"));
 
             // Remove from local state
             setPendingTasks(prev => prev.filter(item => item.task.id !== taskId));
@@ -122,7 +122,7 @@ export default function Dashboard() {
             setChildren(childrenData);
 
         } catch (error) {
-            toast.error("Erro ao aprovar tarefa");
+            toast.error(t("dashboard.pendingApprovals.error"));
             console.error(error);
         }
     };
@@ -137,7 +137,7 @@ export default function Dashboard() {
                     </div>
                     <div className="flex gap-2">
                         <Button variant="outline" onClick={() => navigate("/gift-cards")} data-testid="gift-cards-button">
-                            <Gift className="mr-2 h-4 w-4" /> Loja de Recompensas
+                            <Gift className="mr-2 h-4 w-4" /> {t("dashboard.rewardsStore")}
                         </Button>
                         <Button onClick={() => navigate("/add-child")} data-testid="add-child-button">
                             <Plus className="mr-2 h-4 w-4" /> {t("dashboard.addChild")}
@@ -157,7 +157,7 @@ export default function Dashboard() {
                                 <CardHeader>
                                     <CardTitle className="text-xl font-bold text-yellow-800 flex items-center gap-2">
                                         <Sparkles className="h-5 w-5" />
-                                        Tarefas Aguardando Aprovação
+                                        {t("dashboard.pendingApprovals.title")}
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent>
@@ -167,11 +167,11 @@ export default function Dashboard() {
                                                 <div>
                                                     <p className="font-semibold text-gray-800">{item.task.description}</p>
                                                     <p className="text-sm text-gray-500">
-                                                        Feito por: <span className="font-medium text-gray-700">{item.childName}</span>
+                                                        {t("dashboard.pendingApprovals.madeBy")}: <span className="font-medium text-gray-700">{item.childName}</span>
                                                     </p>
                                                     {item.task.proofImageUrl && (
                                                         <a href={item.task.proofImageUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline">
-                                                            Ver Comprovante
+                                                            {t("dashboard.pendingApprovals.viewProof")}
                                                         </a>
                                                     )}
                                                 </div>
@@ -179,7 +179,7 @@ export default function Dashboard() {
                                                     onClick={() => item.task.id && handleApproveTask(item.childId, item.task.id)}
                                                     className="bg-green-600 hover:bg-green-700 text-white"
                                                 >
-                                                    Aprovar
+                                                    {t("dashboard.pendingApprovals.approve")}
                                                 </Button>
                                             </div>
                                         ))}
@@ -255,7 +255,7 @@ export default function Dashboard() {
                                                     handleGenerateOnboardingCode(child.id);
                                                 }}
                                             >
-                                                <QrCode className="mr-2 h-4 w-4" /> Gerar Código WhatsApp
+                                                <QrCode className="mr-2 h-4 w-4" /> {t("dashboard.generateCode")}
                                             </Button>
                                         </div>
                                     </CardContent>
@@ -275,11 +275,11 @@ export default function Dashboard() {
                 <Dialog open={!!onboardingCode} onOpenChange={() => setOnboardingCode(null)}>
                     <DialogContent>
                         <DialogHeader>
-                            <DialogTitle>Código de Cadastro WhatsApp</DialogTitle>
+                            <DialogTitle>{t("dashboard.onboardingCode.title")}</DialogTitle>
                         </DialogHeader>
                         <div className="text-center p-6 space-y-4">
                             <p className="text-gray-600">
-                                A criança deve enviar este código para o WhatsApp do sistema para completar o cadastro.
+                                {t("dashboard.onboardingCode.instruction")}
                             </p>
                             <div className="text-4xl font-mono font-bold tracking-wider bg-gray-100 p-4 rounded-lg">
                                 {onboardingCode}
@@ -289,11 +289,11 @@ export default function Dashboard() {
                             onClick={() => {
                                 if (onboardingCode) {
                                     navigator.clipboard.writeText(onboardingCode);
-                                    toast.success("Código copiado!");
+                                    toast.success(t("dashboard.onboardingCode.copied"));
                                 }
                             }}
                         >
-                            Copiar Código
+                            {t("dashboard.onboardingCode.copy")}
                         </Button>
                     </DialogContent>
                 </Dialog>

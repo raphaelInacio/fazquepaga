@@ -13,9 +13,10 @@ export function LanguageSwitcher() {
 
     const changeLanguage = (lng: string) => {
         i18n.changeLanguage(lng);
+        localStorage.setItem('i18nextLng', lng);
     };
 
-    const currentLanguage = i18n.language || 'pt';
+    const currentLanguage = i18n.resolvedLanguage || 'pt';
     const languageLabel = currentLanguage === 'pt' ? 'PT' : 'EN';
 
     return (

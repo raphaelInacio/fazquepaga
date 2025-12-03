@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { childAuthService } from "@/services/childAuthService";
 import { childService } from "@/services/childService";
 import { taskService } from "@/services/taskService";
@@ -10,8 +11,11 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { Sparkles, Trophy, LogOut, Rocket } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 
 export default function ChildPortal() {
+    const { t } = useTranslation();
     const navigate = useNavigate();
     const [child, setChild] = useState<any>(null);
     const [tasks, setTasks] = useState<Task[]>([]);
@@ -24,6 +28,7 @@ export default function ChildPortal() {
     const [targetAmount, setTargetAmount] = useState("");
     const [goalPlan, setGoalPlan] = useState("");
     const [isLoadingGoal, setIsLoadingGoal] = useState(false);
+    const [isCreatingPlan, setIsCreatingPlan] = useState(false);
 
     useEffect(() => {
         const currentChild = childAuthService.getCurrentChild();
@@ -43,7 +48,7 @@ export default function ChildPortal() {
             const pendingTasks = fetchedTasks.filter((t: Task) => t.status === "PENDING");
             setTasks(pendingTasks);
         } catch (error) {
-            toast.error("Erro ao carregar tarefas");
+            toast.error(t("childPortal.loadError"));
             console.error(error);
         } finally {
             setIsLoading(false);
@@ -66,39 +71,42 @@ export default function ChildPortal() {
 
         try {
             await taskService.completeTask(taskId, child.id);
-            toast.success("Parabéns! Tarefa concluída! 🎉");
+            toast.success(t("childPortal.taskCompleted"));
+            // Update local state
+            setTasks(tasks.map(t => t.id === taskId ? { ...t, status: 'PENDING_APPROVAL' } : t));
             loadTasks(child.id);
             refreshChildData();
         } catch (error) {
-            toast.error("Erro ao completar tarefa");
+            toast.error(t("childPortal.taskCompletionError"));
             console.error(error);
         }
     }
 
-    async function handleToggleAdventureMode() {
-        if (!isAdventureMode && tasks.length > 0) {
+    async function toggleAdventureMode(checked: boolean) {
+        if (checked && tasks.length > 0) {
             try {
                 const adventures = await aiService.getAdventureTasks(tasks);
                 setAdventureTasks(adventures);
                 setIsAdventureMode(true);
-                toast.success("Modo Aventura ativado! 🗡️");
+                toast.success(t("childPortal.adventureModeActivated"));
             } catch (error) {
-                toast.error("Erro ao ativar modo aventura");
+                toast.error(t("childPortal.adventureModeError"));
                 console.error(error);
+                setIsAdventureMode(false);
             }
         } else {
             setIsAdventureMode(false);
-            toast.success("Modo normal ativado");
+            toast.info(t("childPortal.normalModeActivated"));
         }
     }
 
-    async function handleGetGoalPlan() {
+    async function handleCreatePlan() {
         if (!child || !goalDescription || !targetAmount) {
-            toast.error("Preencha sua meta e o valor!");
+            toast.error(t("childPortal.fillGoal"));
             return;
         }
 
-        setIsLoadingGoal(true);
+        setIsCreatingPlan(true);
         try {
             const response = await aiService.getGoalCoachPlan(
                 child.id,
@@ -106,12 +114,14 @@ export default function ChildPortal() {
                 parseFloat(targetAmount)
             );
             setGoalPlan(response.plan);
-            toast.success("Plano criado! 🎯");
+            toast.success(t("childPortal.planCreated"));
+            setGoalDescription("");
+            setTargetAmount("");
         } catch (error) {
-            toast.error("Erro ao criar plano");
+            toast.error(t("childPortal.planError"));
             console.error(error);
         } finally {
-            setIsLoadingGoal(false);
+            setIsCreatingPlan(false);
         }
     }
 
@@ -131,7 +141,7 @@ export default function ChildPortal() {
     if (isLoading) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-100 to-pink-100">
-                <div className="text-2xl font-bold text-purple-600">Carregando... ⏳</div>
+                <div className="text-2xl font-bold text-purple-600">{t("common.loading")}</div>
             </div>
         );
     }
@@ -144,10 +154,10 @@ export default function ChildPortal() {
                     <CardContent className="p-6">
                         <div className="flex justify-between items-center">
                             <div>
-                                <h1 className="text-3xl font-bold mb-2">Olá, {child?.name}! 👋</h1>
+                                <h1 className="text-3xl font-bold mb-2">{t("childPortal.hello", { name: child?.name })}</h1>
                                 <div className="flex items-center gap-2 text-xl">
                                     <Trophy className="w-6 h-6" />
-                                    <span className="font-bold">Saldo: R$ {child?.balance?.toFixed(2) || "0.00"}</span>
+                                    <span className="font-bold">{t("childPortal.balance", { balance: child?.balance?.toFixed(2) || "0.00" })}</span>
                                 </div>
                             </div>
                             <Button
@@ -156,7 +166,7 @@ export default function ChildPortal() {
                                 className="bg-white text-purple-600 hover:bg-gray-100"
                             >
                                 <LogOut className="w-4 h-4 mr-2" />
-                                Sair
+                                {t("childPortal.logout")}
                             </Button>
                         </div>
                     </CardContent>
@@ -169,24 +179,25 @@ export default function ChildPortal() {
                     <Card className="shadow-lg">
                         <CardHeader className="flex flex-row items-center justify-between">
                             <CardTitle className="text-2xl font-bold text-purple-700">
-                                Minhas Tarefas 📋
+                                {t("childPortal.myTasks")}
                             </CardTitle>
-                            <Button
-                                onClick={handleToggleAdventureMode}
-                                variant={isAdventureMode ? "default" : "outline"}
-                                className={isAdventureMode ? "bg-gradient-to-r from-orange-500 to-red-500" : ""}
-                                disabled={tasks.length === 0}
-                            >
-                                <Sparkles className="w-4 h-4 mr-2" />
-                                {isAdventureMode ? "Modo Aventura ON" : "Modo Aventura"}
-                            </Button>
+                            <div className="flex items-center space-x-2">
+                                <Switch
+                                    checked={isAdventureMode}
+                                    onCheckedChange={toggleAdventureMode}
+                                    id="adventure-mode"
+                                />
+                                <Label htmlFor="adventure-mode" className="font-bold text-purple-700">
+                                    {isAdventureMode ? t("childPortal.adventureModeOn") : t("childPortal.adventureMode")}
+                                </Label>
+                            </div>
                         </CardHeader>
                         <CardContent>
                             {tasks.length === 0 ? (
                                 <div className="text-center py-12 text-gray-500">
                                     <div className="text-6xl mb-4">🎉</div>
-                                    <p className="text-xl font-semibold">Você completou todas as tarefas!</p>
-                                    <p className="text-lg">Parabéns!</p>
+                                    <p className="text-xl font-semibold">{t("childPortal.allTasksCompleted")}</p>
+                                    <p className="text-lg">{t("childPortal.congratulations")}</p>
                                 </div>
                             ) : (
                                 <div className="space-y-4">
@@ -204,9 +215,12 @@ export default function ChildPortal() {
                                                     </div>
                                                     <Button
                                                         onClick={() => handleCompleteTask(task.id)}
-                                                        className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white font-bold h-12 px-6"
+                                                        className={`w-full font-bold text-white shadow-md transform transition hover:scale-105 ${isAdventureMode
+                                                                ? "bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600"
+                                                                : "bg-green-500 hover:bg-green-600"
+                                                            }`}
                                                     >
-                                                        Já fiz! ✅
+                                                        {t("childPortal.alreadyDone")}
                                                     </Button>
                                                 </div>
                                             </CardContent>
@@ -223,16 +237,16 @@ export default function ChildPortal() {
                     <CardHeader>
                         <CardTitle className="text-2xl font-bold text-blue-700 flex items-center gap-2">
                             <Rocket className="w-6 h-6" />
-                            Coach Financeiro
+                            {t("childPortal.financialCoach")}
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <div>
                             <label className="text-sm font-semibold text-gray-700 block mb-2">
-                                Qual é sua meta? 🎯
+                                {t("childPortal.goalQuestion")}
                             </label>
                             <Input
-                                placeholder="Ex: Um jogo novo"
+                                placeholder={t("childPortal.goalPlaceholder")}
                                 value={goalDescription}
                                 onChange={(e) => setGoalDescription(e.target.value)}
                                 className="text-lg"
@@ -240,22 +254,22 @@ export default function ChildPortal() {
                         </div>
                         <div>
                             <label className="text-sm font-semibold text-gray-700 block mb-2">
-                                Quanto custa? 💵
+                                {t("childPortal.costQuestion")}
                             </label>
                             <Input
                                 type="number"
-                                placeholder="Ex: 250"
+                                placeholder={t("childPortal.costPlaceholder")}
                                 value={targetAmount}
                                 onChange={(e) => setTargetAmount(e.target.value)}
                                 className="text-lg"
                             />
                         </div>
                         <Button
-                            onClick={handleGetGoalPlan}
-                            disabled={isLoadingGoal}
+                            onClick={handleCreatePlan}
+                            disabled={isCreatingPlan}
                             className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 font-bold h-12"
                         >
-                            {isLoadingGoal ? "Criando plano... ⏳" : "Criar Plano! 🚀"}
+                            {isCreatingPlan ? t("childPortal.creatingPlan") : t("childPortal.createPlan")}
                         </Button>
 
                         {goalPlan && (
@@ -274,23 +288,23 @@ export default function ChildPortal() {
                 <Card className="shadow-lg border-2 border-yellow-200">
                     <CardHeader>
                         <CardTitle className="text-2xl font-bold text-yellow-700">
-                            Suas Conquistas 🏆
+                            {t("childPortal.achievements")}
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-4">
                             <div className="flex justify-between items-center p-3 bg-yellow-50 rounded-lg">
-                                <span className="font-semibold text-gray-700">Tarefas Pendentes:</span>
+                                <span className="font-semibold text-gray-700">{t("childPortal.pendingTasks")}</span>
                                 <span className="text-2xl font-bold text-yellow-600">{tasks.length}</span>
                             </div>
                             <div className="flex justify-between items-center p-3 bg-green-50 rounded-lg">
-                                <span className="font-semibold text-gray-700">Saldo Atual:</span>
+                                <span className="font-semibold text-gray-700">{t("childPortal.currentBalance")}</span>
                                 <span className="text-2xl font-bold text-green-600">
                                     R$ {child?.balance?.toFixed(2) || "0.00"}
                                 </span>
                             </div>
                             <div className="flex justify-between items-center p-3 bg-purple-50 rounded-lg">
-                                <span className="font-semibold text-gray-700">Mesada Mensal:</span>
+                                <span className="font-semibold text-gray-700">{t("childPortal.monthlyAllowance")}</span>
                                 <span className="text-2xl font-bold text-purple-600">
                                     R$ {child?.monthlyAllowance?.toFixed(2) || "0.00"}
                                 </span>

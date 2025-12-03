@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Menu, X, User, Baby } from "lucide-react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import {
   Dialog,
@@ -10,6 +11,7 @@ import {
 } from "@/components/ui/dialog";
 
 export const Header = () => {
+  const { t } = useTranslation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const navigate = useNavigate();
@@ -27,22 +29,22 @@ export const Header = () => {
 
           <nav className="hidden md:flex items-center gap-8">
             <a href="#recursos" className="text-muted-foreground hover:text-foreground transition-smooth">
-              Recursos
+              {t("header.resources")}
             </a>
             <a href="#como-funciona" className="text-muted-foreground hover:text-foreground transition-smooth">
-              Como funciona
+              {t("header.howItWorks")}
             </a>
             <a href="#precos" className="text-muted-foreground hover:text-foreground transition-smooth">
-              Preços
+              {t("header.pricing")}
             </a>
           </nav>
 
           <div className="hidden md:flex items-center gap-4">
             <Button variant="ghost" onClick={() => setIsLoginModalOpen(true)}>
-              Entrar
+              {t("header.login")}
             </Button>
             <Button variant="default" onClick={() => navigate("/register")}>
-              Cadastrar
+              {t("header.register")}
             </Button>
           </div>
 
@@ -58,20 +60,20 @@ export const Header = () => {
           <div className="md:hidden py-4 border-t border-border animate-fade-in">
             <nav className="flex flex-col gap-4">
               <a href="#recursos" className="text-muted-foreground hover:text-foreground transition-smooth">
-                Recursos
+                {t("header.resources")}
               </a>
               <a href="#como-funciona" className="text-muted-foreground hover:text-foreground transition-smooth">
-                Como funciona
+                {t("header.howItWorks")}
               </a>
               <a href="#precos" className="text-muted-foreground hover:text-foreground transition-smooth">
-                Preços
+                {t("header.pricing")}
               </a>
               <div className="flex flex-col gap-2 pt-2">
                 <Button variant="ghost" className="w-full" onClick={() => setIsLoginModalOpen(true)}>
-                  Entrar
+                  {t("header.login")}
                 </Button>
                 <Button variant="default" className="w-full" onClick={() => navigate("/register")}>
-                  Cadastrar
+                  {t("header.register")}
                 </Button>
               </div>
             </nav>
@@ -82,7 +84,7 @@ export const Header = () => {
       <Dialog open={isLoginModalOpen} onOpenChange={setIsLoginModalOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-center text-2xl font-bold mb-4">Como você quer entrar?</DialogTitle>
+            <DialogTitle className="text-center text-2xl font-bold mb-4">{t("header.loginModal.title")}</DialogTitle>
           </DialogHeader>
           <div className="grid grid-cols-2 gap-4">
             <Button
@@ -96,7 +98,7 @@ export const Header = () => {
               <div className="p-3 rounded-full bg-primary/10 text-primary">
                 <User className="w-8 h-8" />
               </div>
-              <span className="font-semibold text-lg">Sou Pai/Mãe</span>
+              <span className="font-semibold text-lg">{t("header.loginModal.parent")}</span>
             </Button>
 
             <Button
@@ -110,7 +112,7 @@ export const Header = () => {
               <div className="p-3 rounded-full bg-purple-100 text-purple-600">
                 <Baby className="w-8 h-8" />
               </div>
-              <span className="font-semibold text-lg">Sou Filho(a)</span>
+              <span className="font-semibold text-lg">{t("header.loginModal.child")}</span>
             </Button>
           </div>
         </DialogContent>

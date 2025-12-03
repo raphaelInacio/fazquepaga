@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { childAuthService } from "@/services/childAuthService";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,6 +8,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
 
 export default function ChildLogin() {
+    const { t } = useTranslation();
     const navigate = useNavigate();
     const [code, setCode] = useState("");
     const [isLoading, setIsLoading] = useState(false);
@@ -15,17 +17,17 @@ export default function ChildLogin() {
         e.preventDefault();
 
         if (!code || code.trim().length === 0) {
-            toast.error("Por favor, digite seu código!");
+            toast.error(t("childLogin.enterCode"));
             return;
         }
 
         setIsLoading(true);
         try {
             await childAuthService.login(code.trim().toUpperCase());
-            toast.success("Bem-vindo! 🎉");
+            toast.success(t("childLogin.welcome"));
             navigate("/child-portal");
         } catch (error) {
-            toast.error("Código inválido. Peça um novo código para seus pais!");
+            toast.error(t("childLogin.invalidCode"));
             console.error(error);
         } finally {
             setIsLoading(false);
@@ -39,10 +41,10 @@ export default function ChildLogin() {
                 <CardHeader className="text-center pb-4">
                     <div className="text-6xl mb-4">🎮</div>
                     <CardTitle className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-                        Portal da Criança
+                        {t("childLogin.title")}
                     </CardTitle>
                     <p className="text-gray-600 mt-2 text-lg">
-                        Digite o código que seus pais te deram!
+                        {t("childLogin.instruction")}
                     </p>
                 </CardHeader>
                 <CardContent>
@@ -50,7 +52,7 @@ export default function ChildLogin() {
                         <div>
                             <Input
                                 type="text"
-                                placeholder="Digite seu código aqui"
+                                placeholder={t("childLogin.placeholder")}
                                 value={code}
                                 onChange={(e) => setCode(e.target.value)}
                                 className="text-center text-2xl font-bold uppercase tracking-widest h-16"
@@ -63,7 +65,7 @@ export default function ChildLogin() {
                             className="w-full h-14 text-xl font-bold bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
                             disabled={isLoading}
                         >
-                            {isLoading ? "Entrando... ⏳" : "Entrar! 🚀"}
+                            {isLoading ? t("childLogin.buttonLoading") : t("childLogin.button")}
                         </Button>
                     </form>
                 </CardContent>

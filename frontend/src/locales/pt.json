@@ -13,6 +13,18 @@
         "next": "Próximo",
         "close": "Fechar"
     },
+    "header": {
+        "resources": "Recursos",
+        "howItWorks": "Como funciona",
+        "pricing": "Preços",
+        "login": "Entrar",
+        "register": "Cadastrar",
+        "loginModal": {
+            "title": "Como você quer entrar?",
+            "parent": "Sou Pai/Mãe",
+            "child": "Sou Filho(a)"
+        }
+    },
     "auth": {
         "register": {
             "title": "Criar Conta de Responsável",
@@ -53,7 +65,23 @@
         "allowance": "Mesada",
         "setAllowanceTitle": "Definir Mesada Mensal para {{name}}",
         "amount": "Valor",
-        "save": "Salvar"
+        "save": "Salvar",
+        "rewardsStore": "Loja de Recompensas",
+        "pendingApprovals": {
+            "title": "Tarefas Aguardando Aprovação",
+            "madeBy": "Feito por",
+            "viewProof": "Ver Comprovante",
+            "approve": "Aprovar",
+            "success": "Tarefa aprovada!",
+            "error": "Erro ao aprovar tarefa"
+        },
+        "generateCode": "Gerar Código WhatsApp",
+        "onboardingCode": {
+            "title": "Código de Cadastro WhatsApp",
+            "instruction": "A criança deve enviar este código para o WhatsApp do sistema para completar o cadastro.",
+            "copy": "Copiar Código",
+            "copied": "Código copiado!"
+        }
     },
     "tasks": {
         "title": "Tarefas de {{childName}}",
@@ -97,6 +125,107 @@
             "error": "Falha ao gerar código de integração",
             "code": "Código: {{code}}"
         }
+    },
+    "childTasks": {
+        "age": "Idade: {{age}} anos",
+        "generateAiTasks": "✨ Gerar Tarefas com IA",
+        "generating": "Gerando...",
+        "createManualTask": "Criar Tarefa Manual",
+        "aiSuggestions": {
+            "title": "Sugestões de Tarefas IA",
+            "description": "Clique em \"Adicionar\" para criar qualquer uma dessas tarefas apropriadas para a idade",
+            "add": "➕ Adicionar"
+        },
+        "tabs": {
+            "tasks": "Tarefas",
+            "financial": "Financeiro"
+        },
+        "filter": {
+            "all": "Todas as Tarefas",
+            "pending": "Pendente",
+            "pendingApproval": "Aguardando Aprovação",
+            "approved": "Aprovada"
+        },
+        "noTasks": "Nenhuma tarefa encontrada. Crie sua primeira tarefa!",
+        "proofRequired": "📸 Comprovante Necessário",
+        "aiValidated": "✓ Validado por IA",
+        "financial": {
+            "predictedAllowance": "Mesada Prevista",
+            "estimatedValue": "Valor estimado baseado nas tarefas pendentes e aprovadas",
+            "calculating": "Calculando...",
+            "thisMonth": "Este mês"
+        },
+        "review": {
+            "title": "Revisar Tarefa",
+            "aiValidatedMessage": "✅ Nossa IA pré-validou esta tarefa e acredita que foi concluída.",
+            "proof": "Comprovante:",
+            "noProof": "Nenhuma imagem de comprovante enviada ainda"
+        },
+        "create": {
+            "title": "Criar Nova Tarefa",
+            "description": "Adicionar uma nova tarefa para {{name}}",
+            "label": {
+                "description": "Descrição",
+                "type": "Tipo",
+                "weight": "Peso"
+            },
+            "placeholder": {
+                "description": "ex: Arrumar o quarto"
+            },
+            "type": {
+                "oneTime": "Uma vez",
+                "daily": "Diária",
+                "weekly": "Semanal"
+            },
+            "weight": {
+                "low": "Baixo",
+                "medium": "Médio",
+                "high": "Alto"
+            },
+            "requiresProof": "Requer Comprovante?",
+            "submit": "Criar Tarefa"
+        }
+    },
+    "childLogin": {
+        "enterCode": "Por favor, digite seu código!",
+        "welcome": "Bem-vindo! 🎉",
+        "invalidCode": "Código inválido. Peça um novo código para seus pais!",
+        "title": "Portal da Criança",
+        "instruction": "Digite o código que seus pais te deram!",
+        "placeholder": "Digite seu código aqui",
+        "buttonLoading": "Entrando... ⏳",
+        "button": "Entrar! 🚀"
+    },
+    "childPortal": {
+        "hello": "Olá, {{name}}! 👋",
+        "balance": "Saldo: R$ {{balance}}",
+        "logout": "Sair",
+        "myTasks": "Minhas Tarefas 📋",
+        "adventureModeOn": "Modo Aventura ON",
+        "adventureMode": "Modo Aventura",
+        "allTasksCompleted": "Você completou todas as tarefas!",
+        "congratulations": "Parabéns!",
+        "alreadyDone": "Já fiz! ✅",
+        "financialCoach": "Coach Financeiro",
+        "goalQuestion": "Qual é sua meta? 🎯",
+        "goalPlaceholder": "Ex: Um jogo novo",
+        "costQuestion": "Quanto custa? 💵",
+        "costPlaceholder": "Ex: 250",
+        "createPlan": "Criar Plano! 🚀",
+        "creatingPlan": "Criando plano... ⏳",
+        "achievements": "Suas Conquistas 🏆",
+        "pendingTasks": "Tarefas Pendentes:",
+        "currentBalance": "Saldo Atual:",
+        "monthlyAllowance": "Mesada Mensal:",
+        "adventureModeActivated": "Modo Aventura ativado! 🗡️",
+        "adventureModeError": "Erro ao ativar modo aventura",
+        "normalModeActivated": "Modo normal ativado",
+        "fillGoal": "Preencha sua meta e o valor!",
+        "planCreated": "Plano criado! 🎯",
+        "planError": "Erro ao criar plano",
+        "taskCompleted": "Parabéns! Tarefa concluída! 🎉",
+        "taskCompletionError": "Erro ao completar tarefa",
+        "loadError": "Erro ao carregar tarefas"
     },
     "notFound": {
         "title": "404 - Página Não Encontrada",

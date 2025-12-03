@@ -17,6 +17,8 @@ i18n
         interpolation: {
             escapeValue: false,
         },
+        supportedLngs: ['pt', 'en'],
+        load: 'languageOnly',
         detection: {
             order: ['localStorage', 'navigator'],
             caches: ['localStorage'],
