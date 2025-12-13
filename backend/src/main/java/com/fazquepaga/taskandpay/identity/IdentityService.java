@@ -2,6 +2,7 @@ package com.fazquepaga.taskandpay.identity;
 
 import com.fazquepaga.taskandpay.identity.dto.CreateChildRequest;
 import com.fazquepaga.taskandpay.identity.dto.CreateParentRequest;
+import com.fazquepaga.taskandpay.identity.dto.UpdateChildRequest;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -15,8 +16,7 @@ public class IdentityService {
 
     private final UserRepository userRepository;
 
-    private final Map<String, String> onboardingCodes =
-            new ConcurrentHashMap<>(); // code -> childId
+    private final Map<String, String> onboardingCodes = new ConcurrentHashMap<>(); // code -> childId
 
     public IdentityService(UserRepository userRepository) {
 
@@ -85,14 +85,13 @@ public class IdentityService {
     public User registerParent(CreateParentRequest request)
             throws ExecutionException, InterruptedException {
 
-        User parent =
-                User.builder()
-                        .name(request.getName())
-                        .email(request.getEmail())
-                        .role(User.Role.PARENT)
-                        .subscriptionTier(User.SubscriptionTier.FREE) // Default to FREE tier
-                        .subscriptionStatus(User.SubscriptionStatus.ACTIVE)
-                        .build();
+        User parent = User.builder()
+                .name(request.getName())
+                .email(request.getEmail())
+                .role(User.Role.PARENT)
+                .subscriptionTier(User.SubscriptionTier.FREE) // Default to FREE tier
+                .subscriptionStatus(User.SubscriptionStatus.ACTIVE)
+                .build();
 
         userRepository.save(parent).get();
 
@@ -118,14 +117,13 @@ public class IdentityService {
             throw new IllegalArgumentException("Parent with ID " + parentId + " not found.");
         }
 
-        User child =
-                User.builder()
-                        .name(request.getName())
-                        .phoneNumber(request.getPhoneNumber())
-                        .age(request.getAge())
-                        .role(User.Role.CHILD)
-                        .parentId(parentId)
-                        .build();
+        User child = User.builder()
+                .name(request.getName())
+                .phoneNumber(request.getPhoneNumber())
+                .age(request.getAge())
+                .role(User.Role.CHILD)
+                .parentId(parentId)
+                .build();
 
         userRepository.save(child).get();
 
@@ -145,8 +143,8 @@ public class IdentityService {
     }
 
     public List<User> getChildren(String parentId) throws ExecutionException, InterruptedException {
-        List<com.google.cloud.firestore.QueryDocumentSnapshot> documents =
-                userRepository.findByParentId(parentId).get().getDocuments();
+        List<com.google.cloud.firestore.QueryDocumentSnapshot> documents = userRepository.findByParentId(parentId).get()
+                .getDocuments();
         return documents.stream().map(doc -> doc.toObject(User.class)).collect(Collectors.toList());
     }
 
@@ -171,5 +169,40 @@ public class IdentityService {
             throw new IllegalArgumentException("User not found");
         }
         return user;
+    }
+
+    public User updateChild(String childId, UpdateChildRequest request, String parentId)
+            throws ExecutionException, InterruptedException {
+        // SECURITY: Validate child exists and belongs to parent
+        User child = getChild(childId, parentId);
+
+        // Update only the provided fields (partial update)
+        if (request.getName() != null && !request.getName().isEmpty()) {
+            child.setName(request.getName());
+        }
+        if (request.getAge() != null) {
+            child.setAge(request.getAge());
+        }
+        if (request.getPhoneNumber() != null && !request.getPhoneNumber().isEmpty()) {
+            child.setPhoneNumber(request.getPhoneNumber());
+        }
+
+        userRepository.save(child).get();
+        return child;
+    }
+
+    public void deleteChild(String childId, String parentId)
+            throws ExecutionException, InterruptedException {
+        // SECURITY: Validate child belongs to parent before deleting
+        User child = getChild(childId, parentId);
+
+        // Delete the child from database
+        userRepository.delete(childId).get();
+
+        // Note: Tasks associated with this child will remain in the database
+        // In a production app, you would want to either:
+        // 1. Cascade delete tasks
+        // 2. Archive the child instead of hard delete
+        // For this implementation, we'll do a simple delete
     }
 }

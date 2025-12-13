@@ -75,19 +75,6 @@
             "success": "Tarefa aprovada!",
             "error": "Erro ao aprovar tarefa"
         },
-        "generateCode": "Gerar Código WhatsApp",
-        "onboardingCode": {
-            "title": "Código de Cadastro WhatsApp",
-            "instruction": "A criança deve enviar este código para o WhatsApp do sistema para completar o cadastro.",
-            "copy": "Copiar Código",
-            "copied": "Código copiado!"
-        }
-    },
-    "tasks": {
-        "title": "Tarefas de {{childName}}",
-        "allowance": "Mesada",
-        "monthlyOverview": "Visão Mensal",
-        "predictedEarnings": "Ganhos Previstos",
         "totalMonthlyAllowance": "Mesada Mensal Total",
         "loading": "Carregando...",
         "create": {
@@ -124,7 +111,31 @@
             "success": "Código de integração gerado!",
             "error": "Falha ao gerar código de integração",
             "code": "Código: {{code}}"
+        },
+        "logout": {
+            "button": "Sair",
+            "success": "Logout realizado com sucesso"
+        },
+        "generateCode": "Gerar Código de Integração",
+        "onboardingCode": {
+            "title": "Código de Integração",
+            "instruction": "Use este código para acessar a conta da criança:",
+            "copy": "Copiar Código",
+            "copied": "Código copiado!"
+        },
+        "child": {
+            "editTitle": "Editar {{name}}",
+            "updateSuccess": "Criança atualizada com sucesso",
+            "updateError": "Erro ao atualizar criança",
+            "deleteTitle": "Excluir Criança",
+            "deleteConfirm": "Tem certeza que deseja excluir {{name}}?",
+            "deleteSuccess": "Criança excluída com sucesso",
+            "deleteError": "Erro ao excluir criança"
         }
+    },
+    "tasks": {
+        "title": "Minhas Tarefas",
+        "loading": "Carregando tarefas..."
     },
     "childTasks": {
         "age": "Idade: {{age}} anos",

@@ -4,6 +4,7 @@ import com.fazquepaga.taskandpay.identity.dto.ChildLoginRequest;
 import com.fazquepaga.taskandpay.identity.dto.ChildLoginResponse;
 import com.fazquepaga.taskandpay.identity.dto.CreateChildRequest;
 import com.fazquepaga.taskandpay.identity.dto.CreateParentRequest;
+import com.fazquepaga.taskandpay.identity.dto.UpdateChildRequest;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -32,8 +33,7 @@ public class IdentityController {
     public ResponseEntity<ChildLoginResponse> childLogin(@RequestBody ChildLoginRequest request)
             throws ExecutionException, InterruptedException {
         User child = identityService.authenticateChildByCode(request.getCode());
-        ChildLoginResponse response =
-                ChildLoginResponse.builder().child(child).message("Login successful").build();
+        ChildLoginResponse response = ChildLoginResponse.builder().child(child).message("Login successful").build();
         return ResponseEntity.ok(response);
     }
 
@@ -91,5 +91,24 @@ public class IdentityController {
 
         User updatedChild = identityService.updateChildAllowance(childId, request.get("allowance"));
         return ResponseEntity.ok(updatedChild);
+    }
+
+    @PutMapping("/children/{childId}")
+    public ResponseEntity<User> updateChild(
+            @PathVariable String childId,
+            @RequestBody UpdateChildRequest request,
+            @RequestParam("parent_id") String parentId)
+            throws ExecutionException, InterruptedException {
+        User updatedChild = identityService.updateChild(childId, request, parentId);
+        return ResponseEntity.ok(updatedChild);
+    }
+
+    @DeleteMapping("/children/{childId}")
+    public ResponseEntity<Void> deleteChild(
+            @PathVariable String childId,
+            @RequestParam("parent_id") String parentId)
+            throws ExecutionException, InterruptedException {
+        identityService.deleteChild(childId, parentId);
+        return ResponseEntity.noContent().build();
     }
 }

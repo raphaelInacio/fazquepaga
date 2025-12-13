@@ -10,6 +10,7 @@ import java.util.concurrent.ExecutionException;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -25,18 +26,22 @@ public class AiController {
     }
 
     @GetMapping("/tasks/suggestions")
-    public List<String> getTaskSuggestions(@RequestParam int age) {
-        return suggestionService.getSuggestions(age);
+    public List<String> getTaskSuggestions(
+            @RequestParam int age,
+            @RequestHeader(value = "Accept-Language", defaultValue = "pt") String language) {
+        return suggestionService.getSuggestions(age, language);
     }
 
     @PostMapping("/goal-coach")
-    public GoalCoachResponse getGoalCoachPlan(@RequestBody GoalCoachRequest request)
+    public GoalCoachResponse getGoalCoachPlan(
+            @RequestBody GoalCoachRequest request,
+            @RequestHeader(value = "Accept-Language", defaultValue = "pt") String language)
             throws ExecutionException, InterruptedException {
-        String plan =
-                suggestionService.generateGoalPlan(
-                        request.getChildId(),
-                        request.getGoalDescription(),
-                        request.getTargetAmount());
+        String plan = suggestionService.generateGoalPlan(
+                request.getChildId(),
+                request.getGoalDescription(),
+                request.getTargetAmount(),
+                language);
 
         return GoalCoachResponse.builder()
                 .plan(plan)
@@ -45,9 +50,10 @@ public class AiController {
     }
 
     @PostMapping("/adventure-mode/tasks")
-    public AdventureModeResponse getAdventureTasks(@RequestBody AdventureModeRequest request) {
-        List<AdventureTask> adventureTasks =
-                suggestionService.generateAdventureTasks(request.getTasks());
+    public AdventureModeResponse getAdventureTasks(
+            @RequestBody AdventureModeRequest request,
+            @RequestHeader(value = "Accept-Language", defaultValue = "pt") String language) {
+        List<AdventureTask> adventureTasks = suggestionService.generateAdventureTasks(request.getTasks(), language);
 
         return AdventureModeResponse.builder().tasks(adventureTasks).build();
     }

@@ -76,17 +76,6 @@
             "error": "Error approving task"
         },
         "generateCode": "Generate WhatsApp Code",
-        "onboardingCode": {
-            "title": "WhatsApp Registration Code",
-            "instruction": "The child must send this code to the system's WhatsApp to complete registration.",
-            "copy": "Copy Code",
-            "copied": "Code copied!"
-        }
-    },
-    "tasks": {
-        "title": "{{childName}}'s Tasks",
-        "allowance": "Allowance",
-        "monthlyOverview": "Monthly Overview",
         "predictedEarnings": "Predicted Earnings",
         "totalMonthlyAllowance": "Total Monthly Allowance",
         "loading": "Loading...",
@@ -124,7 +113,30 @@
             "success": "Onboarding code generated!",
             "error": "Failed to generate onboarding code",
             "code": "Code: {{code}}"
+        },
+        "logout": {
+            "button": "Logout",
+            "success": "Logout successful"
+        },
+        "onboardingCode": {
+            "title": "Onboarding Code",
+            "instruction": "Use this code to access the child account:",
+            "copy": "Copy Code",
+            "copied": "Code copied!"
+        },
+        "child": {
+            "editTitle": "Edit {{name}}",
+            "updateSuccess": "Child updated successfully",
+            "updateError": "Error updating child",
+            "deleteTitle": "Delete Child",
+            "deleteConfirm": "Are you sure you want to delete {{name}}?",
+            "deleteSuccess": "Child deleted successfully",
+            "deleteError": "Error deleting child"
         }
+    },
+    "tasks": {
+        "title": "My Tasks",
+        "loading": "Loading tasks..."
     },
     "childTasks": {
         "age": "Age: {{age}} years old",

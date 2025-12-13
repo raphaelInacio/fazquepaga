@@ -1,6 +1,5 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight, CheckCircle2 } from "lucide-react";
-import heroImage from "@/assets/hero-image.jpg";
 import { useNavigate } from "react-router-dom";
 
 export const Hero = () => {
@@ -26,9 +25,8 @@ export const Hero = () => {
             </h1>
 
             <p className="text-xl text-muted-foreground leading-relaxed max-w-xl">
-              Ajude seus filhos a aprenderem o valor do trabalho e do dinheiro.
-              Uma plataforma moderna que conecta pais e filhos através de tarefas,
-              mesadas e educação financeira.
+              Ensine seus filhos o valor do trabalho e do dinheiro de forma prática e divertida.
+              Gerencie tarefas, mesadas e acompanhe o desenvolvimento financeiro da sua família.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4">
@@ -36,20 +34,25 @@ export const Hero = () => {
                 Começar gratuitamente
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-smooth" />
               </Button>
-              <Button variant="outline" size="lg">
+              <Button variant="outline" size="lg" onClick={() => navigate("/dashboard")}>
                 Ver demonstração
               </Button>
             </div>
 
             <div className="flex items-center gap-8 pt-4">
               <div>
-                <p className="text-3xl font-bold text-foreground">500+</p>
-                <p className="text-sm text-muted-foreground">Famílias ativas</p>
+                <p className="text-3xl font-bold text-foreground">100%</p>
+                <p className="text-sm text-muted-foreground">Gratuito</p>
               </div>
               <div className="h-12 w-px bg-border"></div>
               <div>
-                <p className="text-3xl font-bold text-foreground">10k+</p>
-                <p className="text-sm text-muted-foreground">Tarefas concluídas</p>
+                <p className="text-3xl font-bold text-foreground">IA</p>
+                <p className="text-sm text-muted-foreground">Integrada</p>
+              </div>
+              <div className="h-12 w-px bg-border"></div>
+              <div>
+                <p className="text-3xl font-bold text-foreground">PT/EN</p>
+                <p className="text-sm text-muted-foreground">Bilíngue</p>
               </div>
             </div>
           </div>
@@ -57,9 +60,9 @@ export const Hero = () => {
           <div className="relative">
             <div className="absolute inset-0 gradient-primary opacity-20 blur-3xl rounded-full"></div>
             <img
-              src={heroImage}
-              alt="Família celebrando conquistas com o FazQuePaga"
-              className="relative rounded-2xl shadow-soft w-full h-auto"
+              src="/dashboard-screenshot.png"
+              alt="Dashboard do FazQuePaga mostrando gestão de filhos e tarefas"
+              className="relative rounded-2xl shadow-soft w-full h-auto border border-border"
             />
           </div>
         </div>

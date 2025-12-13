@@ -55,11 +55,10 @@ public class UserRepository {
 
         // Without it, the query will fail.
 
-        ApiFuture<com.google.cloud.firestore.QuerySnapshot> future =
-                usersCollection.whereEqualTo("phoneNumber", phoneNumber).limit(1).get();
+        ApiFuture<com.google.cloud.firestore.QuerySnapshot> future = usersCollection
+                .whereEqualTo("phoneNumber", phoneNumber).limit(1).get();
 
-        List<com.google.cloud.firestore.QueryDocumentSnapshot> documents =
-                future.get().getDocuments();
+        List<com.google.cloud.firestore.QueryDocumentSnapshot> documents = future.get().getDocuments();
 
         if (!documents.isEmpty()) {
 
@@ -74,5 +73,9 @@ public class UserRepository {
                 .whereEqualTo("parentId", parentId)
                 .whereEqualTo("role", User.Role.CHILD.name())
                 .get();
+    }
+
+    public ApiFuture<WriteResult> delete(String userId) {
+        return usersCollection.document(userId).delete();
     }
 }

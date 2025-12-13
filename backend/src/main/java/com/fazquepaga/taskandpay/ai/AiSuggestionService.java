@@ -26,22 +26,24 @@ public class AiSuggestionService {
         this.userRepository = userRepository;
     }
 
-    public List<String> getSuggestions(int age) {
-        PromptTemplate promptTemplate =
-                new PromptTemplate(
-                        """
+    public List<String> getSuggestions(int age, String language) {
+        String languageInstruction = language.startsWith("en") ? "Respond in English." : "Responda em Português.";
+
+        PromptTemplate promptTemplate = new PromptTemplate(
+                """
+                        {languageInstruction}
                         Suggest a list of 5 simple and motivating household tasks for a {age}-year-old child.
                         Return the answer as a comma-separated list. For example:
                         task 1, task 2, task 3, task 4, task 5
                         """);
-        Prompt prompt = promptTemplate.create(Map.of("age", age));
+        Prompt prompt = promptTemplate.create(Map.of("age", age, "languageInstruction", languageInstruction));
         ChatResponse response = chatModel.call(prompt);
 
         String content = response.getResult().getOutput().getText();
         return List.of(content.split(","));
     }
 
-    public String generateGoalPlan(String childId, String goalDescription, BigDecimal targetAmount)
+    public String generateGoalPlan(String childId, String goalDescription, BigDecimal targetAmount, String language)
             throws ExecutionException, InterruptedException {
 
         // Get child info
@@ -50,14 +52,15 @@ public class AiSuggestionService {
             throw new IllegalArgumentException("Child not found");
         }
 
-        BigDecimal currentBalance =
-                child.getBalance() != null ? child.getBalance() : BigDecimal.ZERO;
-        BigDecimal monthlyAllowance =
-                child.getMonthlyAllowance() != null ? child.getMonthlyAllowance() : BigDecimal.ZERO;
+        BigDecimal currentBalance = child.getBalance() != null ? child.getBalance() : BigDecimal.ZERO;
+        BigDecimal monthlyAllowance = child.getMonthlyAllowance() != null ? child.getMonthlyAllowance()
+                : BigDecimal.ZERO;
 
-        PromptTemplate promptTemplate =
-                new PromptTemplate(
-                        """
+        String languageInstruction = language.startsWith("en") ? "Respond in English." : "Responda em Português.";
+
+        PromptTemplate promptTemplate = new PromptTemplate(
+                """
+                        {languageInstruction}
                         You are a friendly financial coach for children. A child named {childName} wants to save for: {goalDescription}.
 
                         Goal amount: R$ {targetAmount}
@@ -72,13 +75,13 @@ public class AiSuggestionService {
                         Use simple, encouraging language appropriate for a child. Be enthusiastic and positive!
                         """);
 
-        Map<String, Object> params =
-                Map.of(
-                        "childName", child.getName(),
-                        "goalDescription", goalDescription,
-                        "targetAmount", targetAmount.toString(),
-                        "currentBalance", currentBalance.toString(),
-                        "monthlyAllowance", monthlyAllowance.toString());
+        Map<String, Object> params = Map.of(
+                "languageInstruction", languageInstruction,
+                "childName", child.getName(),
+                "goalDescription", goalDescription,
+                "targetAmount", targetAmount.toString(),
+                "currentBalance", currentBalance.toString(),
+                "monthlyAllowance", monthlyAllowance.toString());
 
         Prompt prompt = promptTemplate.create(params);
         ChatResponse response = chatModel.call(prompt);
@@ -86,10 +89,12 @@ public class AiSuggestionService {
         return response.getResult().getOutput().getText();
     }
 
-    public List<AdventureTask> generateAdventureTasks(List<Task> tasks) {
+    public List<AdventureTask> generateAdventureTasks(List<Task> tasks, String language) {
         if (tasks.isEmpty()) {
             return new ArrayList<>();
         }
+
+        String languageInstruction = language.startsWith("en") ? "Respond in English." : "Responda em Português.";
 
         // Build a prompt with all task descriptions
         StringBuilder taskList = new StringBuilder();
@@ -100,9 +105,9 @@ public class AiSuggestionService {
                     .append("\n");
         }
 
-        PromptTemplate promptTemplate =
-                new PromptTemplate(
-                        """
+        PromptTemplate promptTemplate = new PromptTemplate(
+                """
+                        {languageInstruction}
                         Transform these household tasks into fun adventure quests for a child!
                         Make them exciting and game-like, but keep them short (max 5 words each).
 
@@ -116,7 +121,8 @@ public class AiSuggestionService {
                         - "Wash dishes" -> "Defeat the Dirty Dishes Dragon!"
                         """);
 
-        Prompt prompt = promptTemplate.create(Map.of("taskList", taskList.toString()));
+        Prompt prompt = promptTemplate
+                .create(Map.of("taskList", taskList.toString(), "languageInstruction", languageInstruction));
         ChatResponse response = chatModel.call(prompt);
 
         String content = response.getResult().getOutput().getText();

@@ -41,10 +41,23 @@ class AiServicesTest {
         ChatResponse chatResponse = new ChatResponse(List.of(generation));
         when(chatModel.call(any(Prompt.class))).thenReturn(chatResponse);
 
-        List<String> suggestions = suggestionService.getSuggestions(10);
+        List<String> suggestions = suggestionService.getSuggestions(10, "pt");
 
         assertEquals(3, suggestions.size());
         assertEquals(" task 2", suggestions.get(1));
+    }
+
+    @Test
+    void shouldReturnSuggestionsInEnglish() {
+        String suggestionText = "clean room, do homework, wash dishes";
+        Generation generation = new Generation(new AssistantMessage(suggestionText));
+        ChatResponse chatResponse = new ChatResponse(List.of(generation));
+        when(chatModel.call(any(Prompt.class))).thenReturn(chatResponse);
+
+        List<String> suggestions = suggestionService.getSuggestions(10, "en");
+
+        assertEquals(3, suggestions.size());
+        assertTrue(suggestions.get(0).contains("clean"));
     }
 
     @Test

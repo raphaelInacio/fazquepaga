@@ -16,9 +16,11 @@ import org.mockito.MockitoAnnotations;
 
 class IdentityServiceTest {
 
-    @Mock private UserRepository userRepository;
+    @Mock
+    private UserRepository userRepository;
 
-    @InjectMocks private IdentityService identityService;
+    @InjectMocks
+    private IdentityService identityService;
 
     @BeforeEach
     void setUp() {
@@ -108,12 +110,11 @@ class IdentityServiceTest {
 
         // When & Then
 
-        IllegalArgumentException exception =
-                assertThrows(
-                        IllegalArgumentException.class,
-                        () -> {
-                            identityService.createChild(request);
-                        });
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> {
+                    identityService.createChild(request);
+                });
 
         assertEquals("Parent with ID " + parentId + " not found.", exception.getMessage());
     }
@@ -160,10 +161,9 @@ class IdentityServiceTest {
         String phoneNumber = "+1234567890";
 
         // When & Then
-        IllegalArgumentException exception =
-                assertThrows(
-                        IllegalArgumentException.class,
-                        () -> identityService.completeOnboarding(invalidCode, phoneNumber));
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> identityService.completeOnboarding(invalidCode, phoneNumber));
 
         assertEquals("Invalid onboarding code.", exception.getMessage());
     }
@@ -179,10 +179,9 @@ class IdentityServiceTest {
         when(userRepository.findByIdSync(childId)).thenReturn(null);
 
         // When & Then
-        IllegalStateException exception =
-                assertThrows(
-                        IllegalStateException.class,
-                        () -> identityService.completeOnboarding(code, phoneNumber));
+        IllegalStateException exception = assertThrows(
+                IllegalStateException.class,
+                () -> identityService.completeOnboarding(code, phoneNumber));
 
         assertEquals("Child not found for onboarding code.", exception.getMessage());
     }
@@ -195,9 +194,8 @@ class IdentityServiceTest {
         request.setParentId(null);
 
         // When & Then
-        IllegalArgumentException exception =
-                assertThrows(
-                        IllegalArgumentException.class, () -> identityService.createChild(request));
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class, () -> identityService.createChild(request));
 
         assertEquals("Parent ID is required to create a child.", exception.getMessage());
     }
@@ -210,9 +208,8 @@ class IdentityServiceTest {
         request.setParentId("");
 
         // When & Then
-        IllegalArgumentException exception =
-                assertThrows(
-                        IllegalArgumentException.class, () -> identityService.createChild(request));
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class, () -> identityService.createChild(request));
 
         assertEquals("Parent ID is required to create a child.", exception.getMessage());
     }
@@ -222,11 +219,10 @@ class IdentityServiceTest {
             throws ExecutionException, InterruptedException {
         // Given
         String parentId = "parent-id";
-        User notAParent =
-                User.builder()
-                        .id(parentId)
-                        .role(User.Role.CHILD) // Wrong role
-                        .build();
+        User notAParent = User.builder()
+                .id(parentId)
+                .role(User.Role.CHILD) // Wrong role
+                .build();
 
         CreateChildRequest request = new CreateChildRequest();
         request.setName("Test Child");
@@ -235,9 +231,8 @@ class IdentityServiceTest {
         when(userRepository.findByIdSync(parentId)).thenReturn(notAParent);
 
         // When & Then
-        IllegalArgumentException exception =
-                assertThrows(
-                        IllegalArgumentException.class, () -> identityService.createChild(request));
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class, () -> identityService.createChild(request));
 
         assertEquals("Parent with ID " + parentId + " not found.", exception.getMessage());
     }
@@ -258,5 +253,148 @@ class IdentityServiceTest {
         // Then
         assertNotNull(result);
         assertEquals(allowance, result.getMonthlyAllowance());
+    }
+
+    @Test
+    void shouldUpdateChild() throws ExecutionException, InterruptedException {
+        // Given
+        String childId = "child-id";
+        String parentId = "parent-id";
+        User child = User.builder()
+                .id(childId)
+                .parentId(parentId)
+                .name("Old Name")
+                .age(8)
+                .phoneNumber("111111111")
+                .role(User.Role.CHILD)
+                .build();
+
+        com.fazquepaga.taskandpay.identity.dto.UpdateChildRequest request = new com.fazquepaga.taskandpay.identity.dto.UpdateChildRequest();
+        request.setName("New Name");
+        request.setAge(9);
+        request.setPhoneNumber("222222222");
+
+        when(userRepository.findByIdSync(childId)).thenReturn(child);
+        when(userRepository.save(any(User.class))).thenReturn(ApiFutures.immediateFuture(null));
+
+        // When
+        User result = identityService.updateChild(childId, request, parentId);
+
+        // Then
+        assertNotNull(result);
+        assertEquals("New Name", result.getName());
+        assertEquals(9, result.getAge());
+        assertEquals("222222222", result.getPhoneNumber());
+    }
+
+    @Test
+    void shouldUpdateChildPartially() throws ExecutionException, InterruptedException {
+        // Given
+        String childId = "child-id";
+        String parentId = "parent-id";
+        User child = User.builder()
+                .id(childId)
+                .parentId(parentId)
+                .name("Old Name")
+                .age(8)
+                .phoneNumber("111111111")
+                .role(User.Role.CHILD)
+                .build();
+
+        com.fazquepaga.taskandpay.identity.dto.UpdateChildRequest request = new com.fazquepaga.taskandpay.identity.dto.UpdateChildRequest();
+        request.setName("New Name"); // Only update name
+
+        when(userRepository.findByIdSync(childId)).thenReturn(child);
+        when(userRepository.save(any(User.class))).thenReturn(ApiFutures.immediateFuture(null));
+
+        // When
+        User result = identityService.updateChild(childId, request, parentId);
+
+        // Then
+        assertNotNull(result);
+        assertEquals("New Name", result.getName());
+        assertEquals(8, result.getAge()); // Unchanged
+        assertEquals("111111111", result.getPhoneNumber()); // Unchanged
+    }
+
+    @Test
+    void shouldThrowExceptionWhenUpdatingChildOfDifferentParent() throws ExecutionException, InterruptedException {
+        // Given
+        String childId = "child-id";
+        String parentId = "parent-id";
+        String wrongParentId = "wrong-parent-id";
+        User child = User.builder()
+                .id(childId)
+                .parentId(wrongParentId) // Different parent
+                .role(User.Role.CHILD)
+                .build();
+
+        com.fazquepaga.taskandpay.identity.dto.UpdateChildRequest request = new com.fazquepaga.taskandpay.identity.dto.UpdateChildRequest();
+        request.setName("New Name");
+
+        when(userRepository.findByIdSync(childId)).thenReturn(child);
+
+        // When & Then
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> identityService.updateChild(childId, request, parentId));
+
+        assertEquals("Child does not belong to this parent", exception.getMessage());
+    }
+
+    @Test
+    void shouldDeleteChild() throws ExecutionException, InterruptedException {
+        // Given
+        String childId = "child-id";
+        String parentId = "parent-id";
+        User child = User.builder()
+                .id(childId)
+                .parentId(parentId)
+                .role(User.Role.CHILD)
+                .build();
+
+        when(userRepository.findByIdSync(childId)).thenReturn(child);
+        when(userRepository.delete(childId)).thenReturn(ApiFutures.immediateFuture(null));
+
+        // When & Then (should not throw)
+        assertDoesNotThrow(() -> identityService.deleteChild(childId, parentId));
+    }
+
+    @Test
+    void shouldThrowExceptionWhenDeletingChildOfDifferentParent() throws ExecutionException, InterruptedException {
+        // Given
+        String childId = "child-id";
+        String parentId = "parent-id";
+        String wrongParentId = "wrong-parent-id";
+        User child = User.builder()
+                .id(childId)
+                .parentId(wrongParentId) // Different parent
+                .role(User.Role.CHILD)
+                .build();
+
+        when(userRepository.findByIdSync(childId)).thenReturn(child);
+
+        // When & Then
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> identityService.deleteChild(childId, parentId));
+
+        assertEquals("Child does not belong to this parent", exception.getMessage());
+    }
+
+    @Test
+    void shouldThrowExceptionWhenDeletingNonExistentChild() throws ExecutionException, InterruptedException {
+        // Given
+        String childId = "non-existent-child";
+        String parentId = "parent-id";
+
+        when(userRepository.findByIdSync(childId)).thenReturn(null);
+
+        // When & Then
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> identityService.deleteChild(childId, parentId));
+
+        assertEquals("Child not found", exception.getMessage());
     }
 }

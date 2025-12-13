@@ -27,5 +27,14 @@ export const childService = {
     updateAllowance: async (childId: string, allowance: number, parentId: string) => {
         const response = await api.post(`/api/v1/children/${childId}/allowance?parent_id=${parentId}`, { allowance });
         return response.data;
+    },
+
+    updateChild: async (childId: string, data: Partial<CreateChildRequest>, parentId: string): Promise<User> => {
+        const response = await api.put(`/api/v1/children/${childId}?parent_id=${parentId}`, data);
+        return response.data;
+    },
+
+    deleteChild: async (childId: string, parentId: string): Promise<void> => {
+        await api.delete(`/api/v1/children/${childId}?parent_id=${parentId}`);
     }
 };

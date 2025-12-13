@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { User as UserIcon, Gift, Loader2, QrCode, Plus, Sparkles } from "lucide-react";
+import { User as UserIcon, Gift, Loader2, QrCode, Plus, Sparkles, LogOut, Edit, Trash2 } from "lucide-react";
 import { User, Task } from "@/types";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -22,6 +22,9 @@ export default function Dashboard() {
     const [isLoading, setIsLoading] = useState(true);
     const [onboardingCode, setOnboardingCode] = useState<string | null>(null);
     const [selectedChildForCode, setSelectedChildForCode] = useState<string | null>(null);
+    const [editingChild, setEditingChild] = useState<User | null>(null);
+    const [deletingChild, setDeletingChild] = useState<User | null>(null);
+    const [editForm, setEditForm] = useState({ name: "", age: 0, phoneNumber: "" });
     const [pendingTasks, setPendingTasks] = useState<{ childId: string, childName: string, task: Task }[]>([]);
 
     useEffect(() => {
@@ -127,6 +130,63 @@ export default function Dashboard() {
         }
     };
 
+    const handleLogout = () => {
+        // Clear all authentication data
+        localStorage.removeItem("parentId");
+        localStorage.removeItem("parentName");
+        localStorage.removeItem("children");
+
+        toast.success(t("dashboard.logout.success"));
+        navigate("/");
+    };
+
+    const handleEditChild = (child: User) => {
+        setEditingChild(child);
+        setEditForm({
+            name: child.name,
+            age: child.age || 0,
+            phoneNumber: child.phoneNumber || ""
+        });
+    };
+
+    const handleSaveEdit = async () => {
+        if (!editingChild) return;
+        const parentId = localStorage.getItem("parentId");
+        if (!parentId) return;
+
+        try {
+            await childService.updateChild(editingChild.id, editForm, parentId);
+            toast.success(t("dashboard.child.updateSuccess"));
+            setEditingChild(null);
+
+            // Refresh children list
+            const childrenData = await childService.getChildren(parentId);
+            setChildren(childrenData);
+        } catch (error) {
+            toast.error(t("dashboard.child.updateError"));
+            console.error(error);
+        }
+    };
+
+    const handleDeleteChild = async () => {
+        if (!deletingChild) return;
+        const parentId = localStorage.getItem("parentId");
+        if (!parentId) return;
+
+        try {
+            await childService.deleteChild(deletingChild.id, parentId);
+            toast.success(t("dashboard.child.deleteSuccess"));
+            setDeletingChild(null);
+
+            // Refresh children list
+            const childrenData = await childService.getChildren(parentId);
+            setChildren(childrenData);
+        } catch (error) {
+            toast.error(t("dashboard.child.deleteError"));
+            console.error(error);
+        }
+    };
+
     return (
         <div className="min-h-screen bg-gray-50 p-8">
             <div className="max-w-4xl mx-auto space-y-8">
@@ -136,6 +196,9 @@ export default function Dashboard() {
                         <p className="text-gray-500">{t("dashboard.welcome", { name: parentName || "Parent" })}</p>
                     </div>
                     <div className="flex gap-2">
+                        <Button variant="outline" onClick={handleLogout} data-testid="logout-button">
+                            <LogOut className="mr-2 h-4 w-4" /> {t("dashboard.logout.button")}
+                        </Button>
                         <Button variant="outline" onClick={() => navigate("/gift-cards")} data-testid="gift-cards-button">
                             <Gift className="mr-2 h-4 w-4" /> {t("dashboard.rewardsStore")}
                         </Button>
@@ -210,6 +273,32 @@ export default function Dashboard() {
                                             {t("dashboard.viewTasks")}
                                         </p>
                                         <div className="mt-4 space-y-2" onClick={(e) => e.stopPropagation()}>
+                                            <div className="flex gap-2">
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    className="flex-1"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleEditChild(child);
+                                                    }}
+                                                    data-testid="edit-child-button"
+                                                >
+                                                    <Edit className="mr-2 h-4 w-4" /> {t("common.edit")}
+                                                </Button>
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    className="flex-1 text-red-600 hover:text-red-700"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setDeletingChild(child);
+                                                    }}
+                                                    data-testid="delete-child-button"
+                                                >
+                                                    <Trash2 className="mr-2 h-4 w-4" /> {t("common.delete")}
+                                                </Button>
+                                            </div>
                                             <Dialog open={selectedChildId === child.id} onOpenChange={(open) => {
                                                 if (open) {
                                                     setSelectedChildId(child.id);
@@ -295,6 +384,69 @@ export default function Dashboard() {
                         >
                             {t("dashboard.onboardingCode.copy")}
                         </Button>
+                    </DialogContent>
+                </Dialog>
+
+                {/* Edit Child Dialog */}
+                <Dialog open={!!editingChild} onOpenChange={() => setEditingChild(null)}>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>{t("dashboard.child.editTitle", { name: editingChild?.name })}</DialogTitle>
+                        </DialogHeader>
+                        <div className="space-y-4 py-4">
+                            <div>
+                                <Label htmlFor="edit-name">{t("child.add.name")}</Label>
+                                <Input
+                                    id="edit-name"
+                                    value={editForm.name}
+                                    onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                                    placeholder={t("child.add.namePlaceholder")}
+                                />
+                            </div>
+                            <div>
+                                <Label htmlFor="edit-age">{t("child.add.age")}</Label>
+                                <Input
+                                    id="edit-age"
+                                    type="number"
+                                    value={editForm.age}
+                                    onChange={(e) => setEditForm({ ...editForm, age: parseInt(e.target.value) })}
+                                    placeholder={t("child.add.agePlaceholder")}
+                                />
+                            </div>
+                            <div>
+                                <Label htmlFor="edit-phone">{t("child.add.phone")}</Label>
+                                <Input
+                                    id="edit-phone"
+                                    value={editForm.phoneNumber}
+                                    onChange={(e) => setEditForm({ ...editForm, phoneNumber: e.target.value })}
+                                    placeholder={t("child.add.phonePlaceholder")}
+                                />
+                            </div>
+                        </div>
+                        <div className="flex gap-2 justify-end">
+                            <Button variant="outline" onClick={() => setEditingChild(null)}>{t("common.cancel")}</Button>
+                            <Button onClick={handleSaveEdit} data-testid="save-edit-button">{t("common.save")}</Button>
+                        </div>
+                    </DialogContent>
+                </Dialog>
+
+                {/* Delete Confirmation Dialog */}
+                <Dialog open={!!deletingChild} onOpenChange={() => setDeletingChild(null)}>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>{t("dashboard.child.deleteTitle")}</DialogTitle>
+                        </DialogHeader>
+                        <p className="text-gray-600">{t("dashboard.child.deleteConfirm", { name: deletingChild?.name })}</p>
+                        <div className="flex gap-2 justify-end mt-4">
+                            <Button variant="outline" onClick={() => setDeletingChild(null)}>{t("common.cancel")}</Button>
+                            <Button
+                                variant="destructive"
+                                onClick={handleDeleteChild}
+                                data-testid="confirm-delete-button"
+                            >
+                                {t("common.delete")}
+                            </Button>
+                        </div>
                     </DialogContent>
                 </Dialog>
             </div>
