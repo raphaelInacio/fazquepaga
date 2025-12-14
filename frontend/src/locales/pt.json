@@ -36,6 +36,15 @@
             "buttonLoading": "Criando...",
             "success": "Conta criada com sucesso!",
             "error": "Falha ao criar conta. Por favor, tente novamente."
+        },
+        "childLogin": {
+            "title": "Portal da Criança",
+            "instruction": "Digite o código que seus pais te deram!",
+            "placeholder": "Digite seu código aqui",
+            "button": "Entrar! 🚀",
+            "enterCode": "Por favor, digite seu código!",
+            "welcome": "Bem-vindo! 🎉",
+            "invalidCode": "Código inválido. Peça um novo código para seus pais!"
         }
     },
     "child": {

@@ -13,9 +13,15 @@ api.interceptors.request.use((config) => {
     const language = i18n.language || 'pt';
     config.headers['Accept-Language'] = language;
 
-    // Dev auth bypass: Inject user email from localStorage
+    // Add Authorization header if token exists
+    const token = localStorage.getItem('token');
+    if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+    }
+
+    // Dev auth bypass: Inject user email from localStorage (Legacy/Fallback)
     const parentStr = localStorage.getItem("parent");
-    if (parentStr) {
+    if (parentStr && !token) {
         try {
             const parent = JSON.parse(parentStr);
             if (parent.email) {

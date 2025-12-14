@@ -68,6 +68,28 @@ public class UserRepository {
         return null;
     }
 
+    public User findByEmail(String email)
+            throws ExecutionException, InterruptedException {
+        ApiFuture<com.google.cloud.firestore.QuerySnapshot> future = usersCollection
+                .whereEqualTo("email", email).limit(1).get();
+        List<com.google.cloud.firestore.QueryDocumentSnapshot> documents = future.get().getDocuments();
+        if (!documents.isEmpty()) {
+            return documents.get(0).toObject(User.class);
+        }
+        return null;
+    }
+
+    public java.util.Optional<User> findByAccessCode(String accessCode)
+            throws ExecutionException, InterruptedException {
+        ApiFuture<com.google.cloud.firestore.QuerySnapshot> future = usersCollection
+                .whereEqualTo("accessCode", accessCode).limit(1).get();
+        List<com.google.cloud.firestore.QueryDocumentSnapshot> documents = future.get().getDocuments();
+        if (!documents.isEmpty()) {
+            return java.util.Optional.of(documents.get(0).toObject(User.class));
+        }
+        return java.util.Optional.empty();
+    }
+
     public ApiFuture<com.google.cloud.firestore.QuerySnapshot> findByParentId(String parentId) {
         return usersCollection
                 .whereEqualTo("parentId", parentId)

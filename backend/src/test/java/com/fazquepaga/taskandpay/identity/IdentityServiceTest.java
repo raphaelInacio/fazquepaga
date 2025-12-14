@@ -19,6 +19,9 @@ class IdentityServiceTest {
     @Mock
     private UserRepository userRepository;
 
+    @Mock
+    private org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
+
     @InjectMocks
     private IdentityService identityService;
 
@@ -40,8 +43,8 @@ class IdentityServiceTest {
         request.setEmail("parent@test.com");
 
         // Mock the save operation to do nothing and return a completed future
-
         when(userRepository.save(any(User.class))).thenReturn(ApiFutures.immediateFuture(null));
+        when(passwordEncoder.encode(any())).thenReturn("hashed_password");
 
         // When
 
@@ -76,6 +79,7 @@ class IdentityServiceTest {
         when(userRepository.findByIdSync(parentId)).thenReturn(parent);
 
         when(userRepository.save(any(User.class))).thenReturn(ApiFutures.immediateFuture(null));
+        when(userRepository.findByAccessCode(any())).thenReturn(java.util.Optional.empty());
 
         // When
 

@@ -3,9 +3,7 @@ package com.fazquepaga.taskandpay.identity.dto;
 import lombok.Data;
 
 @Data
-public class CreateParentRequest {
-    private String name;
+public class LoginRequest {
     private String email;
-    private String phoneNumber;
     private String password;
 }

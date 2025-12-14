@@ -12,5 +12,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class ChildLoginResponse {
     private User child;
+    private String token;
     private String message;
 }

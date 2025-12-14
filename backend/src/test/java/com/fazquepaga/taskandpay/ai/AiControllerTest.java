@@ -7,26 +7,30 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import com.fazquepaga.taskandpay.config.SecurityConfig;
 import java.util.Arrays;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.FilterType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
-@WebMvcTest(controllers = AiController.class, includeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = SecurityConfig.class))
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+
+@WebMvcTest(controllers = AiController.class)
+@AutoConfigureMockMvc(addFilters = false)
 class AiControllerTest {
 
         @Autowired
         private MockMvc mockMvc;
 
         @MockBean
-        private AiSuggestionService suggestionService;
+        private AiSuggestionService aiSuggestionService;
+        @MockBean
+        private com.fazquepaga.taskandpay.identity.UserRepository userRepository;
+        @MockBean
+        private com.fazquepaga.taskandpay.security.JwtService jwtService;
 
         @Test
         @WithMockUser(username = "parent@example.com", roles = "PARENT")
@@ -40,7 +44,7 @@ class AiControllerTest {
                                 "Feed the pet",
                                 "Water the plants");
 
-                when(suggestionService.getSuggestions(eq(age), anyString())).thenReturn(suggestions);
+                when(aiSuggestionService.getSuggestions(eq(age), anyString())).thenReturn(suggestions);
 
                 // When & Then
                 mockMvc.perform(get("/api/v1/ai/tasks/suggestions").param("age", String.valueOf(age)))
@@ -59,7 +63,7 @@ class AiControllerTest {
                 int age = 5;
                 List<String> suggestions = Arrays.asList("Put toys away", "Brush teeth", "Help set table");
 
-                when(suggestionService.getSuggestions(eq(age), anyString())).thenReturn(suggestions);
+                when(aiSuggestionService.getSuggestions(eq(age), anyString())).thenReturn(suggestions);
 
                 // When & Then
                 mockMvc.perform(get("/api/v1/ai/tasks/suggestions").param("age", String.valueOf(age)))
@@ -75,7 +79,7 @@ class AiControllerTest {
                 int age = 15;
                 List<String> suggestions = Arrays.asList("Mow the lawn", "Wash the car", "Cook a meal", "Do laundry");
 
-                when(suggestionService.getSuggestions(eq(age), anyString())).thenReturn(suggestions);
+                when(aiSuggestionService.getSuggestions(eq(age), anyString())).thenReturn(suggestions);
 
                 // When & Then
                 mockMvc.perform(get("/api/v1/ai/tasks/suggestions").param("age", String.valueOf(age)))
@@ -89,7 +93,7 @@ class AiControllerTest {
         void shouldHandleEmptySuggestionsList() throws Exception {
                 // Given
                 int age = 10;
-                when(suggestionService.getSuggestions(anyInt(), anyString())).thenReturn(List.of());
+                when(aiSuggestionService.getSuggestions(anyInt(), anyString())).thenReturn(List.of());
 
                 // When & Then
                 mockMvc.perform(get("/api/v1/ai/tasks/suggestions").param("age", String.valueOf(age)))

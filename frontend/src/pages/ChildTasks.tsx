@@ -5,10 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { toast } from "sonner";
 import { Task, User } from "@/types";
-import { ArrowLeft, Plus, Sparkles, QrCode, Calendar } from "lucide-react";
+import { ArrowLeft, Plus, Sparkles, Calendar, CheckCircle2, Trophy, Clock, Target } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { FinancialLedger } from "@/components/FinancialLedger";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { childService } from "@/services/childService";
@@ -18,6 +18,7 @@ import api from "@/lib/api";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import confetti from "canvas-confetti";
 
 export default function ChildTasks() {
     const { t } = useTranslation();
@@ -37,7 +38,6 @@ export default function ChildTasks() {
         type: "ONE_TIME",
         requiresProof: false,
         weight: "MEDIUM"
-        // value removed - will be calculated automatically by backend
     });
     const [aiSuggestions, setAiSuggestions] = useState<string[]>([]);
     const [isLoadingAI, setIsLoadingAI] = useState(false);
@@ -112,6 +112,14 @@ export default function ChildTasks() {
         try {
             await taskService.approveTask(childId, selectedTaskForReview.id!, parentId);
             toast.success("Task approved successfully!");
+
+            confetti({
+                particleCount: 50,
+                spread: 60,
+                origin: { y: 0.7 },
+                colors: ['#26ccff', '#a25afd', '#ff5e7e', '#88ff5a', '#fcff42']
+            });
+
             setIsReviewDialogOpen(false);
             setSelectedTaskForReview(null);
             loadTasks();
@@ -168,7 +176,6 @@ export default function ChildTasks() {
     };
 
     const handleAddSuggestionAsTask = (suggestion: string) => {
-        // Pre-fill dialog with AI suggestion and open it for customization
         setNewTask({
             description: suggestion,
             type: "ONE_TIME",
@@ -177,24 +184,23 @@ export default function ChildTasks() {
             value: 0
         });
         setIsCreateTaskDialogOpen(true);
-        // Remove suggestion from list after user clicks to add it
         setAiSuggestions(prev => prev.filter(s => s !== suggestion));
     };
 
     const getStatusColor = (status?: string) => {
         switch (status) {
             case "COMPLETED":
-                return "bg-green-500";
+                return "bg-green-500 shadow-green-200";
             case "PENDING_APPROVAL":
-                return "bg-yellow-500";
+                return "bg-yellow-500 shadow-yellow-200";
             case "APPROVED":
-                return "bg-blue-500";
+                return "bg-blue-500 shadow-blue-200";
             default:
-                return "bg-gray-500";
+                return "bg-gray-400";
         }
     };
 
-    const getWeightColor = (weight: string) => {
+    const getWeightVariant = (weight: string) => {
         switch (weight) {
             case "HIGH":
                 return "destructive";
@@ -209,39 +215,63 @@ export default function ChildTasks() {
 
     const filteredTasks = tasks.filter(task => {
         if (filterStatus === 'ALL') {
-            return task.status !== 'COMPLETED';
+            return task.status !== 'COMPLETED'; // Hide completed from main list to keep it clean, or keep them? Let's hide completed to focus on active quests
         }
         return task.status === filterStatus;
     });
 
     if (!child) {
-        return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-background">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+            </div>
+        );
     }
 
     return (
         <Dialog open={isReviewDialogOpen} onOpenChange={setIsReviewDialogOpen}>
-            <div className="min-h-screen bg-gray-50 p-8">
-                <div className="max-w-6xl mx-auto space-y-6">
-                    <div className="flex items-center justify-between">
+            <div className="min-h-screen bg-background p-8 animate-fade-in">
+                <div className="max-w-6xl mx-auto space-y-8">
+                    {/* Header Section */}
+                    <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 bg-card p-6 rounded-3xl shadow-soft border border-border/50">
                         <div className="flex items-center gap-4">
-                            <Button variant="ghost" onClick={() => navigate("/dashboard")}>
-                                <ArrowLeft className="h-4 w-4" />
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => navigate("/dashboard")}
+                                className="rounded-full hover:bg-primary/10"
+                            >
+                                <ArrowLeft className="h-6 w-6 text-primary" />
                             </Button>
                             <div>
-                                <h1 className="text-3xl font-bold text-gray-900">{t("tasks.title", { childName: child.name })}</h1>
-                                <p className="text-gray-500">{t("childTasks.age", { age: child.age || "N/A" })}</p>
+                                <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-purple-600 font-heading">
+                                    {t("tasks.title", { childName: child.name })}
+                                </h1>
+                                <div className="flex items-center gap-2 mt-1">
+                                    <Badge variant="outline" className="text-muted-foreground border-primary/20">
+                                        {t("childTasks.age", { age: child.age || "N/A" })}
+                                    </Badge>
+                                    <Badge variant="secondary" className="bg-secondary/10 text-secondary-foreground hover:bg-secondary/20">
+                                        Level {Math.floor((child.age || 0) / 2) + 1} Explorer
+                                    </Badge>
+                                </div>
                             </div>
                         </div>
-                        <div className="flex gap-2">
+                        <div className="flex gap-3 w-full md:w-auto">
                             <Button
                                 onClick={handleGetAISuggestions}
                                 disabled={isLoadingAI}
-                                className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white shadow-lg"
+                                className="flex-1 md:flex-none bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white shadow-lg shadow-purple-500/20 rounded-xl transition-all hover:scale-105 active:scale-95"
                             >
                                 <Sparkles className="h-4 w-4 mr-2" />
                                 {isLoadingAI ? t("childTasks.generating") : t("childTasks.generateAiTasks")}
                             </Button>
-                            <Button variant="outline" onClick={() => setIsCreateTaskDialogOpen(true)} data-testid="create-task-button">
+                            <Button
+                                variant="outline"
+                                onClick={() => setIsCreateTaskDialogOpen(true)}
+                                data-testid="create-task-button"
+                                className="flex-1 md:flex-none border-dashed border-2 hover:border-primary hover:text-primary rounded-xl"
+                            >
                                 <Plus className="h-4 w-4 mr-2" />
                                 {t("childTasks.createManualTask")}
                             </Button>
@@ -249,10 +279,13 @@ export default function ChildTasks() {
                     </div>
 
                     {showAISuggestions && aiSuggestions.length > 0 && (
-                        <Card className="border-2 border-purple-200 bg-gradient-to-br from-purple-50 to-blue-50">
+                        <Card className="border-none bg-gradient-to-br from-purple-500/5 to-blue-500/5 shadow-glow animate-fade-in overflow-hidden relative">
+                            <div className="absolute top-0 right-0 p-8 opacity-5">
+                                <Sparkles className="w-32 h-32 text-primary" />
+                            </div>
                             <CardHeader>
-                                <CardTitle className="flex items-center gap-2">
-                                    <Sparkles className="h-5 w-5 text-purple-600" />
+                                <CardTitle className="flex items-center gap-2 text-xl text-primary">
+                                    <Sparkles className="h-6 w-6" />
                                     {t("childTasks.aiSuggestions.title")}
                                 </CardTitle>
                                 <CardDescription>
@@ -260,18 +293,18 @@ export default function ChildTasks() {
                                 </CardDescription>
                             </CardHeader>
                             <CardContent>
-                                <div className="grid gap-3">
+                                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
                                     {aiSuggestions.map((suggestion, index) => (
                                         <div
                                             key={index}
-                                            className="flex items-center justify-between p-4 bg-white rounded-lg border border-purple-100 hover:border-purple-300 transition-colors"
+                                            className="group flex flex-col justify-between p-5 bg-card rounded-2xl border border-primary/10 hover:border-primary/40 hover:shadow-soft transition-all duration-300"
                                         >
-                                            <span className="text-gray-700">{suggestion}</span>
+                                            <span className="text-foreground font-medium mb-4 leading-relaxed">{suggestion}</span>
                                             <Button
                                                 onClick={() => handleAddSuggestionAsTask(suggestion)}
-                                                size="sm"
-                                                className="bg-purple-600 hover:bg-purple-700"
+                                                className="w-full bg-primary/10 hover:bg-primary text-primary hover:text-primary-foreground rounded-lg transition-colors"
                                             >
+                                                <Plus className="w-4 h-4 mr-2" />
                                                 {t("childTasks.aiSuggestions.add")}
                                             </Button>
                                         </div>
@@ -282,213 +315,308 @@ export default function ChildTasks() {
                     )}
 
                     <Tabs defaultValue="tasks" className="w-full">
-                        <TabsList className="grid w-full grid-cols-2">
-                            <TabsTrigger value="tasks">{t("childTasks.tabs.tasks")}</TabsTrigger>
-                            <TabsTrigger value="financial">{t("childTasks.tabs.financial")}</TabsTrigger>
+                        <TabsList className="grid w-full grid-cols-2 p-1 bg-card/50 rounded-2xl mb-8">
+                            <TabsTrigger
+                                value="tasks"
+                                className="rounded-xl data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all py-3"
+                            >
+                                <Target className="w-4 h-4 mr-2" />
+                                {t("childTasks.tabs.tasks")}
+                            </TabsTrigger>
+                            <TabsTrigger
+                                value="financial"
+                                className="rounded-xl data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all py-3"
+                            >
+                                <Trophy className="w-4 h-4 mr-2" />
+                                {t("childTasks.tabs.financial")}
+                            </TabsTrigger>
                         </TabsList>
-                        <TabsContent value="tasks">
-                            <Card>
-                                <CardHeader>
-                                    <div className="flex items-center justify-between">
-                                        <CardTitle>{t("childTasks.tabs.tasks")}</CardTitle>
-                                        <Select value={filterStatus} onValueChange={setFilterStatus}>
-                                            <SelectTrigger className="w-[180px]">
-                                                <SelectValue placeholder={t("childTasks.filter.all")} />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="ALL">{t("childTasks.filter.all")}</SelectItem>
-                                                <SelectItem value="PENDING">{t("childTasks.filter.pending")}</SelectItem>
-                                                <SelectItem value="PENDING_APPROVAL">{t("childTasks.filter.pendingApproval")}</SelectItem>
-                                                <SelectItem value="APPROVED">{t("childTasks.filter.approved")}</SelectItem>
-                                            </SelectContent>
-                                        </Select>
+
+                        <TabsContent value="tasks" className="animate-fade-in">
+                            <Card className="border-none shadow-none bg-transparent">
+                                <div className="flex items-center justify-between mb-6">
+                                    <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
+                                        <Target className="w-6 h-6 text-primary" />
+                                        Task Board
+                                    </h2>
+                                    <Select value={filterStatus} onValueChange={setFilterStatus}>
+                                        <SelectTrigger className="w-[180px] rounded-xl bg-card border-border/50">
+                                            <SelectValue placeholder={t("childTasks.filter.all")} />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="ALL">{t("childTasks.filter.all")}</SelectItem>
+                                            <SelectItem value="PENDING">{t("childTasks.filter.pending")}</SelectItem>
+                                            <SelectItem value="PENDING_APPROVAL">{t("childTasks.filter.pendingApproval")}</SelectItem>
+                                            <SelectItem value="APPROVED">{t("childTasks.filter.approved")}</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+
+                                {isLoadingTasks ? (
+                                    <div className="grid place-items-center py-12">
+                                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
                                     </div>
-                                </CardHeader>
-                                <CardContent>
-                                    {isLoadingTasks ? (
-                                        <div className="text-center py-8 text-gray-500">{t("tasks.loading")}</div>
-                                    ) : filteredTasks.length === 0 ? (
-                                        <div className="text-center py-8 text-gray-500">
+                                ) : filteredTasks.length === 0 ? (
+                                    <div className="flex flex-col items-center justify-center py-16 bg-card rounded-3xl border-2 border-dashed border-border/50">
+                                        <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4 text-muted-foreground">
+                                            <Target className="w-8 h-8" />
+                                        </div>
+                                        <p className="text-lg text-muted-foreground font-medium">
                                             {t("childTasks.noTasks")}
-                                        </div>
-                                    ) : (
-                                        <div className="space-y-4">
-                                            {filteredTasks.map((task) => (
-                                                <div
-                                                    key={task.id}
-                                                    className={`p-4 border rounded-lg hover:shadow-md transition-shadow cursor-pointer ${task.status === 'PENDING_APPROVAL' ? 'border-yellow-400 bg-yellow-50' : ''
-                                                        }`}
-                                                    onClick={() => handleReviewClick(task)}
-                                                >
-                                                    <div className="flex items-start justify-between">
-                                                        <div className="flex-1">
-                                                            <div className="flex items-center gap-2 mb-2">
-                                                                <h3 className="font-semibold">{task.description}</h3>
-                                                                <Badge variant={getWeightColor(task.weight)}>
-                                                                    {task.weight}
-                                                                </Badge>
-                                                            </div>
-                                                            <div className="flex items-center gap-4 text-sm text-gray-600">
-                                                                <span className="flex items-center gap-1">
-                                                                    <Calendar className="h-3 w-3" />
-                                                                    {task.type}
-                                                                </span>
-                                                                {task.requiresProof && (
-                                                                    <span className="text-purple-600">{t("childTasks.proofRequired")}</span>
-                                                                )}
-                                                                {task.aiValidated && (
-                                                                    <span className="text-green-600">{t("childTasks.aiValidated")}</span>
-                                                                )}
-                                                            </div>
-                                                        </div>
-                                                        <div className="flex flex-col items-end gap-2">
-                                                            <div className={`px-3 py-1 rounded-full text-white text-xs ${getStatusColor(task.status)}`}>
-                                                                {task.status || "PENDING"}
-                                                            </div>
-                                                            {task.createdAt && (
-                                                                <span className="text-xs text-gray-400">
-                                                                    {new Date(task.createdAt).toLocaleDateString()}
-                                                                </span>
-                                                            )}
-                                                        </div>
-                                                    </div>
+                                        </p>
+                                        <Button
+                                            variant="link"
+                                            onClick={() => setIsCreateTaskDialogOpen(true)}
+                                            className="text-primary mt-2"
+                                        >
+                                            Create First Quest
+                                        </Button>
+                                    </div>
+                                ) : (
+                                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                        {filteredTasks.map((task) => (
+                                            <div
+                                                key={task.id}
+                                                className={`
+                                                    group relative overflow-hidden bg-card p-5 rounded-2xl border transition-all duration-300 hover:scale-[1.02] cursor-pointer
+                                                    ${task.status === 'PENDING_APPROVAL'
+                                                        ? 'border-yellow-400 shadow-glow shadow-yellow-500/20'
+                                                        : 'border-border/50 hover:border-primary/50 hover:shadow-soft'}
+                                                `}
+                                                onClick={() => handleReviewClick(task)}
+                                            >
+                                                <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-primary to-purple-600 opacity-0 group-hover:opacity-100 transition-opacity" />
+
+                                                <div className="flex justify-between items-start mb-4">
+                                                    <Badge variant={getWeightVariant(task.weight)} className="rounded-lg px-2 py-0.5 text-xs font-semibold uppercase tracking-wider">
+                                                        {task.weight} Quest
+                                                    </Badge>
+                                                    <div className={`h-2.5 w-2.5 rounded-full ${getStatusColor(task.status)} shadow-sm ring-2 ring-white dark:ring-gray-900`} />
                                                 </div>
-                                            ))}
-                                        </div>
-                                    )}
-                                </CardContent>
+
+                                                <h3 className="font-bold text-lg mb-3 line-clamp-2 text-foreground group-hover:text-primary transition-colors">
+                                                    {task.description}
+                                                </h3>
+
+                                                <div className="flex flex-col gap-2 text-sm text-muted-foreground">
+                                                    <div className="flex items-center gap-2">
+                                                        <Calendar className="w-4 h-4 text-primary/70" />
+                                                        <span className="font-medium bg-secondary/10 px-2 py-0.5 rounded text-xs text-secondary-foreground">{task.type}</span>
+                                                    </div>
+
+                                                    {task.requiresProof && (
+                                                        <div className="flex items-center gap-2 text-purple-600 dark:text-purple-400">
+                                                            <CheckCircle2 className="w-4 h-4" />
+                                                            <span className="text-xs font-medium">{t("childTasks.proofRequired")}</span>
+                                                        </div>
+                                                    )}
+
+                                                    {task.aiValidated && (
+                                                        <div className="flex items-center gap-2 text-green-600 dark:text-green-400">
+                                                            <Sparkles className="w-4 h-4" />
+                                                            <span className="text-xs font-medium">{t("childTasks.aiValidated")}</span>
+                                                        </div>
+                                                    )}
+                                                </div>
+
+                                                {task.createdAt && (
+                                                    <div className="mt-4 pt-4 border-t border-border/30 flex items-center gap-1.5 text-xs text-muted-foreground/60">
+                                                        <Clock className="w-3 h-3" />
+                                                        {new Date(task.createdAt).toLocaleDateString()}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
                             </Card>
                         </TabsContent>
-                        <TabsContent value="financial">
-                            <Card className="mb-6">
-                                <CardHeader>
-                                    <CardTitle>{t("childTasks.financial.predictedAllowance")}</CardTitle>
-                                    <CardDescription>
-                                        {t("childTasks.financial.estimatedValue")}
-                                    </CardDescription>
-                                </CardHeader>
-                                <CardContent>
-                                    {isLoadingAllowance ? (
-                                        <div className="text-center py-4">
-                                            <span className="text-gray-500">{t("childTasks.financial.calculating")}</span>
+
+                        <TabsContent value="financial" className="animate-fade-in">
+                            <div className="grid gap-6">
+                                <Card className="border-none bg-gradient-to-br from-green-500/10 to-emerald-500/5 shadow-soft">
+                                    <div className="flex flex-col md:flex-row items-center p-8 gap-8">
+                                        <div className="p-6 bg-gradient-to-br from-green-400 to-emerald-600 rounded-3xl shadow-lg shadow-green-500/30 text-white">
+                                            <Trophy className="w-12 h-12" />
                                         </div>
-                                    ) : (
-                                        <div className="text-center">
-                                            <div className="text-4xl font-bold text-green-600">
-                                                {new Intl.NumberFormat('pt-BR', {
-                                                    style: 'currency',
-                                                    currency: 'BRL'
-                                                }).format(predictedAllowance)}
-                                            </div>
-                                            <p className="text-sm text-gray-500 mt-2">
-                                                {t("childTasks.financial.thisMonth")}
+                                        <div className="text-center md:text-left flex-1">
+                                            <p className="text-muted-foreground font-medium mb-1">{t("childTasks.financial.predictedAllowance")}</p>
+                                            {isLoadingAllowance ? (
+                                                <div className="h-12 w-48 bg-gray-200 animate-pulse rounded-lg" />
+                                            ) : (
+                                                <h3 className="text-5xl font-bold text-green-600 dark:text-green-400 font-heading tracking-tight">
+                                                    {new Intl.NumberFormat('pt-BR', {
+                                                        style: 'currency',
+                                                        currency: 'BRL'
+                                                    }).format(predictedAllowance)}
+                                                </h3>
+                                            )}
+                                            <p className="text-sm text-muted-foreground mt-2 max-w-md">
+                                                {t("childTasks.financial.estimatedValue")} • {t("childTasks.financial.thisMonth")}
                                             </p>
                                         </div>
-                                    )}
-                                </CardContent>
-                            </Card>
-                            <FinancialLedger childId={childId!} parentId={localStorage.getItem("parentId") || ""} />
+                                    </div>
+                                </Card>
+
+                                <Card className="border-border/50 shadow-sm overflow-hidden rounded-2xl">
+                                    <CardHeader className="bg-muted/30">
+                                        <CardTitle className="flex items-center gap-2">
+                                            <Clock className="w-5 h-5 text-gray-500" />
+                                            Activity History
+                                        </CardTitle>
+                                    </CardHeader>
+                                    <CardContent className="p-0">
+                                        <FinancialLedger childId={childId!} parentId={localStorage.getItem("parentId") || ""} />
+                                    </CardContent>
+                                </Card>
+                            </div>
                         </TabsContent>
                     </Tabs>
                 </div>
-                <DialogContent>
+
+                <DialogContent className="sm:max-w-xl">
                     <DialogHeader>
                         <DialogTitle>{t("childTasks.review.title")}</DialogTitle>
-                        <DialogDescription>{selectedTaskForReview?.description}</DialogDescription>
+                        <DialogDescription className="text-lg font-medium text-foreground mt-2">
+                            "{selectedTaskForReview?.description}"
+                        </DialogDescription>
                     </DialogHeader>
-                    {selectedTaskForReview?.aiValidated && (
-                        <div className="my-4 p-3 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm">
-                            <p>{t("childTasks.review.aiValidatedMessage")}</p>
-                        </div>
-                    )}
-                    {selectedTaskForReview?.requiresProof && (
-                        <div className="my-4">
-                            <p className="font-semibold mb-2">{t("childTasks.review.proof")}</p>
-                            {selectedTaskForReview?.proofImageUrl ? (
-                                <img
-                                    src={selectedTaskForReview.proofImageUrl}
-                                    alt="Task proof"
-                                    className="w-full max-h-96 object-contain rounded-md border border-gray-300"
-                                />
-                            ) : (
-                                <div className="w-full h-48 bg-gray-200 rounded-md flex items-center justify-center">
-                                    <span className="text-gray-500">{t("childTasks.review.noProof")}</span>
+
+                    <div className="py-4">
+                        {selectedTaskForReview?.aiValidated && (
+                            <div className="mb-6 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-900 rounded-xl flex items-start gap-3">
+                                <Sparkles className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                                <div>
+                                    <p className="font-semibold text-green-700 dark:text-green-400">AI Verified</p>
+                                    <p className="text-sm text-green-600/80 dark:text-green-500">{t("childTasks.review.aiValidatedMessage")}</p>
                                 </div>
-                            )}
-                        </div>
-                    )}
-                    <DialogFooter>
-                        <Button variant="outline" onClick={() => setIsReviewDialogOpen(false)}>{t("common.cancel")}</Button>
-                        <Button onClick={handleApproveTask}>{t("dashboard.pendingApprovals.approve")}</Button>
-                    </DialogFooter>
-                </DialogContent>
-            </div>
-            <Dialog open={isCreateTaskDialogOpen} onOpenChange={setIsCreateTaskDialogOpen}>
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>{t("childTasks.create.title")}</DialogTitle>
-                        <DialogDescription>{t("childTasks.create.description", { name: child.name })}</DialogDescription>
-                    </DialogHeader>
-                    <div className="space-y-4 py-4">
-                        <div className="space-y-2">
-                            <Label>{t("childTasks.create.label.description")}</Label>
-                            <Input
-                                name="description"
-                                value={newTask.description}
-                                onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
-                                placeholder={t("childTasks.create.placeholder.description")}
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <Label>{t("childTasks.create.label.type")}</Label>
-                            <Select
-                                value={newTask.type}
-                                onValueChange={(value) => setNewTask({ ...newTask, type: value as any })}
-                            >
-                                <SelectTrigger data-testid="task-type-select">
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="ONE_TIME">{t("childTasks.create.type.oneTime")}</SelectItem>
-                                    <SelectItem value="DAILY">{t("childTasks.create.type.daily")}</SelectItem>
-                                    <SelectItem value="WEEKLY">{t("childTasks.create.type.weekly")}</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        <div className="space-y-2">
-                            <Label>{t("childTasks.create.label.weight")}</Label>
-                            <Select
-                                value={newTask.weight}
-                                onValueChange={(value) => setNewTask({ ...newTask, weight: value as any })}
-                            >
-                                <SelectTrigger data-testid="task-weight-select">
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="LOW">{t("childTasks.create.weight.low")}</SelectItem>
-                                    <SelectItem value="MEDIUM">{t("childTasks.create.weight.medium")}</SelectItem>
-                                    <SelectItem value="HIGH">{t("childTasks.create.weight.high")}</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        {/* Value input REMOVED - calculated automatically */}
-                        <div className="flex items-center space-x-2">
-                            <Checkbox
-                                id="requiresProof"
-                                checked={newTask.requiresProof}
-                                onCheckedChange={(checked) =>
-                                    setNewTask({ ...newTask, requiresProof: checked as boolean })
-                                }
-                            />
-                            <Label htmlFor="requiresProof">{t("childTasks.create.requiresProof")}</Label>
-                        </div>
+                            </div>
+                        )}
+
+                        {selectedTaskForReview?.requiresProof ? (
+                            <div className="space-y-3">
+                                <Label className="text-base">{t("childTasks.review.proof")}</Label>
+                                {selectedTaskForReview?.proofImageUrl ? (
+                                    <div className="relative rounded-xl overflow-hidden border border-border shadow-sm group">
+                                        <img
+                                            src={selectedTaskForReview.proofImageUrl}
+                                            alt="Task proof"
+                                            className="w-full h-64 object-cover hover:scale-105 transition-transform duration-500"
+                                        />
+                                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors pointer-events-none" />
+                                    </div>
+                                ) : (
+                                    <div className="w-full h-48 bg-muted/50 rounded-xl border-2 border-dashed border-muted flex flex-col items-center justify-center text-muted-foreground gap-2">
+                                        <Clock className="w-8 h-8 opacity-50" />
+                                        <span>{t("childTasks.review.noProof")}</span>
+                                    </div>
+                                )}
+                            </div>
+                        ) : (
+                            <div className="p-4 bg-secondary/5 rounded-xl border border-secondary/20 text-center">
+                                <p className="text-muted-foreground text-sm">No proof required for this quest.</p>
+                            </div>
+                        )}
                     </div>
-                    <DialogFooter>
-                        <Button variant="outline" onClick={() => setIsCreateTaskDialogOpen(false)}>{t("common.cancel")}</Button>
-                        <Button onClick={handleCreateTask} data-testid="create-task-submit-button">{t("childTasks.create.submit")}</Button>
+
+                    <DialogFooter className="gap-2 sm:gap-0">
+                        <Button variant="outline" onClick={() => setIsReviewDialogOpen(false)} className="rounded-xl">
+                            {t("common.cancel")}
+                        </Button>
+                        <Button
+                            onClick={handleApproveTask}
+                            className="bg-green-600 hover:bg-green-700 rounded-xl shadow-lg shadow-green-600/20"
+                        >
+                            <CheckCircle2 className="w-4 h-4 mr-2" />
+                            {t("dashboard.pendingApprovals.approve")}
+                        </Button>
                     </DialogFooter>
                 </DialogContent>
-            </Dialog>
-        </Dialog >
+
+                <Dialog open={isCreateTaskDialogOpen} onOpenChange={setIsCreateTaskDialogOpen}>
+                    <DialogContent className="sm:max-w-lg">
+                        <DialogHeader>
+                            <DialogTitle className="text-xl flex items-center gap-2">
+                                <Plus className="w-5 h-5 text-primary" />
+                                {t("childTasks.create.title")}
+                            </DialogTitle>
+                            <DialogDescription>
+                                {t("childTasks.create.description", { name: child.name })}
+                            </DialogDescription>
+                        </DialogHeader>
+                        <div className="space-y-6 py-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="desc">{t("childTasks.create.label.description")}</Label>
+                                <Input
+                                    id="desc"
+                                    value={newTask.description}
+                                    onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
+                                    placeholder={t("childTasks.create.placeholder.description")}
+                                    className="h-12 text-lg rounded-xl"
+                                />
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <Label>{t("childTasks.create.label.type")}</Label>
+                                    <Select
+                                        value={newTask.type}
+                                        onValueChange={(value) => setNewTask({ ...newTask, type: value as any })}
+                                    >
+                                        <SelectTrigger className="h-10 rounded-xl">
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="ONE_TIME">{t("childTasks.create.type.oneTime")}</SelectItem>
+                                            <SelectItem value="DAILY">{t("childTasks.create.type.daily")}</SelectItem>
+                                            <SelectItem value="WEEKLY">{t("childTasks.create.type.weekly")}</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div className="space-y-2">
+                                    <Label>{t("childTasks.create.label.weight")}</Label>
+                                    <Select
+                                        value={newTask.weight}
+                                        onValueChange={(value) => setNewTask({ ...newTask, weight: value as any })}
+                                    >
+                                        <SelectTrigger className="h-10 rounded-xl">
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="LOW">Easy (Low)</SelectItem>
+                                            <SelectItem value="MEDIUM">Normal (Medium)</SelectItem>
+                                            <SelectItem value="HIGH">Hard (High)</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            </div>
+
+                            <div className="flex items-center space-x-3 p-4 bg-muted/30 rounded-xl border border-border/50">
+                                <Checkbox
+                                    id="requiresProof"
+                                    checked={newTask.requiresProof}
+                                    onCheckedChange={(checked) =>
+                                        setNewTask({ ...newTask, requiresProof: checked as boolean })
+                                    }
+                                    className="h-5 w-5 rounded-md"
+                                />
+                                <div className="grid gap-1.5 leading-none">
+                                    <Label htmlFor="requiresProof" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                                        {t("childTasks.create.requiresProof")}
+                                    </Label>
+                                    <p className="text-xs text-muted-foreground">
+                                        Child must upload a photo to complete this quest.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <DialogFooter>
+                            <Button variant="ghost" onClick={() => setIsCreateTaskDialogOpen(false)} className="rounded-xl">{t("common.cancel")}</Button>
+                            <Button onClick={handleCreateTask} className="rounded-xl shadow-lg shadow-primary/20">{t("childTasks.create.submit")}</Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
+            </div>
+        </Dialog>
     );
 }

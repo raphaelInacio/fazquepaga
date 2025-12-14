@@ -18,34 +18,43 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.test.web.servlet.MockMvc;
 
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+
 @WebMvcTest(controllers = WhatsAppController.class)
-@Import(SecurityConfig.class)
+@AutoConfigureMockMvc(addFilters = false)
 class WhatsAppControllerTest {
 
-    @Autowired private MockMvc mockMvc;
+        @Autowired
+        private MockMvc mockMvc;
 
-    @Autowired private ObjectMapper objectMapper;
+        @Autowired
+        private ObjectMapper objectMapper;
 
-    @MockBean private WhatsAppService whatsAppService;
+        @MockBean
+        private WhatsAppService whatsAppService;
+        @MockBean
+        private com.fazquepaga.taskandpay.identity.UserRepository userRepository;
+        @MockBean
+        private com.fazquepaga.taskandpay.security.JwtService jwtService;
 
-    @MockBean private TwilioRequestValidator requestValidator;
+        @MockBean
+        private TwilioRequestValidator requestValidator;
 
-    @Test
-    void shouldCallWebhookHandler() throws Exception {
-        Map<String, String> payload =
-                Map.of(
-                        "Body", "test message",
-                        "From", "whatsapp:+1234567890");
+        @Test
+        void shouldCallWebhookHandler() throws Exception {
+                Map<String, String> payload = Map.of(
+                                "Body", "test message",
+                                "From", "whatsapp:+1234567890");
 
-        when(requestValidator.validate(any(), any())).thenReturn(true);
+                when(requestValidator.validate(any(), any())).thenReturn(true);
 
-        mockMvc.perform(
-                        post("/api/v1/whatsapp/webhook")
-                                .with(SecurityMockMvcRequestPostProcessors.csrf())
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(objectMapper.writeValueAsString(payload)))
-                .andExpect(status().isOk());
+                mockMvc.perform(
+                                post("/api/v1/whatsapp/webhook")
+                                                .with(SecurityMockMvcRequestPostProcessors.csrf())
+                                                .contentType(MediaType.APPLICATION_JSON)
+                                                .content(objectMapper.writeValueAsString(payload)))
+                                .andExpect(status().isOk());
 
-        verify(whatsAppService).handleWebhook(payload);
-    }
+                verify(whatsAppService).handleWebhook(payload);
+        }
 }

@@ -46,6 +46,8 @@ export interface CreateChildRequest {
 export interface CreateParentRequest {
     name: string;
     email: string;
+    phoneNumber: string;
+    password?: string;
 }
 
 export interface GiftCard {

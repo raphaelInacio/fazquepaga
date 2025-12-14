@@ -16,7 +16,10 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.test.web.servlet.MockMvc;
 
-@WebMvcTest(controllers = AllowanceController.class, includeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = SecurityConfig.class))
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+
+@WebMvcTest(controllers = AllowanceController.class)
+@AutoConfigureMockMvc(addFilters = false)
 class AllowanceControllerTest {
 
         @Autowired
@@ -27,6 +30,10 @@ class AllowanceControllerTest {
 
         @MockBean
         private LedgerService ledgerService;
+        @MockBean
+        private com.fazquepaga.taskandpay.identity.UserRepository userRepository;
+        @MockBean
+        private com.fazquepaga.taskandpay.security.JwtService jwtService;
 
         @Test
         void shouldGetPredictedAllowance() throws Exception {

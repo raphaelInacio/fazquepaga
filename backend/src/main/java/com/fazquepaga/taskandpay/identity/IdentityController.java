@@ -18,22 +18,45 @@ public class IdentityController {
 
     private final IdentityService identityService;
 
-    public IdentityController(IdentityService identityService) {
+    private final com.fazquepaga.taskandpay.security.JwtService jwtService;
+
+    public IdentityController(IdentityService identityService,
+            com.fazquepaga.taskandpay.security.JwtService jwtService) {
         this.identityService = identityService;
+        this.jwtService = jwtService;
     }
 
     @PostMapping("/auth/register")
     public ResponseEntity<User> registerParent(@RequestBody CreateParentRequest request)
             throws ExecutionException, InterruptedException {
         User parent = identityService.registerParent(request);
+        // We could return a token here too, but for now let's stick to returning User
+        // and requiring login.
         return ResponseEntity.status(HttpStatus.CREATED).body(parent);
+    }
+
+    @PostMapping("/auth/login")
+    public ResponseEntity<com.fazquepaga.taskandpay.identity.dto.LoginResponse> login(
+            @RequestBody com.fazquepaga.taskandpay.identity.dto.LoginRequest request)
+            throws ExecutionException, InterruptedException {
+        User user = identityService.authenticateParent(request.getEmail(), request.getPassword());
+        String token = jwtService.generateToken(user);
+        return ResponseEntity.ok(com.fazquepaga.taskandpay.identity.dto.LoginResponse.builder()
+                .token(token)
+                .user(user)
+                .build());
     }
 
     @PostMapping("/children/login")
     public ResponseEntity<ChildLoginResponse> childLogin(@RequestBody ChildLoginRequest request)
             throws ExecutionException, InterruptedException {
         User child = identityService.authenticateChildByCode(request.getCode());
-        ChildLoginResponse response = ChildLoginResponse.builder().child(child).message("Login successful").build();
+        String token = jwtService.generateToken(child.getId(), child.getId(), "CHILD"); // Simplified token for child
+        ChildLoginResponse response = ChildLoginResponse.builder()
+                .child(child)
+                .token(token)
+                .message("Login successful")
+                .build();
         return ResponseEntity.ok(response);
     }
 

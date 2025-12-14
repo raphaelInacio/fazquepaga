@@ -36,6 +36,15 @@
             "buttonLoading": "Creating...",
             "success": "Account created successfully!",
             "error": "Failed to create account. Please try again."
+        },
+        "childLogin": {
+            "title": "Child Portal",
+            "instruction": "Enter the code your parents gave you!",
+            "placeholder": "Enter your code here",
+            "button": "Enter! 🚀",
+            "enterCode": "Please enter your code!",
+            "welcome": "Welcome! 🎉",
+            "invalidCode": "Invalid code. Ask your parents for a new code!"
         }
     },
     "child": {

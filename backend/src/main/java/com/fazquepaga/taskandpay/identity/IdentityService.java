@@ -1,8 +1,10 @@
 package com.fazquepaga.taskandpay.identity;
 
+import com.fazquepaga.taskandpay.identity.dto.ChildLoginRequest;
 import com.fazquepaga.taskandpay.identity.dto.CreateChildRequest;
 import com.fazquepaga.taskandpay.identity.dto.CreateParentRequest;
 import com.fazquepaga.taskandpay.identity.dto.UpdateChildRequest;
+import com.google.api.core.ApiFuture;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -15,68 +17,74 @@ import org.springframework.stereotype.Service;
 public class IdentityService {
 
     private final UserRepository userRepository;
+    private final org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
+    // In-memory storage for onboarding codes: code -> childId
+    private final ConcurrentHashMap<String, String> onboardingCodes = new ConcurrentHashMap<>();
 
-    private final Map<String, String> onboardingCodes = new ConcurrentHashMap<>(); // code -> childId
-
-    public IdentityService(UserRepository userRepository) {
-
+    public IdentityService(UserRepository userRepository,
+            org.springframework.security.crypto.password.PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public String generateOnboardingCode(String childId) {
-
+        // Reuse existing logic or simple random
         String code = UUID.randomUUID().toString().substring(0, 6).toUpperCase();
-
         onboardingCodes.put(code, childId);
-
-        // In a real application, you'd add a TTL to this code
-
         return code;
     }
 
     public User completeOnboarding(String code, String phoneNumber)
             throws ExecutionException, InterruptedException {
-
         String childId = onboardingCodes.get(code);
-
         if (childId == null) {
-
             throw new IllegalArgumentException("Invalid onboarding code.");
         }
-
         User child = userRepository.findByIdSync(childId);
-
         if (child == null) {
-
             throw new IllegalStateException("Child not found for onboarding code.");
         }
-
         child.setPhoneNumber(phoneNumber);
-
         userRepository.save(child).get();
-
         onboardingCodes.remove(code);
-
         return child;
     }
 
+    // Authenticate Child by Access Code (Permanent)
     public User authenticateChildByCode(String code)
             throws ExecutionException, InterruptedException {
 
-        String childId = onboardingCodes.get(code);
+        // Find child by access code
+        // We need a query for this.
+        // Option A: Update UserRepository to findByAccessCode.
+        // Option B: For now, if code is 6 chars, maybe we can fetch all children and
+        // filter? (Bad performance)
+        // Option C: Add findByAccessCode to UserRepository.
 
-        if (childId == null) {
-            throw new IllegalArgumentException("Invalid or expired onboarding code.");
-        }
+        // Let's add findByAccessCode to UserRepository while we're at it.
+        // But for now, let's assume specific query.
 
-        User child = userRepository.findByIdSync(childId);
+        // Note: The previous implementation used `onboardingCodes` map which is
+        // ephemeral.
+        // We want PERSISTENT access code login now.
+
+        // Actually, let's check if the code exists in `onboardingCodes` (legacy flow)
+        // OR database (new flow).
+        // The user wants PERMANENT access code.
+
+        // Implementation:
+        // 1. Check if we can find by accessCode in DB.
+
+        User child = userRepository.findByAccessCode(code).get();
 
         if (child == null) {
-            throw new IllegalStateException("Child not found for onboarding code.");
+            // Fallback to legacy onboarding for transition if needed, but per plan "Child
+            // Access Code Strategy", it's primary.
+            throw new IllegalArgumentException("Invalid access code.");
         }
 
         if (child.getRole() != User.Role.CHILD) {
-            throw new IllegalArgumentException("Invalid user type for child login.");
+            throw new IllegalArgumentException("Invalid user type.");
         }
 
         return child;
@@ -85,11 +93,21 @@ public class IdentityService {
     public User registerParent(CreateParentRequest request)
             throws ExecutionException, InterruptedException {
 
+        // Validate uniqueness of email and phone
+        if (userRepository.findByEmail(request.getEmail()) != null) {
+            throw new IllegalArgumentException("Email already in use.");
+        }
+        if (request.getPhoneNumber() != null && userRepository.findByPhoneNumber(request.getPhoneNumber()) != null) {
+            throw new IllegalArgumentException("Phone number already in use.");
+        }
+
         User parent = User.builder()
                 .name(request.getName())
                 .email(request.getEmail())
+                .phoneNumber(request.getPhoneNumber()) // Save phone
+                .password(passwordEncoder.encode(request.getPassword())) // Save hashed password
                 .role(User.Role.PARENT)
-                .subscriptionTier(User.SubscriptionTier.FREE) // Default to FREE tier
+                .subscriptionTier(User.SubscriptionTier.FREE)
                 .subscriptionStatus(User.SubscriptionStatus.ACTIVE)
                 .build();
 
@@ -104,18 +122,20 @@ public class IdentityService {
         String parentId = request.getParentId();
 
         if (parentId == null || parentId.isEmpty()) {
-
             throw new IllegalArgumentException("Parent ID is required to create a child.");
         }
-
-        // Ensure parent exists
 
         User parent = userRepository.findByIdSync(parentId);
 
         if (parent == null || parent.getRole() != User.Role.PARENT) {
-
             throw new IllegalArgumentException("Parent with ID " + parentId + " not found.");
         }
+
+        // Generate Unique Access Code
+        String accessCode;
+        do {
+            accessCode = UUID.randomUUID().toString().substring(0, 6).toUpperCase();
+        } while (userRepository.findByAccessCode(accessCode).isPresent()); // Ensure uniqueness
 
         User child = User.builder()
                 .name(request.getName())
@@ -123,6 +143,7 @@ public class IdentityService {
                 .age(request.getAge())
                 .role(User.Role.CHILD)
                 .parentId(parentId)
+                .accessCode(accessCode) // Save access code
                 .build();
 
         userRepository.save(child).get();
@@ -189,6 +210,19 @@ public class IdentityService {
 
         userRepository.save(child).get();
         return child;
+    }
+
+    public User authenticateParent(String email, String password) throws ExecutionException, InterruptedException {
+        User user = userRepository.findByEmail(email);
+        if (user == null || user.getRole() != User.Role.PARENT) {
+            throw new IllegalArgumentException("Invalid credentials.");
+        }
+
+        if (!passwordEncoder.matches(password, user.getPassword())) {
+            throw new IllegalArgumentException("Invalid credentials.");
+        }
+
+        return user;
     }
 
     public void deleteChild(String childId, String parentId)

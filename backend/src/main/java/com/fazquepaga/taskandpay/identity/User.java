@@ -6,19 +6,24 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import org.springframework.security.core.userdetails.UserDetails;
+
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class User {
+public class User implements UserDetails {
 
-    @DocumentId private String id;
+    @DocumentId
+    private String id;
 
     private String name;
     private String email; // Used for parents
     private Role role;
     private String parentId; // Links a child to a parent
-    private String phoneNumber; // Used for children for WhatsApp identification
+    private String phoneNumber; // Used for children (WhatsApp) AND Parents (Unique login/contact)
+    private String password; // Hashed password for parents
+    private String accessCode; // Unique 6-character code for children
     private java.math.BigDecimal monthlyAllowance;
     private java.math.BigDecimal balance; // Current balance for the child
     private Integer age; // Used for children
@@ -39,5 +44,40 @@ public class User {
         ACTIVE,
         CANCELED,
         PAST_DUE
+    }
+
+    // UserDetails Implementation
+
+    @Override
+    public java.util.Collection<? extends org.springframework.security.core.GrantedAuthority> getAuthorities() {
+        return java.util.Collections.singletonList(
+                new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_" + role.name()));
+    }
+
+    @Override
+    public String getUsername() {
+        // For parents, use email. For children, we might use ID or Access Code,
+        // but this method is primarily for Spring Security context.
+        return email != null ? email : id;
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return true;
     }
 }

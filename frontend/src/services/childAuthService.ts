@@ -14,6 +14,7 @@ export interface ChildLoginResponse {
         parentId: string;
     };
     message: string;
+    token?: string;
 }
 
 const CHILD_STORAGE_KEY = 'fazquepaga_child';
@@ -23,8 +24,11 @@ export const childAuthService = {
         const response = await api.post('/api/v1/children/login', { code });
         const data = response.data;
 
-        // Store child data in localStorage
+        // Store child data and token
         localStorage.setItem(CHILD_STORAGE_KEY, JSON.stringify(data.child));
+        if (data.token) {
+            localStorage.setItem('token', data.token);
+        }
 
         return data;
     },
