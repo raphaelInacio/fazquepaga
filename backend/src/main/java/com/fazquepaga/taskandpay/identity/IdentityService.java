@@ -37,17 +37,17 @@ public class IdentityService {
 
     public User completeOnboarding(String code, String phoneNumber)
             throws ExecutionException, InterruptedException {
-        String childId = onboardingCodes.get(code);
-        if (childId == null) {
+        // Use persistent access code lookup
+        java.util.Optional<User> childOptional = userRepository.findByAccessCode(code);
+
+        if (!childOptional.isPresent()) {
             throw new IllegalArgumentException("Invalid onboarding code.");
         }
-        User child = userRepository.findByIdSync(childId);
-        if (child == null) {
-            throw new IllegalStateException("Child not found for onboarding code.");
-        }
+
+        User child = childOptional.get();
         child.setPhoneNumber(phoneNumber);
         userRepository.save(child).get();
-        onboardingCodes.remove(code);
+        // onboardingCodes map is no longer used
         return child;
     }
 

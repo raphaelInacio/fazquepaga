@@ -124,33 +124,37 @@ class IdentityServiceTest {
     }
 
     @Test
-    void shouldGenerateOnboardingCode() {
+    void shouldGenerateOnboardingCode() throws ExecutionException, InterruptedException {
         // Given
         String childId = "child-123";
+        String accessCode = "ABC123";
+        User child = User.builder().id(childId).accessCode(accessCode).build(); // Mock child with access code
+
+        when(userRepository.findByIdSync(childId)).thenReturn(child);
 
         // When
         String code = identityService.generateOnboardingCode(childId);
 
         // Then
         assertNotNull(code);
-        assertEquals(6, code.length());
-        assertTrue(code.matches("[A-Z0-9]{6}"));
+        assertEquals(accessCode, code);
     }
 
     @Test
     void shouldCompleteOnboardingSuccessfully() throws ExecutionException, InterruptedException {
         // Given
         String childId = "child-123";
-        String code = identityService.generateOnboardingCode(childId);
+        String accessCode = "ABC123";
         String phoneNumber = "+1234567890";
 
-        User child = User.builder().id(childId).name("Test Child").role(User.Role.CHILD).build();
+        User child = User.builder().id(childId).name("Test Child").role(User.Role.CHILD).accessCode(accessCode).build();
 
-        when(userRepository.findByIdSync(childId)).thenReturn(child);
+        // Mock findByAccessCode instead of map lookup
+        when(userRepository.findByAccessCode(accessCode)).thenReturn(java.util.Optional.of(child));
         when(userRepository.save(any(User.class))).thenReturn(ApiFutures.immediateFuture(null));
 
         // When
-        User result = identityService.completeOnboarding(code, phoneNumber);
+        User result = identityService.completeOnboarding(accessCode, phoneNumber);
 
         // Then
         assertNotNull(result);
@@ -159,10 +163,12 @@ class IdentityServiceTest {
     }
 
     @Test
-    void shouldThrowExceptionForInvalidOnboardingCode() {
+    void shouldThrowExceptionForInvalidOnboardingCode() throws ExecutionException, InterruptedException {
         // Given
         String invalidCode = "INVALID";
         String phoneNumber = "+1234567890";
+
+        when(userRepository.findByAccessCode(invalidCode)).thenReturn(java.util.Optional.empty());
 
         // When & Then
         IllegalArgumentException exception = assertThrows(
@@ -170,24 +176,6 @@ class IdentityServiceTest {
                 () -> identityService.completeOnboarding(invalidCode, phoneNumber));
 
         assertEquals("Invalid onboarding code.", exception.getMessage());
-    }
-
-    @Test
-    void shouldThrowExceptionWhenChildNotFoundDuringOnboarding()
-            throws ExecutionException, InterruptedException {
-        // Given
-        String childId = "child-123";
-        String code = identityService.generateOnboardingCode(childId);
-        String phoneNumber = "+1234567890";
-
-        when(userRepository.findByIdSync(childId)).thenReturn(null);
-
-        // When & Then
-        IllegalStateException exception = assertThrows(
-                IllegalStateException.class,
-                () -> identityService.completeOnboarding(code, phoneNumber));
-
-        assertEquals("Child not found for onboarding code.", exception.getMessage());
     }
 
     @Test
