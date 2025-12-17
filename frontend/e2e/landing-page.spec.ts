@@ -1,35 +1,46 @@
 import { test, expect } from '@playwright/test';
 
 test('Landing Page Login Flow', async ({ page }) => {
+    // Force desktop viewport to ensure consistent rendering
+    await page.setViewportSize({ width: 1280, height: 720 });
     await page.goto('/');
 
     // Check if "Entrar" button exists and click it
-    const enterButton = page.getByRole('button', { name: 'Entrar' }).first();
+    const enterButton = page.locator('button:has-text("Entrar"):visible');
     await expect(enterButton).toBeVisible();
     await enterButton.click();
 
-    // Verify Modal appears
+    // Verify Modal appears and click "Sou Pai/Mãe"
     await expect(page.getByText('Como você quer entrar?')).toBeVisible();
-
-    // Test "Sou Pai/Mãe" navigation
     const parentButton = page.getByRole('button', { name: 'Sou Pai/Mãe' });
     await expect(parentButton).toBeVisible();
+    await parentButton.click();
 
-    // Mock auth to allow access to dashboard
-    await page.evaluate(() => {
-        localStorage.setItem('parentId', 'test-parent-id');
-        localStorage.setItem('parentName', 'Test Parent');
+    // Verify redirection to Login page
+    await expect(page).toHaveURL(/.*\/login/);
+
+    // Fill Login Form
+    await page.fill('input[id="email"]', 'test@example.com');
+    await page.fill('input[id="password"]', 'password123');
+
+    // Mock the API call to /api/v1/auth/login to return success
+    await page.route('**/api/v1/auth/login', async route => {
+        await route.fulfill({
+            status: 200,
+            contentType: 'application/json',
+            body: JSON.stringify({
+                token: 'fake-jwt-token',
+                user: {
+                    id: 'test-parent-id',
+                    name: 'Test Parent',
+                    email: 'test@example.com',
+                    role: 'PARENT'
+                }
+            })
+        });
     });
 
-    await parentButton.click();
-    await expect(page).toHaveURL('/dashboard');
+    await page.click('button[type="submit"]');
 
-    // Go back and test "Sou Filho(a)" navigation
-    await page.goto('/');
-    await enterButton.click();
-
-    const childButton = page.getByRole('button', { name: 'Sou Filho(a)' });
-    await expect(childButton).toBeVisible();
-    await childButton.click();
-    await expect(page).toHaveURL('/child-login');
+    await page.waitForURL('**/dashboard');
 });

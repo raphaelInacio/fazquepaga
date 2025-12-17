@@ -27,11 +27,12 @@ public class IdentityService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public String generateOnboardingCode(String childId) {
-        // Reuse existing logic or simple random
-        String code = UUID.randomUUID().toString().substring(0, 6).toUpperCase();
-        onboardingCodes.put(code, childId);
-        return code;
+    public String generateOnboardingCode(String childId) throws ExecutionException, InterruptedException {
+        User child = userRepository.findByIdSync(childId);
+        if (child == null) {
+            throw new IllegalArgumentException("Child not found");
+        }
+        return child.getAccessCode();
     }
 
     public User completeOnboarding(String code, String phoneNumber)

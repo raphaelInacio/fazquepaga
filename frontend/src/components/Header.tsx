@@ -92,7 +92,7 @@ export const Header = () => {
               className="h-32 flex flex-col gap-4 hover:border-primary hover:bg-primary/5 transition-all"
               onClick={() => {
                 setIsLoginModalOpen(false);
-                navigate("/dashboard");
+                navigate("/login");
               }}
             >
               <div className="p-3 rounded-full bg-primary/10 text-primary">

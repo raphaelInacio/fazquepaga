@@ -39,6 +39,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         localStorage.setItem('token', newToken);
         localStorage.setItem('user', JSON.stringify(newUser));
 
+        // Legacy compatibility
+        if (newUser.id) localStorage.setItem('parentId', newUser.id);
+        if (newUser.name) localStorage.setItem('parentName', newUser.name);
+
         // Also set axios default header if we had an api instance setup globally
         // api.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
     };

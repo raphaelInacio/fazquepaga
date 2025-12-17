@@ -65,9 +65,9 @@ export default function RegisterParent() {
                 localStorage.setItem("parentName", parent.name);
                 localStorage.setItem("parent", JSON.stringify(parent));
                 // Sync with SubscriptionContext
-                setUser(parent);
+                // setUser(parent); // Remove auto-login context sync as we don't have token
             }
-            navigate("/dashboard");
+            navigate("/login");
         } catch (error) {
             toast.error(t("auth.register.error"));
             console.error(error);

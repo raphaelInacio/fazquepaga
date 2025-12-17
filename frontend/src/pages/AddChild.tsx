@@ -132,7 +132,7 @@ export default function AddChild() {
                                     </FormItem>
                                 )}
                             />
-                            <Button type="submit" className="w-full" disabled={isLoading}>
+                            <Button type="submit" className="w-full" disabled={isLoading} data-testid="add-child-submit-button">
                                 {isLoading ? t("child.add.buttonLoading") : t("child.add.button")}
                             </Button>
                         </form>
