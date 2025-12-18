@@ -14,16 +14,16 @@ export const Footer = () => {
               Transformando tarefas em educação financeira.
             </p>
           </div>
-          
+
           <div>
             <h4 className="font-semibold text-foreground mb-4">Produto</h4>
             <ul className="space-y-2">
               <li><a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-smooth">Recursos</a></li>
-              <li><a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-smooth">Preços</a></li>
+              <li><a href="/#pricing" className="text-sm text-muted-foreground hover:text-foreground transition-smooth">Preços</a></li>
               <li><a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-smooth">FAQ</a></li>
             </ul>
           </div>
-          
+
           <div>
             <h4 className="font-semibold text-foreground mb-4">Empresa</h4>
             <ul className="space-y-2">
@@ -32,7 +32,7 @@ export const Footer = () => {
               <li><a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-smooth">Contato</a></li>
             </ul>
           </div>
-          
+
           <div>
             <h4 className="font-semibold text-foreground mb-4">Legal</h4>
             <ul className="space-y-2">
@@ -41,7 +41,7 @@ export const Footer = () => {
             </ul>
           </div>
         </div>
-        
+
         <div className="border-t border-border mt-8 pt-8 text-center">
           <p className="text-sm text-muted-foreground">
             © 2025 FazQuePaga. Todos os direitos reservados.

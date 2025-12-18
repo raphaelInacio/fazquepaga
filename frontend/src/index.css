@@ -18,13 +18,13 @@ All colors MUST be HSL.
     --popover: 0 0% 100%;
     --popover-foreground: 265 40% 15%;
 
-    /* Primary: Vibrant Violet */
-    --primary: 265 80% 60%;
+    /* Primary: Vibrant Violet - Darkened for contrast */
+    --primary: 265 80% 50%;
     --primary-foreground: 0 0% 100%;
     --primary-glow: 265 90% 75%;
 
-    /* Secondary: Playful Blue */
-    --secondary: 195 85% 55%;
+    /* Secondary: Playful Blue - Darkened for contrast */
+    --secondary: 195 85% 45%;
     --secondary-foreground: 0 0% 100%;
 
     --muted: 265 20% 94%;

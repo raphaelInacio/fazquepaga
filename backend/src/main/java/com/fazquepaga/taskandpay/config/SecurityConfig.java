@@ -34,7 +34,26 @@ public class SecurityConfig {
                                 "/api/v1/children/login",
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
-                                "/swagger-ui.html")
+                                "/swagger-ui.html",
+                                "/",
+                                "/index.html",
+                                "/assets/**",
+                                "/*.js",
+                                "/*.css",
+                                "/*.ico",
+                                "/*.png",
+                                "/*.svg",
+                                "/*.json",
+                                "/manifest.json",
+                                "/login",
+                                "/register",
+                                "/child-login",
+                                "/child-portal",
+                                "/gift-cards",
+                                "/dashboard",
+                                "/add-child",
+                                "/child/**",
+                                "/error") // Allow error dispatch
                         .permitAll()
                         // All other endpoints require authentication
                         .anyRequest().authenticated())
