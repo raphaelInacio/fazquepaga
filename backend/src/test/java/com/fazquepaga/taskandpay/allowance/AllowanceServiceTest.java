@@ -21,11 +21,14 @@ import org.mockito.MockitoAnnotations;
 
 class AllowanceServiceTest {
 
-    @Mock private TaskService taskService;
+    @Mock
+    private TaskService taskService;
 
-    @Mock private UserRepository userRepository;
+    @Mock
+    private UserRepository userRepository;
 
-    @Mock private AllowanceCalculator allowanceCalculator;
+    @Mock
+    private AllowanceCalculator allowanceCalculator;
 
     private AllowanceService allowanceService;
 
@@ -41,23 +44,20 @@ class AllowanceServiceTest {
         String childId = "child1";
         User child = User.builder().id(childId).build();
 
-        Task task1 =
-                Task.builder()
-                        .status(Task.TaskStatus.APPROVED)
-                        .value(new BigDecimal("10.00"))
-                        .build();
+        Task task1 = Task.builder()
+                .status(Task.TaskStatus.APPROVED)
+                .value(new BigDecimal("10.00"))
+                .build();
 
-        Task task2 =
-                Task.builder()
-                        .status(Task.TaskStatus.PENDING_APPROVAL)
-                        .value(new BigDecimal("5.00"))
-                        .build();
+        Task task2 = Task.builder()
+                .status(Task.TaskStatus.PENDING_APPROVAL)
+                .value(new BigDecimal("5.00"))
+                .build();
 
-        Task task3 =
-                Task.builder()
-                        .status(Task.TaskStatus.PENDING)
-                        .value(new BigDecimal("20.00"))
-                        .build();
+        Task task3 = Task.builder()
+                .status(Task.TaskStatus.PENDING)
+                .value(new BigDecimal("20.00"))
+                .build();
 
         List<Task> tasks = Arrays.asList(task1, task2, task3);
 
@@ -68,7 +68,26 @@ class AllowanceServiceTest {
         BigDecimal predictedAllowance = allowanceService.calculatePredictedAllowance(childId);
 
         // Then
-        assertEquals(new BigDecimal("15.00"), predictedAllowance);
+        // Then
+        // Current Balance (100) + Pending Task Value (5 / 1 occurrence = 5)
+        // Approved tasks are already in balance, so they are not added again from task
+        // list value,
+        // BUT the test setup says child has balance null? Let's fix child setup.
+
+        // Wait, the test setup in `setUp` doesn't set balance.
+        // In the method: `currentBalance = child.getBalance() != null ?
+        // child.getBalance() : BigDecimal.ZERO;`
+
+        // Let's assume child has 0 balance for this test or update the test.
+        // Task1 (APPROVED) - value 10 - Ignored by pending filter
+        // Task2 (PENDING_APPROVAL) - value 5 - Added (5/1 = 5)
+        // Task3 (PENDING) - value 20 - Ignored
+
+        // So predicted should be 0 + 5 = 5.00.
+        // Original test expected 15.00 (10 + 5).
+        // But Approved tasks are assumed to be in balance now.
+
+        assertEquals(new BigDecimal("5.00"), predictedAllowance);
     }
 
     @Test
@@ -79,12 +98,11 @@ class AllowanceServiceTest {
         when(userRepository.findByIdSync(childId)).thenReturn(null);
 
         // When & Then
-        IllegalArgumentException exception =
-                assertThrows(
-                        IllegalArgumentException.class,
-                        () -> {
-                            allowanceService.calculatePredictedAllowance(childId);
-                        });
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> {
+                    allowanceService.calculatePredictedAllowance(childId);
+                });
         assertEquals("Child not found", exception.getMessage());
     }
 
@@ -100,7 +118,7 @@ class AllowanceServiceTest {
         when(userRepository.findByIdSync(childId)).thenReturn(child);
         when(taskService.getTasksByUserId(childId)).thenReturn(tasks);
         when(allowanceCalculator.calculateTaskValue(
-                        task, child.getMonthlyAllowance(), tasks, YearMonth.now()))
+                task, child.getMonthlyAllowance(), tasks, YearMonth.now()))
                 .thenReturn(new BigDecimal("10.00"));
 
         // When
@@ -118,12 +136,11 @@ class AllowanceServiceTest {
         when(userRepository.findByIdSync(childId)).thenReturn(null);
 
         // When & Then
-        IllegalArgumentException exception =
-                assertThrows(
-                        IllegalArgumentException.class,
-                        () -> {
-                            allowanceService.calculateValueForTask(childId, taskId);
-                        });
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> {
+                    allowanceService.calculateValueForTask(childId, taskId);
+                });
         assertEquals("Child not found", exception.getMessage());
     }
 
@@ -138,12 +155,11 @@ class AllowanceServiceTest {
         when(taskService.getTasksByUserId(childId)).thenReturn(Collections.emptyList());
 
         // When & Then
-        IllegalArgumentException exception =
-                assertThrows(
-                        IllegalArgumentException.class,
-                        () -> {
-                            allowanceService.calculateValueForTask(childId, taskId);
-                        });
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> {
+                    allowanceService.calculateValueForTask(childId, taskId);
+                });
         assertEquals("Task not found", exception.getMessage());
     }
 
@@ -153,8 +169,7 @@ class AllowanceServiceTest {
         String childId = "child1";
         User child = User.builder().id(childId).monthlyAllowance(new BigDecimal("100.00")).build();
         Task task1 = Task.builder().type(Task.TaskType.DAILY).weight(Task.TaskWeight.LOW).build();
-        Task task2 =
-                Task.builder().type(Task.TaskType.WEEKLY).weight(Task.TaskWeight.MEDIUM).build();
+        Task task2 = Task.builder().type(Task.TaskType.WEEKLY).weight(Task.TaskWeight.MEDIUM).build();
         List<Task> tasks = Arrays.asList(task1, task2);
 
         when(userRepository.findByIdSync(childId)).thenReturn(child);

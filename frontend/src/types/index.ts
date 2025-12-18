@@ -11,6 +11,7 @@ export interface Task {
     scheduledDate?: string;
     aiValidated?: boolean;
     proofImageUrl?: string;
+    acknowledged?: boolean;
 }
 
 export interface CreateTaskRequest {

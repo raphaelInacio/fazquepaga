@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { toast } from "sonner";
 import { Task, User } from "@/types";
-import { ArrowLeft, Plus, Sparkles, Calendar, CheckCircle2, Trophy, Clock, Target } from "lucide-react";
+import { ArrowLeft, Plus, Sparkles, Calendar, CheckCircle2, Trophy, Clock, Target, Check, X } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
@@ -126,6 +126,39 @@ export default function ChildTasks() {
         } catch (error) {
             toast.error("Failed to approve task");
             console.error(error);
+        }
+    };
+
+    const handleAcknowledgeTask = async () => {
+        if (!selectedTaskForReview || !childId) return;
+        const parentId = localStorage.getItem("parentId");
+        if (!parentId) return;
+
+        try {
+            await taskService.acknowledgeTask(childId, selectedTaskForReview.id!, parentId);
+            toast.success(t("childTasks.review.taskDismissed"));
+            setIsReviewDialogOpen(false);
+            setSelectedTaskForReview(null);
+            loadTasks();
+        } catch (error) {
+            toast.error(t("childTasks.review.taskDismissError"));
+        }
+    };
+
+    const handleRejectTask = async () => {
+        if (!selectedTaskForReview || !childId) return;
+        const parentId = localStorage.getItem("parentId");
+        if (!parentId) return;
+
+        try {
+            await taskService.rejectTask(childId, selectedTaskForReview.id!, parentId);
+            toast.success(t("childTasks.review.taskRejected"));
+            setIsReviewDialogOpen(false);
+            setSelectedTaskForReview(null);
+            loadTasks();
+            loadPredictedAllowance(); // Update balance
+        } catch (error) {
+            toast.error(t("childTasks.review.taskRejectError"));
         }
     };
 
@@ -523,13 +556,34 @@ export default function ChildTasks() {
                         <Button variant="outline" onClick={() => setIsReviewDialogOpen(false)} className="rounded-xl">
                             {t("common.cancel")}
                         </Button>
-                        <Button
-                            onClick={handleApproveTask}
-                            className="bg-green-600 hover:bg-green-700 rounded-xl shadow-lg shadow-green-600/20"
-                        >
-                            <CheckCircle2 className="w-4 h-4 mr-2" />
-                            {t("dashboard.pendingApprovals.approve")}
-                        </Button>
+
+                        {selectedTaskForReview?.status === 'APPROVED' ? (
+                            <>
+                                <Button
+                                    onClick={handleRejectTask}
+                                    variant="destructive"
+                                    className="rounded-xl"
+                                >
+                                    <X className="w-4 h-4 mr-2" />
+                                    {t("common.reject") || "Reject"}
+                                </Button>
+                                <Button
+                                    onClick={handleAcknowledgeTask}
+                                    className="bg-blue-600 hover:bg-blue-700 rounded-xl"
+                                >
+                                    <Check className="w-4 h-4 mr-2" />
+                                    {t("common.dismiss") || "Dismiss"}
+                                </Button>
+                            </>
+                        ) : (
+                            <Button
+                                onClick={handleApproveTask}
+                                className="bg-green-600 hover:bg-green-700 rounded-xl shadow-lg shadow-green-600/20"
+                            >
+                                <CheckCircle2 className="w-4 h-4 mr-2" />
+                                {t("dashboard.pendingApprovals.approve")}
+                            </Button>
+                        )}
                     </DialogFooter>
                 </DialogContent>
 

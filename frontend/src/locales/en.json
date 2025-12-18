@@ -11,7 +11,9 @@
         "edit": "Edit",
         "back": "Back",
         "next": "Next",
-        "close": "Close"
+        "close": "Close",
+        "dismiss": "Dismiss",
+        "reject": "Reject"
     },
     "header": {
         "resources": "Features",
@@ -180,7 +182,13 @@
             "title": "Review Task",
             "aiValidatedMessage": "✅ Our AI has pre-validated this task and believes it has been completed.",
             "proof": "Proof:",
-            "noProof": "No proof image submitted yet"
+            "aiValidatedMessage": "✅ Our AI has pre-validated this task and believes it has been completed.",
+            "proof": "Proof:",
+            "noProof": "No proof image submitted yet",
+            "taskDismissed": "Task dismissed",
+            "taskDismissError": "Failed to dismiss task",
+            "taskRejected": "Task rejected",
+            "taskRejectError": "Failed to reject task"
         },
         "create": {
             "title": "Create New Task",

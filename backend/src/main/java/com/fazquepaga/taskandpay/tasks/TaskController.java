@@ -58,4 +58,26 @@ public class TaskController {
 
         return ResponseEntity.ok(completedTask);
     }
+
+    @PostMapping("/{taskId}/acknowledge")
+    public ResponseEntity<Task> acknowledgeTask(
+            @PathVariable String taskId,
+            @RequestParam("child_id") String childId,
+            @RequestParam("parent_id") String parentId)
+            throws ExecutionException, InterruptedException {
+
+        Task task = taskService.acknowledgeTask(childId, taskId, parentId);
+        return ResponseEntity.ok(task);
+    }
+
+    @PostMapping("/{taskId}/reject")
+    public ResponseEntity<Task> rejectTask(
+            @PathVariable String taskId,
+            @RequestParam("child_id") String childId,
+            @RequestParam("parent_id") String parentId)
+            throws ExecutionException, InterruptedException {
+
+        Task task = taskService.rejectTask(childId, taskId, parentId);
+        return ResponseEntity.ok(task);
+    }
 }

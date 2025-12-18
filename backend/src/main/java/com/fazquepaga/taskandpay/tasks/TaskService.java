@@ -23,16 +23,14 @@ public class TaskService {
     private final SubscriptionService subscriptionService;
 
     private final com.fazquepaga.taskandpay.allowance.LedgerService ledgerService;
-    private final Provider<com.fazquepaga.taskandpay.allowance.AllowanceService>
-            allowanceServiceProvider;
+    private final Provider<com.fazquepaga.taskandpay.allowance.AllowanceService> allowanceServiceProvider;
 
     public TaskService(
             TaskRepository taskRepository,
             UserRepository userRepository,
             SubscriptionService subscriptionService,
             com.fazquepaga.taskandpay.allowance.LedgerService ledgerService,
-            Provider<com.fazquepaga.taskandpay.allowance.AllowanceService>
-                    allowanceServiceProvider) {
+            Provider<com.fazquepaga.taskandpay.allowance.AllowanceService> allowanceServiceProvider) {
 
         this.taskRepository = taskRepository;
 
@@ -69,18 +67,17 @@ public class TaskService {
             }
         }
 
-        Task task =
-                Task.builder()
-                        .description(request.getDescription())
-                        .type(request.getType())
-                        .weight(request.getWeight())
-                        .value(java.math.BigDecimal.ZERO) // Will be recalculated
-                        .requiresProof(request.isRequiresProof())
-                        .createdAt(Instant.now())
-                        .dayOfWeek(request.getDayOfWeek())
-                        .scheduledDate(request.getScheduledDate())
-                        .status(Task.TaskStatus.PENDING)
-                        .build();
+        Task task = Task.builder()
+                .description(request.getDescription())
+                .type(request.getType())
+                .weight(request.getWeight())
+                .value(java.math.BigDecimal.ZERO) // Will be recalculated
+                .requiresProof(request.isRequiresProof())
+                .createdAt(Instant.now())
+                .dayOfWeek(request.getDayOfWeek())
+                .scheduledDate(request.getScheduledDate())
+                .status(Task.TaskStatus.PENDING)
+                .build();
 
         taskRepository.save(userId, task).get();
 
@@ -98,8 +95,7 @@ public class TaskService {
     public List<Task> getTasksByUserId(String userId)
             throws ExecutionException, InterruptedException {
 
-        List<QueryDocumentSnapshot> documents =
-                taskRepository.findTasksByUserId(userId).get().getDocuments();
+        List<QueryDocumentSnapshot> documents = taskRepository.findTasksByUserId(userId).get().getDocuments();
 
         return documents.stream().map(doc -> doc.toObject(Task.class)).collect(Collectors.toList());
     }
@@ -159,22 +155,21 @@ public class TaskService {
         }
 
         List<Task> tasks = getTasksByUserId(childId);
-        Task task =
-                tasks.stream()
-                        .filter(t -> t.getId().equals(taskId))
-                        .findFirst()
-                        .orElseThrow(() -> new IllegalArgumentException("Task not found"));
+        Task task = tasks.stream()
+                .filter(t -> t.getId().equals(taskId))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Task not found"));
 
         if (task.getStatus() == Task.TaskStatus.APPROVED) {
             throw new IllegalStateException("Task is already approved");
         }
 
         // Calculate value
-        java.math.BigDecimal value =
-                allowanceServiceProvider.get().calculateValueForTask(childId, taskId);
+        java.math.BigDecimal value = allowanceServiceProvider.get().calculateValueForTask(childId, taskId);
 
         // Update task status
         task.setStatus(Task.TaskStatus.APPROVED);
+        task.setAcknowledged(true); // Manually approved, so acknowledged
         taskRepository.save(childId, task).get();
 
         // Add transaction
@@ -198,11 +193,10 @@ public class TaskService {
 
         // Find task
         List<Task> tasks = getTasksByUserId(childId);
-        Task task =
-                tasks.stream()
-                        .filter(t -> t.getId().equals(taskId))
-                        .findFirst()
-                        .orElseThrow(() -> new IllegalArgumentException("Task not found"));
+        Task task = tasks.stream()
+                .filter(t -> t.getId().equals(taskId))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Task not found"));
 
         // Check if task is already completed or approved
         if (task.getStatus() == Task.TaskStatus.COMPLETED
@@ -217,10 +211,10 @@ public class TaskService {
         } else {
             // Auto-approve tasks that don't require proof
             task.setStatus(Task.TaskStatus.APPROVED);
+            task.setAcknowledged(false);
 
             // Calculate value and add transaction
-            java.math.BigDecimal value =
-                    allowanceServiceProvider.get().calculateValueForTask(childId, taskId);
+            java.math.BigDecimal value = allowanceServiceProvider.get().calculateValueForTask(childId, taskId);
             ledgerService.addTransaction(
                     childId,
                     value,
@@ -232,15 +226,82 @@ public class TaskService {
         return task;
     }
 
+    public Task acknowledgeTask(String childId, String taskId, String parentId)
+            throws ExecutionException, InterruptedException {
+        // Verify parent rights (simplified for now, ideally check parent-child
+        // relation)
+        User parent = userRepository.findByIdSync(parentId);
+        if (parent == null || parent.getRole() != User.Role.PARENT) {
+            throw new IllegalArgumentException("User is not a parent");
+        }
+
+        List<Task> tasks = getTasksByUserId(childId);
+        Task task = tasks.stream()
+                .filter(t -> t.getId().equals(taskId))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Task not found"));
+
+        task.setAcknowledged(true);
+        taskRepository.save(childId, task).get();
+        return task;
+    }
+
+    public Task rejectTask(String childId, String taskId, String parentId)
+            throws ExecutionException, InterruptedException {
+        User parent = userRepository.findByIdSync(parentId);
+        if (parent == null || parent.getRole() != User.Role.PARENT) {
+            throw new IllegalArgumentException("User is not a parent");
+        }
+
+        List<Task> tasks = getTasksByUserId(childId);
+        Task task = tasks.stream()
+                .filter(t -> t.getId().equals(taskId))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Task not found"));
+
+        // Only allow rejecting APPROVED tasks (that were auto-approved or manually
+        // approved)
+        if (task.getStatus() != Task.TaskStatus.APPROVED) {
+            throw new IllegalStateException("Can only reject approved tasks");
+        }
+
+        // Calculate value to reverse
+        java.math.BigDecimal value = allowanceServiceProvider.get().calculateValueForTask(childId, taskId);
+
+        // Reverse transaction (Debit)
+        ledgerService.addTransaction(
+                childId,
+                value,
+                "Task rejected by parent: " + task.getDescription(),
+                com.fazquepaga.taskandpay.allowance.Transaction.TransactionType.DEBIT);
+
+        task.setStatus(Task.TaskStatus.PENDING); // Reset to pending or a specific REJECTED status? User asked to
+                                                 // "Cancel or Reprove". Let's use PENDING (so child can try again) or
+                                                 // maybe we need a REJECTED status.
+        // Looking at TaskStatus enum: PENDING, COMPLETED, PENDING_APPROVAL, APPROVED.
+        // It doesn't have REJECTED.
+        // If I set to PENDING, it might be confusing if it shows up as "To Do" again
+        // immediately.
+        // But usually rejection means "Redo it".
+        // Let's set to PENDING for now so it goes back to the list.
+        // Wait, if it was auto-approved, it means it was "completed" by child.
+        // If parent rejects, it should probably go back to PENDING or stay in a
+        // "Failed" state.
+        // Let's assume PENDING so it can be done again.
+        task.setStatus(Task.TaskStatus.PENDING);
+        task.setAcknowledged(true); // Logic: Parent acted on it.
+
+        taskRepository.save(childId, task).get();
+        return task;
+    }
+
     private int countRecurringTasks(String userId) throws ExecutionException, InterruptedException {
         List<Task> tasks = getTasksByUserId(userId);
-        return (int)
-                tasks.stream()
-                        .filter(
-                                task ->
-                                        task.getType() == Task.TaskType.DAILY
-                                                || task.getType() == Task.TaskType.WEEKLY)
-                        .count();
+        return (int) tasks.stream()
+                .filter(
+                        task -> task.getType() == Task.TaskType.DAILY
+                                || task.getType() == Task.TaskType.WEEKLY)
+                .count();
     }
 
     /** Updates the value of a task (used by automatic redistribution). */

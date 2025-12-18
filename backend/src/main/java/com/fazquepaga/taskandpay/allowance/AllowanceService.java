@@ -36,19 +36,17 @@ public class AllowanceService {
         }
 
         List<Task> allTasks = taskService.getTasksByUserId(childId);
-        Task targetTask =
-                allTasks.stream()
-                        .filter(t -> t.getId().equals(taskId))
-                        .findFirst()
-                        .orElseThrow(() -> new IllegalArgumentException("Task not found"));
+        Task targetTask = allTasks.stream()
+                .filter(t -> t.getId().equals(taskId))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Task not found"));
 
         YearMonth currentMonth = YearMonth.now(); // Default to current month
 
         // Filter tasks relevant for this month
-        List<Task> activeTasks =
-                allTasks.stream()
-                        .filter(t -> isTaskActiveForMonth(t, currentMonth))
-                        .collect(Collectors.toList());
+        List<Task> activeTasks = allTasks.stream()
+                .filter(t -> isTaskActiveForMonth(t, currentMonth))
+                .collect(Collectors.toList());
 
         return allowanceCalculator.calculateTaskValue(
                 targetTask, child.getMonthlyAllowance(), activeTasks, currentMonth);
@@ -56,9 +54,9 @@ public class AllowanceService {
 
     private boolean isTaskActiveForMonth(Task task, YearMonth yearMonth) {
         if (task.getType() == Task.TaskType.ONE_TIME) {
-            if (task.getScheduledDate() == null) return false;
-            YearMonth taskMonth =
-                    YearMonth.from(task.getScheduledDate().atZone(ZoneId.systemDefault()));
+            if (task.getScheduledDate() == null)
+                return false;
+            YearMonth taskMonth = YearMonth.from(task.getScheduledDate().atZone(ZoneId.systemDefault()));
             return taskMonth.equals(yearMonth);
         }
         // DAILY and WEEKLY are assumed active if they exist
@@ -74,21 +72,33 @@ public class AllowanceService {
 
         List<Task> allTasks = taskService.getTasksByUserId(childId);
 
-        // Sum the value of PENDING_APPROVAL and APPROVED tasks
-        BigDecimal predictedTotal =
-                allTasks.stream()
-                        .filter(
-                                t ->
-                                        t.getStatus() == Task.TaskStatus.PENDING_APPROVAL
-                                                || t.getStatus() == Task.TaskStatus.APPROVED)
-                        .map(t -> t.getValue() != null ? t.getValue() : BigDecimal.ZERO)
-                        .reduce(BigDecimal.ZERO, BigDecimal::add);
+        // Start with current balance (already includes approved/completed tasks)
+        BigDecimal currentBalance = child.getBalance() != null ? child.getBalance() : BigDecimal.ZERO;
 
-        return predictedTotal;
+        // Add value of tasks waiting for approval
+        BigDecimal pendingValue = allTasks.stream()
+                .filter(t -> t.getStatus() == Task.TaskStatus.PENDING_APPROVAL)
+                .map(t -> {
+                    if (t.getValue() == null)
+                        return BigDecimal.ZERO;
+                    int occurrences = getOccurrences(t.getType());
+                    if (occurrences == 0)
+                        return BigDecimal.ZERO;
+
+                    // Calculate single instance value: Total Monthly Value / Occurrences
+                    return t.getValue().divide(
+                            BigDecimal.valueOf(occurrences),
+                            2,
+                            java.math.RoundingMode.HALF_EVEN);
+                })
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        return currentBalance.add(pendingValue);
     }
 
     /**
-     * Recalculates task values based on monthly allowance, weight, and type. Redistributes the
+     * Recalculates task values based on monthly allowance, weight, and type.
+     * Redistributes the
      * allowance proportionally among all tasks.
      */
     public void recalculateTaskValues(String childId)
@@ -112,17 +122,15 @@ public class AllowanceService {
         }
 
         // Value per point
-        BigDecimal valuePerPoint =
-                monthlyAllowance.divide(
-                        BigDecimal.valueOf(totalPoints), 4, java.math.RoundingMode.HALF_EVEN);
+        BigDecimal valuePerPoint = monthlyAllowance.divide(
+                BigDecimal.valueOf(totalPoints), 4, java.math.RoundingMode.HALF_EVEN);
 
         // Distribute value to each task
         for (Task task : allTasks) {
             int taskPoints = calculateTaskPoints(task);
-            BigDecimal taskValue =
-                    valuePerPoint
-                            .multiply(BigDecimal.valueOf(taskPoints))
-                            .setScale(2, java.math.RoundingMode.HALF_EVEN);
+            BigDecimal taskValue = valuePerPoint
+                    .multiply(BigDecimal.valueOf(taskPoints))
+                    .setScale(2, java.math.RoundingMode.HALF_EVEN);
             task.setValue(taskValue);
 
             // Save task with new value
@@ -141,7 +149,8 @@ public class AllowanceService {
     }
 
     private int getOccurrences(Task.TaskType type) {
-        if (type == null) return 1;
+        if (type == null)
+            return 1;
         switch (type) {
             case DAILY:
                 return 30;
@@ -155,7 +164,8 @@ public class AllowanceService {
     }
 
     private int getWeightPoints(Task.TaskWeight weight) {
-        if (weight == null) return 1;
+        if (weight == null)
+            return 1;
         switch (weight) {
             case HIGH:
                 return 3;

@@ -14,7 +14,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class Task {
 
-    @DocumentId private String id;
+    @DocumentId
+    private String id;
 
     private String description;
     private TaskType type;
@@ -26,6 +27,7 @@ public class Task {
     private Integer dayOfWeek; // 1 (Mon) to 7 (Sun) for WEEKLY
     private Instant scheduledDate; // For ONE_TIME
     private Boolean aiValidated;
+    private Boolean acknowledged;
 
     public enum TaskType {
         DAILY,

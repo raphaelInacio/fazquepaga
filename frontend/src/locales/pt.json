@@ -11,7 +11,9 @@
         "edit": "Editar",
         "back": "Voltar",
         "next": "Próximo",
-        "close": "Fechar"
+        "close": "Fechar",
+        "dismiss": "Dispensar",
+        "reject": "Reprovar"
     },
     "header": {
         "resources": "Recursos",
@@ -179,7 +181,13 @@
             "title": "Revisar Tarefa",
             "aiValidatedMessage": "✅ Nossa IA pré-validou esta tarefa e acredita que foi concluída.",
             "proof": "Comprovante:",
-            "noProof": "Nenhuma imagem de comprovante enviada ainda"
+            "aiValidatedMessage": "✅ Nossa IA pré-validou esta tarefa e acredita que foi concluída.",
+            "proof": "Comprovante:",
+            "noProof": "Nenhuma imagem de comprovante enviada ainda",
+            "taskDismissed": "Tarefa dispensada",
+            "taskDismissError": "Falha ao dispensar tarefa",
+            "taskRejected": "Tarefa reprovida",
+            "taskRejectError": "Falha ao reprovar tarefa"
         },
         "create": {
             "title": "Criar Nova Tarefa",
