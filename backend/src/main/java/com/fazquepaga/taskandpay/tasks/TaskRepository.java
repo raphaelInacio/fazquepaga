@@ -47,4 +47,10 @@ public class TaskRepository {
 
         return getTasksCollection(userId).document(taskId).get();
     }
+
+    public ApiFuture<QuerySnapshot> findRecurringTasks(String taskTypeString) {
+        return firestore.collectionGroup(TASKS_SUBCOLLECTION)
+                .whereEqualTo("type", taskTypeString)
+                .get();
+    }
 }
