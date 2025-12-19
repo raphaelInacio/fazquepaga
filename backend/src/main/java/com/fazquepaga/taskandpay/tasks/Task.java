@@ -28,6 +28,7 @@ public class Task {
     private Instant scheduledDate; // For ONE_TIME
     private Boolean aiValidated;
     private Boolean acknowledged;
+    private Boolean archived;
 
     public enum TaskType {
         DAILY,

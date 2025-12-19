@@ -222,4 +222,22 @@ class TaskControllerTest {
                                 .andExpect(jsonPath("$.id").value(taskId))
                                 .andExpect(jsonPath("$.status").value("APPROVED"));
         }
+
+        @Test
+        void shouldDeleteTaskSuccessfully() throws Exception {
+                // Given
+                String taskId = "task-id";
+                String childId = "child-id";
+                String parentId = "parent@example.com";
+
+                // When & Then
+                mockMvc.perform(
+                                org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+                                                .delete("/api/v1/tasks/{taskId}", taskId)
+                                                .param("child_id", childId)
+                                                .param("parent_id", parentId))
+                                .andExpect(status().isNoContent());
+
+                org.mockito.Mockito.verify(taskService).deleteTask(childId, taskId, parentId);
+        }
 }

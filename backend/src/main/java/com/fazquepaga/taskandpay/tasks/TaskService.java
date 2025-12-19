@@ -94,9 +94,13 @@ public class TaskService {
 
     public List<Task> getTasksByUserId(String userId)
             throws ExecutionException, InterruptedException {
+        return getAllTasksRaw(userId).stream()
+                .filter(task -> task.getArchived() == null || !task.getArchived())
+                .collect(Collectors.toList());
+    }
 
+    private List<Task> getAllTasksRaw(String userId) throws ExecutionException, InterruptedException {
         List<QueryDocumentSnapshot> documents = taskRepository.findTasksByUserId(userId).get().getDocuments();
-
         return documents.stream().map(doc -> doc.toObject(Task.class)).collect(Collectors.toList());
     }
 
@@ -154,7 +158,7 @@ public class TaskService {
             throw new IllegalArgumentException("Child not found or does not belong to this parent");
         }
 
-        List<Task> tasks = getTasksByUserId(childId);
+        List<Task> tasks = getAllTasksRaw(childId);
         Task task = tasks.stream()
                 .filter(t -> t.getId().equals(taskId))
                 .findFirst()
@@ -192,7 +196,7 @@ public class TaskService {
         }
 
         // Find task
-        List<Task> tasks = getTasksByUserId(childId);
+        List<Task> tasks = getAllTasksRaw(childId);
         Task task = tasks.stream()
                 .filter(t -> t.getId().equals(taskId))
                 .findFirst()
@@ -235,7 +239,7 @@ public class TaskService {
             throw new IllegalArgumentException("User is not a parent");
         }
 
-        List<Task> tasks = getTasksByUserId(childId);
+        List<Task> tasks = getAllTasksRaw(childId);
         Task task = tasks.stream()
                 .filter(t -> t.getId().equals(taskId))
                 .findFirst()
@@ -253,7 +257,7 @@ public class TaskService {
             throw new IllegalArgumentException("User is not a parent");
         }
 
-        List<Task> tasks = getTasksByUserId(childId);
+        List<Task> tasks = getAllTasksRaw(childId);
         Task task = tasks.stream()
                 .filter(t -> t.getId().equals(taskId))
                 .findFirst()
@@ -307,6 +311,27 @@ public class TaskService {
     /** Updates the value of a task (used by automatic redistribution). */
     public void updateTaskValue(String childId, Task task)
             throws ExecutionException, InterruptedException {
+        taskRepository.save(childId, task).get();
+    }
+
+    public void deleteTask(String childId, String taskId, String parentId)
+            throws ExecutionException, InterruptedException {
+        User parent = userRepository.findByIdSync(parentId);
+        if (parent == null || parent.getRole() != User.Role.PARENT) {
+            throw new IllegalArgumentException("User is not a parent");
+        }
+
+        List<Task> tasks = getAllTasksRaw(childId);
+        Task task = tasks.stream()
+                .filter(t -> t.getId().equals(taskId))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Task not found"));
+
+        if (Boolean.TRUE.equals(task.getArchived())) {
+            return; // Already deleted
+        }
+
+        task.setArchived(true);
         taskRepository.save(childId, task).get();
     }
 }

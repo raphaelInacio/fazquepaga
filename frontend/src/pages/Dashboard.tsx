@@ -137,13 +137,27 @@ export default function Dashboard() {
             // Remove from local state
             setPendingTasks(prev => prev.filter(item => item.task.id !== taskId));
 
-            // Refresh children to update balance if needed (optional, but good for consistency)
             const childrenData = await childService.getChildren(parentId);
             setChildren(childrenData);
 
         } catch (error) {
             toast.error(t("dashboard.pendingApprovals.error"));
             console.error(error);
+        }
+    };
+
+    const handleRejectTask = async (childId: string, taskId: string) => {
+        const parentId = localStorage.getItem("parentId");
+        if (!parentId) return;
+
+        try {
+            await taskService.rejectTask(childId, taskId, parentId);
+            toast.success("Task rejected");
+            setPendingTasks(prev => prev.filter(item => item.task.id !== taskId));
+            const childrenData = await childService.getChildren(parentId);
+            setChildren(childrenData);
+        } catch (error) {
+            toast.error("Failed to reject task");
         }
     };
 
@@ -278,12 +292,21 @@ export default function Dashboard() {
                                                         </a>
                                                     )}
                                                 </div>
-                                                <Button
-                                                    onClick={() => item.task.id && handleApproveTask(item.childId, item.task.id)}
-                                                    className="bg-green-500 hover:bg-green-600 text-white shadow-md hover:shadow-green-500/20 rounded-full px-6"
-                                                >
-                                                    {t("dashboard.pendingApprovals.approve")}
-                                                </Button>
+                                                <div className="flex gap-2">
+                                                    <Button
+                                                        variant="outline"
+                                                        onClick={() => item.task.id && handleRejectTask(item.childId, item.task.id)}
+                                                        className="border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700 hover:border-red-300 rounded-full"
+                                                    >
+                                                        {t("common.reject") || "Reject"}
+                                                    </Button>
+                                                    <Button
+                                                        onClick={() => item.task.id && handleApproveTask(item.childId, item.task.id)}
+                                                        className="bg-green-500 hover:bg-green-600 text-white shadow-md hover:shadow-green-500/20 rounded-full px-6"
+                                                    >
+                                                        {t("dashboard.pendingApprovals.approve")}
+                                                    </Button>
+                                                </div>
                                             </div>
                                         ))}
                                     </div>

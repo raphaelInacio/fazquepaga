@@ -158,6 +158,37 @@ class TaskServiceTest {
                 assertEquals("task-id", result.get(0).getId());
 
                 assertEquals("My Task", result.get(0).getDescription());
+                assertEquals("My Task", result.get(0).getDescription());
+        }
+
+        @Test
+        void shouldGetTasksByUserIdFilteringArchived() throws ExecutionException, InterruptedException {
+                // Given
+                String userId = "user-id";
+                Task activeTask = Task.builder().id("task-1").archived(false).build();
+                Task archivedTask = Task.builder().id("task-2").archived(true).build();
+                Task nullArchivedTask = Task.builder().id("task-3").archived(null).build();
+
+                QuerySnapshot querySnapshot = Mockito.mock(QuerySnapshot.class);
+                QueryDocumentSnapshot doc1 = Mockito.mock(QueryDocumentSnapshot.class);
+                QueryDocumentSnapshot doc2 = Mockito.mock(QueryDocumentSnapshot.class);
+                QueryDocumentSnapshot doc3 = Mockito.mock(QueryDocumentSnapshot.class);
+
+                when(taskRepository.findTasksByUserId(userId)).thenReturn(ApiFutures.immediateFuture(querySnapshot));
+                when(querySnapshot.getDocuments()).thenReturn(List.of(doc1, doc2, doc3));
+
+                when(doc1.toObject(Task.class)).thenReturn(activeTask);
+                when(doc2.toObject(Task.class)).thenReturn(archivedTask);
+                when(doc3.toObject(Task.class)).thenReturn(nullArchivedTask);
+
+                // When
+                List<Task> result = taskService.getTasksByUserId(userId);
+
+                // Then
+                assertEquals(2, result.size());
+                assertTrue(result.contains(activeTask));
+                assertTrue(result.contains(nullArchivedTask));
+                assertFalse(result.contains(archivedTask));
         }
 
         @Test
@@ -492,5 +523,59 @@ class TaskServiceTest {
 
                 // Then
                 verify(taskRepository).save(childId, task);
+        }
+
+        @Test
+        void shouldDeleteTask() throws ExecutionException, InterruptedException {
+                // Given
+                String childId = "child-id";
+                String taskId = "task-id";
+                String parentId = "parent-id";
+
+                User parent = User.builder().id(parentId).role(User.Role.PARENT).build();
+                Task task = Task.builder().id(taskId).archived(false).build();
+
+                when(userRepository.findByIdSync(parentId)).thenReturn(parent);
+
+                QuerySnapshot querySnapshot = Mockito.mock(QuerySnapshot.class);
+                QueryDocumentSnapshot documentSnapshot = Mockito.mock(QueryDocumentSnapshot.class);
+                when(taskRepository.findTasksByUserId(childId)).thenReturn(ApiFutures.immediateFuture(querySnapshot));
+                when(querySnapshot.getDocuments()).thenReturn(Collections.singletonList(documentSnapshot));
+                when(documentSnapshot.toObject(Task.class)).thenReturn(task);
+
+                when(taskRepository.save(childId, task)).thenReturn(ApiFutures.immediateFuture(null));
+
+                // When
+                taskService.deleteTask(childId, taskId, parentId);
+
+                // Then
+                assertTrue(task.getArchived());
+                verify(taskRepository).save(childId, task);
+        }
+
+        @Test
+        void shouldNotDeleteTaskIfAlreadyArchived() throws ExecutionException, InterruptedException {
+                // Given
+                String childId = "child-id";
+                String taskId = "task-id";
+                String parentId = "parent-id";
+
+                User parent = User.builder().id(parentId).role(User.Role.PARENT).build();
+                Task task = Task.builder().id(taskId).archived(true).build();
+
+                when(userRepository.findByIdSync(parentId)).thenReturn(parent);
+
+                QuerySnapshot querySnapshot = Mockito.mock(QuerySnapshot.class);
+                QueryDocumentSnapshot documentSnapshot = Mockito.mock(QueryDocumentSnapshot.class);
+                when(taskRepository.findTasksByUserId(childId)).thenReturn(ApiFutures.immediateFuture(querySnapshot));
+                when(querySnapshot.getDocuments()).thenReturn(Collections.singletonList(documentSnapshot));
+                when(documentSnapshot.toObject(Task.class)).thenReturn(task);
+
+                // When
+                taskService.deleteTask(childId, taskId, parentId);
+
+                // Then
+                // Should simply return without saving
+                verify(taskRepository, Mockito.never()).save(anyString(), any(Task.class));
         }
 }

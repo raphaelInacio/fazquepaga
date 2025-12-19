@@ -80,4 +80,15 @@ public class TaskController {
         Task task = taskService.rejectTask(childId, taskId, parentId);
         return ResponseEntity.ok(task);
     }
+
+    @DeleteMapping("/{taskId}")
+    public ResponseEntity<Void> deleteTask(
+            @PathVariable String taskId,
+            @RequestParam("child_id") String childId,
+            @RequestParam("parent_id") String parentId)
+            throws ExecutionException, InterruptedException {
+
+        taskService.deleteTask(childId, taskId, parentId);
+        return ResponseEntity.noContent().build();
+    }
 }

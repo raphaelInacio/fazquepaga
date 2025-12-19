@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { toast } from "sonner";
 import { Task, User } from "@/types";
-import { ArrowLeft, Plus, Sparkles, Calendar, CheckCircle2, Trophy, Clock, Target, Check, X } from "lucide-react";
+import { ArrowLeft, Plus, Sparkles, Calendar, CheckCircle2, Trophy, Clock, Target, Check, X, Trash2 } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
@@ -159,6 +159,23 @@ export default function ChildTasks() {
             loadPredictedAllowance(); // Update balance
         } catch (error) {
             toast.error(t("childTasks.review.taskRejectError"));
+        }
+    };
+
+    const handleDeleteTask = async () => {
+        if (!selectedTaskForReview || !childId) return;
+        const parentId = localStorage.getItem("parentId");
+        if (!parentId) return;
+
+        try {
+            await taskService.deleteTask(childId, selectedTaskForReview.id!, parentId);
+            toast.success("Task deleted successfully");
+            setIsReviewDialogOpen(false);
+            setSelectedTaskForReview(null);
+            loadTasks();
+            loadPredictedAllowance();
+        } catch (error) {
+            toast.error("Failed to delete task");
         }
     };
 
@@ -552,13 +569,26 @@ export default function ChildTasks() {
                         )}
                     </div>
 
-                    <DialogFooter className="gap-2 sm:gap-0">
-                        <Button variant="outline" onClick={() => setIsReviewDialogOpen(false)} className="rounded-xl">
-                            {t("common.cancel")}
+                    <DialogFooter className="flex-col sm:flex-row gap-2 sm:gap-2 justify-between w-full">
+                        <Button
+                            variant="ghost"
+                            onClick={() => setIsReviewDialogOpen(false)}
+                            className="rounded-xl text-muted-foreground"
+                        >
+                            {t("common.close") || "Close"}
                         </Button>
 
-                        {selectedTaskForReview?.status === 'APPROVED' ? (
-                            <>
+                        <div className="flex gap-2 w-full sm:w-auto justify-end">
+                            <Button
+                                onClick={handleDeleteTask}
+                                variant="outline"
+                                className="rounded-xl border-destructive/50 text-destructive hover:bg-destructive/10 hover:text-destructive"
+                            >
+                                <Trash2 className="w-4 h-4 mr-2" />
+                                {t("common.delete") || "Delete"}
+                            </Button>
+
+                            {selectedTaskForReview?.status === 'APPROVED' ? (
                                 <Button
                                     onClick={handleRejectTask}
                                     variant="destructive"
@@ -567,23 +597,26 @@ export default function ChildTasks() {
                                     <X className="w-4 h-4 mr-2" />
                                     {t("common.reject") || "Reject"}
                                 </Button>
-                                <Button
-                                    onClick={handleAcknowledgeTask}
-                                    className="bg-blue-600 hover:bg-blue-700 rounded-xl"
-                                >
-                                    <Check className="w-4 h-4 mr-2" />
-                                    {t("common.dismiss") || "Dismiss"}
-                                </Button>
-                            </>
-                        ) : (
-                            <Button
-                                onClick={handleApproveTask}
-                                className="bg-green-600 hover:bg-green-700 rounded-xl shadow-lg shadow-green-600/20"
-                            >
-                                <CheckCircle2 className="w-4 h-4 mr-2" />
-                                {t("dashboard.pendingApprovals.approve")}
-                            </Button>
-                        )}
+                            ) : selectedTaskForReview?.status === 'PENDING_APPROVAL' ? (
+                                <>
+                                    <Button
+                                        onClick={handleRejectTask}
+                                        variant="outline"
+                                        className="rounded-xl border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
+                                    >
+                                        <X className="w-4 h-4 mr-2" />
+                                        {t("common.reject")}
+                                    </Button>
+                                    <Button
+                                        onClick={handleApproveTask}
+                                        className="bg-green-600 hover:bg-green-700 rounded-xl shadow-lg shadow-green-600/20"
+                                    >
+                                        <CheckCircle2 className="w-4 h-4 mr-2" />
+                                        {t("dashboard.pendingApprovals.approve")}
+                                    </Button>
+                                </>
+                            ) : null}
+                        </div>
                     </DialogFooter>
                 </DialogContent>
 

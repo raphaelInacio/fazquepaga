@@ -29,5 +29,9 @@ export const taskService = {
     rejectTask: async (childId: string, taskId: string, parentId: string): Promise<Task> => {
         const response = await api.post(`/api/v1/tasks/${taskId}/reject?child_id=${childId}&parent_id=${parentId}`);
         return response.data;
+    },
+
+    deleteTask: async (childId: string, taskId: string, parentId: string): Promise<void> => {
+        await api.delete(`/api/v1/tasks/${taskId}?child_id=${childId}&parent_id=${parentId}`);
     }
 };
