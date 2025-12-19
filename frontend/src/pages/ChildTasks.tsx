@@ -19,6 +19,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import confetti from "canvas-confetti";
+import { Mascot } from "@/components/Mascot";
 
 export default function ChildTasks() {
     const { t } = useTranslation();
@@ -327,6 +328,14 @@ export default function ChildTasks() {
                             </Button>
                         </div>
                     </div>
+
+
+                    {isLoadingAI && (
+                        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex flex-col items-center justify-center animate-in fade-in duration-300">
+                            <Mascot state="tech" width={200} className="animate-pulse" />
+                            <p className="mt-4 text-xl font-bold text-primary animate-pulse">Generating quests...</p>
+                        </div>
+                    )}
 
                     {showAISuggestions && aiSuggestions.length > 0 && (
                         <Card className="border-none bg-gradient-to-br from-purple-500/5 to-blue-500/5 shadow-glow animate-fade-in overflow-hidden relative">
@@ -704,6 +713,6 @@ export default function ChildTasks() {
                     </DialogContent>
                 </Dialog>
             </div>
-        </Dialog>
+        </Dialog >
     );
 }

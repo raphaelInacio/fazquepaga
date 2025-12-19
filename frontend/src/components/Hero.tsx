@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight, CheckCircle2 } from "lucide-react";
+import { Mascot } from "./Mascot";
 import { useNavigate } from "react-router-dom";
 
 export const Hero = () => {
@@ -55,15 +56,21 @@ export const Hero = () => {
                 <p className="text-sm text-muted-foreground">Bilíngue</p>
               </div>
             </div>
+
+
           </div>
 
+
           <div className="relative">
+
             <div className="absolute inset-0 gradient-primary opacity-20 blur-3xl rounded-full"></div>
-            <img
-              src="/dashboard-screenshot.png"
-              alt="Dashboard do FazQuePaga mostrando gestão de filhos e tarefas"
-              className="relative rounded-2xl shadow-soft w-full h-auto border border-border"
-            />
+            <div className="relative z-10 flex justify-center items-center">
+              <Mascot
+                state="default"
+                className="w-full max-w-md animate-in zoom-in duration-1000 hover:scale-105 transition-transform mix-blend-multiply"
+                width={800}
+              />
+            </div>
           </div>
         </div>
       </div>

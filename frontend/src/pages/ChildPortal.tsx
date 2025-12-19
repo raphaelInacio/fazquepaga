@@ -14,6 +14,7 @@ import { Sparkles, Trophy, LogOut, Rocket, Gamepad2, Target, Sword, CheckCircle2
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import confetti from "canvas-confetti";
+import { Mascot } from "@/components/Mascot";
 
 export default function ChildPortal() {
     const { t } = useTranslation();
@@ -190,8 +191,8 @@ export default function ChildPortal() {
                         <div className="flex flex-col md:flex-row justify-between items-center gap-6">
                             <div className="flex items-center gap-4">
                                 <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-primary to-purple-600 p-[2px] shadow-lg shadow-primary/20">
-                                    <div className="h-full w-full rounded-[14px] bg-card flex items-center justify-center">
-                                        <Trophy className="w-8 h-8 text-primary" />
+                                    <div className="h-full w-full rounded-[14px] bg-card flex items-center justify-center overflow-hidden">
+                                        <Mascot state="waving" width={60} className="mt-2" />
                                     </div>
                                 </div>
                                 <div>
@@ -244,9 +245,7 @@ export default function ChildPortal() {
                         {tasks.length === 0 ? (
                             <Card className="border-2 border-dashed border-border/60 bg-card/50 shadow-sm">
                                 <CardContent className="flex flex-col items-center justify-center py-16 text-center space-y-4">
-                                    <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center animate-bounce">
-                                        <Trophy className="h-10 w-10 text-green-600" />
-                                    </div>
+                                    <Mascot state="celebrating" width={150} className="animate-bounce" />
                                     <div className="space-y-2">
                                         <p className="text-2xl font-bold text-foreground">{t("childPortal.allTasksCompleted")}</p>
                                         <p className="text-muted-foreground">{t("childPortal.congratulations")}</p>
@@ -258,8 +257,8 @@ export default function ChildPortal() {
                                 <Card
                                     key={task.id}
                                     className={`group overflow-hidden border-2 transition-all duration-300 hover:scale-[1.01] hover:shadow-lg ${isAdventureMode
-                                            ? "border-orange-200 hover:border-orange-400 bg-orange-50/30 dark:bg-orange-950/20"
-                                            : "border-border hover:border-primary/50 bg-card"
+                                        ? "border-orange-200 hover:border-orange-400 bg-orange-50/30 dark:bg-orange-950/20"
+                                        : "border-border hover:border-primary/50 bg-card"
                                         }`}
                                 >
                                     <CardContent className="p-0">
@@ -283,8 +282,8 @@ export default function ChildPortal() {
                                                 <Button
                                                     onClick={() => handleCompleteTask(task.id)}
                                                     className={`h-12 px-8 font-bold text-white shadow-md rounded-xl transition-all active:scale-95 text-lg ${isAdventureMode
-                                                            ? "bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 shadow-orange-500/20"
-                                                            : "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 shadow-green-500/20"
+                                                        ? "bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 shadow-orange-500/20"
+                                                        : "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 shadow-green-500/20"
                                                         }`}
                                                 >
                                                     <CheckCircle2 className="w-5 h-5 mr-2" />

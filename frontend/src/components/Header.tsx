@@ -9,6 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Mascot } from "./Mascot";
 
 export const Header = () => {
   const { t } = useTranslation();
@@ -25,6 +26,7 @@ export const Header = () => {
               <span className="text-xl font-bold text-primary-foreground">F</span>
             </div>
             <span className="text-xl font-bold text-foreground">FazQuePaga</span>
+            <Mascot state="waving" width={40} className="-mb-2" />
           </div>
 
           <nav className="hidden md:flex items-center gap-8">

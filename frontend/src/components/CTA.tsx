@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { Mascot } from "./Mascot";
 import { useNavigate } from "react-router-dom";
 
 export const CTA = () => {
@@ -9,8 +10,13 @@ export const CTA = () => {
   return (
     <section className="py-24 bg-background">
       <div className="container mx-auto px-4">
-        <div className="max-w-4xl mx-auto">
-          <Card className="gradient-primary p-12 text-center shadow-glow border-0 overflow-hidden relative">
+        <div className="max-w-4xl mx-auto relative pt-16">
+          <Mascot
+            state="peeking"
+            className="absolute -top-24 left-1/2 -translate-x-1/2 w-64 z-0"
+            width={256}
+          />
+          <Card className="gradient-primary p-12 text-center shadow-glow border-0 overflow-hidden relative z-10">
             <div className="absolute inset-0 bg-gradient-to-br from-primary-glow/20 to-transparent"></div>
 
             <div className="relative z-10 space-y-6">
