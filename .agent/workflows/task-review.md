@@ -1,0 +1,9 @@
+---
+description: Starts a code review for a specific task using the code-reviewer persona.
+---
+
+Using the persona defined in `docs/ai_guidance/personas/code-reviewer.md`, please begin the review process.
+
+The arguments provided are: {{args}}
+
+I will parse the arguments to identify the PRD slug and task number, locate the relevant files, and then begin the strict 5-step review workflow outlined in the persona.

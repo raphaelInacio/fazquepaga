@@ -1,0 +1,32 @@
+---
+trigger: model_decision
+---
+
+# AI Integration Standards
+
+## Tech Stack
+
+- **Framework**: Spring AI using Google Vertex AI (Gemini models).
+- **Models**: Use `gemini-pro` for text/chat and `gemini-pro-vision` for image analysis.
+
+## Implementation Guidelines
+
+- **Service Layer**: Encapsulate AI interactions in dedicated services (e.g., `AiSuggestionService`, `AiValidator`).
+- **Prompt Engineering**:
+  - Store system prompts as `Resource` files (classpath) or constants to avoid hardcoding long strings in logic.
+  - Use clear, structured output instructions (e.g., "Return strictly JSON").
+- **Error Handling**: AI calls can fail or timeout. Always wrap calls in `try-catch` blocks and provide fallback behavior (e.g., "Could not validate image, please check manually").
+
+## specific Patterns
+
+### structured Output
+
+When an object response is needed, provide a JSON schema in the prompt and use a JSON parser (like Jackson) to deserialize the AI response.
+
+```java
+String prompt = """
+    Analyze this image. Return valid JSON:
+    { "conforms": boolean, "reason": "string" }
+    """;
+// ... call AI ...
+```

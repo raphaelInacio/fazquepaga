@@ -1,0 +1,92 @@
+---
+trigger: model_decision
+---
+
+# Testing Standards (Spring Boot)
+
+## Testing Frameworks
+
+- Use **JUnit 5** as the primary testing framework.
+- Use **Mockito** for creating mock objects.
+- Use **Spring Test** and `@SpringBootTest` for integration tests.
+- Use **AssertJ** for fluent assertions.
+
+## Commands
+
+- Run tests using your build tool:
+  - Maven: `mvn test`
+  - Gradle: `./gradlew test`
+
+## Test Organization
+
+### Directory Structure
+
+- All test code resides in `src/test/java/`.
+- The package structure in `src/test/java` should mirror `src/main/java`.
+
+### Test Categories
+
+- **Unit Tests**:
+  - Test a single class in isolation.
+  - Do not require a Spring context.
+  - Dependencies are mocked using Mockito.
+  - Reside in packages like `com.company.project.service`.
+- **Integration Tests**:
+  - Test the integration of multiple components (e.g., controller -> service -> repository).
+  - Use `@SpringBootTest` to load the application context.
+  - May use an in-memory database (like H2) or Testcontainers.
+  - Reside in packages like `com.company.project.controller`.
+- **API/Controller Tests**:
+  - A specific type of integration test that focuses on the web layer.
+  - Use `@WebMvcTest` to test controllers in isolation (slicing the context).
+  - Use `MockMvc` to perform requests and assert responses.
+
+## Design Principles
+
+- Tests must be independent and runnable in any order.
+- Follow the Arrange-Act-Assert (or Given-When-Then) pattern.
+- Use `@BeforeEach` and `@AfterEach` for setup and teardown.
+
+## Best Practices
+
+- Write one test method per behavior.
+- Keep tests small, focused, and fast.
+- Use descriptive test method names (e.g., `shouldReturnUser_whenUserIdExists()`).
+- Use `@Mock` and `@InjectMocks` from Mockito for unit tests.
+- Use `@MockBean` in Spring Boot tests to mock beans in the application context.
+
+## Example (JUnit 5 & Mockito Unit Test)
+
+```java
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
+
+@ExtendWith(MockitoExtension.class)
+class UserServiceTest {
+
+    @Mock
+    private UserRepository userRepository;
+
+    @InjectMocks
+    private UserService userService;
+
+    @Test
+    void shouldReturnUser_whenUserIdExists() {
+        // Arrange
+        User user = new User("1", "John Doe");
+        when(userRepository.findById("1")).thenReturn(Optional.of(user));
+
+        // Act
+        Optional<User> foundUser = userService.findById("1");
+
+        // Assert
+        assertThat(foundUser).isPresent();
+        assertThat(foundUser.get().getName()).isEqualTo("John Doe");
+    }
+}
