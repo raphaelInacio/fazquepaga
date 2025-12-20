@@ -11,6 +11,7 @@ The application is divided into focused domain modules:
 *   **User Management**: Secure registration and profile management for parents and children.
 *   **Task Management**:
     *   **Types**: Daily, Weekly, and One-time tasks.
+    *   **Recurring Config**: Daily (reset every morning) and Weekly tasks.
     *   **Parent Approval**: Dedicated UI for parents to review and approve tasks completed by children.
     *   **Proof Requirement**: Option to require proof (e.g., photo) for task completion.
 *   **Allowance Calculation Engine**:
@@ -25,6 +26,7 @@ The application is divided into focused domain modules:
     *   **Gamification**: Adventure Mode and fun stats.
 *   **Financial Record**:
     *   **Ledger**: Detailed transaction history (credits and debits).
+    *   **AI Financial Insights**: Smart analysis of spending and saving habits.
     *   **Gift Card Store**: (Premium) Redeem balance for real-world rewards.
 *   **Plans and Monetization (Freemium)**:
     *   **Free Plan**: Limited to 5 recurring tasks, 1 child.
@@ -112,8 +114,10 @@ The project is a monorepo with two main parts:
 │   │   ├── ai/           # AI integration (Gemini)
 │   │   ├── allowance/    # Allowance calculation & Ledger
 │   │   ├── config/       # App configuration (Security, CORS)
+│   │   ├── controller/   # REST Controllers
 │   │   ├── giftcard/     # Gift Card Store logic
 │   │   ├── identity/     # User management (Parent/Child)
+│   │   ├── security/     # Spring Security setup
 │   │   ├── shared/       # Shared utilities & exceptions
 │   │   ├── subscription/ # Plan limits & logic
 │   │   ├── tasks/        # Task management domain

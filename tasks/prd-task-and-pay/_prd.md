@@ -23,15 +23,16 @@ Este documento serve como uma baseline, refletindo o estado atual da implementa�
     - ✅ Definir um valor total de mesada mensal para meu filho.
     - ✅ Criar tarefas de diferentes tipos (diárias, semanais, únicas) com pesos (Baixo, Médio, Alto) para cálculo automático de valor.
     - ✅ Receber sugestões de tarefas de uma IA com base na idade.
-    - 🟡 Ser notificado quando uma tarefa for marcada como concluída. *(A notificação existe, mas a aprovação via web não)*.
-    - 🟡 Ver uma foto enviada pelo meu filho. *(O envio via WhatsApp é possível, mas a visualização e aprovação na interface web dos pais não está implementada)*.
+    - ✅ Ser notificado quando uma tarefa for marcada como concluída.
+    - ✅ Aprovar tarefas e ver provas enviadas pelo filho na interface web.
+    - ✅ Ver uma foto enviada pelo meu filho via WhatsApp na interface web.
     - ✅ Criar um login simples para meu filho (código de onboarding para WhatsApp).
 
 - **Como filho(a), eu quero...**
-    - ❌ Acessar um portal web simples com meu login para ver minhas tarefas. *(A interação atual é primariamente via WhatsApp)*.
-    - ✅ Marcar uma tarefa como "concluída" via WhatsApp.
+    - ✅ Acessar um portal web simples com meu login para ver minhas tarefas.
+    - ✅ Marcar uma tarefa como "concluída" via WhatsApp ou Portal Web.
     - ✅ Enviar uma foto como prova via WhatsApp.
-    - ❌ Acompanhar quanto dinheiro ganhei com minhas tarefas. *(O backend calcula, mas a interface para o filho não existe)*.
+    - ⚠️ Acompanhar quanto dinheiro ganhei com minhas tarefas. *(Disponível para pais, em breve para filhos com Coach Financeiro)*.
     - ✅ Receber notificações sobre novas tarefas no WhatsApp.
     - ✅ **(Plano Pago)** Trocar meu saldo acumulado por Gift Cards (Roblox, iFood, etc.) diretamente no app. *(Funcionalidade mockada disponível para pais Premium)*.
 
@@ -43,8 +44,8 @@ Este documento serve como uma baseline, refletindo o estado atual da implementa�
 | **2. Gerenciamento de Tarefas** | **Parcialmente Implementado** | Pais podem criar e visualizar tarefas. A criação de tarefas respeita os limites do plano (Free/Premium). |
 | **3. Motor de Cálculo de Mesada** | **Implementado** | O backend calcula o valor previsto da mesada com base nas tarefas e pesos definidos. |
 | **4. Recursos com IA (Premium)** | **Parcialmente Implementado** | **Sugestão de Tarefas**: Implementado e funcional. **Validação de Imagem**: Backend está pronto para receber imagem e processar de forma assíncrona, mas o fluxo completo de aprovação não está finalizado. |
-| **5. Fluxo de Conclusão** | **Parcialmente Implementado** | **Criança**: Pode submeter tarefas como concluídas via WhatsApp. **Pais**: **NÃO HÁ INTERFACE** para aprovar tarefas no portal web. Este é um GAP CRÍTICO. |
-| **6. Registro Financeiro** | **Não Implementado** | Não há extrato financeiro visível para pais ou filhos. |
+| **5. Fluxo de Conclusão** | **Implementado** | **Criança**: Submete via WhatsApp ou Portal. **Pais**: Aprovam via Dashboard Web. |
+| **6. Registro Financeiro** | **Implementado** | Extrato financeiro (Ledger) disponível para pais. |
 | **7. Planos e Monetização** | **Implementado** | A lógica de negócio para diferenciar os planos Free e Premium está implementada no backend (`SubscriptionService`), controlando o acesso a funcionalidades como IA, número de tarefas e Loja de Gift Cards. |
 | **8. Loja de Gift Cards (Premium)** | **Implementado (Mock)** | Pais com plano Premium podem acessar uma loja de gift cards e "resgatar" itens. A funcionalidade é simulada. |
 
@@ -67,10 +68,10 @@ Para aprofundar nosso diferencial como uma plataforma nativa de IA, as seguintes
 
 ## Plano de Lançamento em Fases (Revisado)
 
-- **MVP (Estado Atual)**: Funcionalidades essenciais para pais e conclusão via WhatsApp para filhos.
-- **Próximos Passos para Concluir a Versão 1.0**:
-    1. Implementar a interface de **aprovação de tarefas** para os pais no portal web.
-    2. Criar uma tela de **extrato financeiro** com os primeiros insights da IA.
+- **MVP (Estado Atual)**: Funcionalidades essenciais completas, incluindo Portal da Criança e Aprovação dos Pais.
+- **Próximos Passos (Fase 2)**:
+    1. Implementar **Coach Financeiro** para crianças.
+    2. Expandir **Insights de IA** no extrato financeiro.
     3. Lançar a **v1 do Portal da Criança** com o "Modo Aventura" e o "Coach Financeiro".
     4. Implementar a geração de **"Pacotes de Tarefas"**.
 

@@ -1,4 +1,4 @@
-# GEMINI.md
+# Agents Guide
 
 ## Project Overview
 
@@ -73,9 +73,15 @@ The project is a monorepo with two main parts:
 ├── backend/      # Spring Boot modular monolith
 │   ├── src/main/java/com/fazquepaga/taskandpay
 │   │   ├── ai/           # AI integration (Gemini)
-│   │   ├── allowance/    # Allowance calculation logic
-│   │   ├── identity/     # User management
-│   │   ├── tasks/        # Task management
+│   │   ├── allowance/    # Allowance calculation & Ledger
+│   │   ├── config/       # App configuration (Security, CORS)
+│   │   ├── controller/   # REST Controllers
+│   │   ├── giftcard/     # Gift Card Store logic
+│   │   ├── identity/     # User management (Parent/Child)
+│   │   ├── security/     # Spring Security setup
+│   │   ├── shared/       # Shared utilities & exceptions
+│   │   ├── subscription/ # Plan limits & logic
+│   │   ├── tasks/        # Task management domain
 │   │   └── whatsapp/     # Twilio/WhatsApp integration
 │   ├── pom.xml
 │   └── docker-compose.yml
@@ -107,6 +113,31 @@ The project is a monorepo with two main parts:
 - End‑to‑end tests written with **Playwright**.
 - Run with `npm run test:e2e`.
 - CI ensures all Playwright tests pass before merging.
+
+## Rules & Productivity
+
+To ensure high quality and consistency, ALL agents must follow the established project rules.
+
+### Core Rule Sets
+
+The following rule files define our standards. **Always consult these before generating code.**
+
+-   **[Use Java Spring Boot](docs/ai_guidance/rules/use-java-spring-boot.mdc)**: Backend technology choices and rationale.
+-   **[React Frontend](docs/ai_guidance/rules/react.mdc)**: Frontend integration and architecture.
+-   **[Code Standards](docs/ai_guidance/rules/code-standards.mdc)**: Naming conventions, clean code principles, and formatting (Java & TS).
+-   **[API REST HTTP](docs/ai_guidance/rules/api-rest-http.mdc)**: API design contracts and JSON standards.
+-   **[Tests](docs/ai_guidance/rules/tests.mdc)**: Testing strategies and library usage.
+-   **[Folder Structure](docs/ai_guidance/rules/folder-structure.mdc)**: Where files should live.
+-   **[Firestore NoSQL](docs/ai_guidance/rules/firestore-nosql.mdc)**: NoSQL data modeling and best practices (replaces SQL).
+-   **[AI Integration](docs/ai_guidance/rules/ai-integration.mdc)**: Guidelines for using Gemini and Spring AI.
+-   **[E2E Testing](docs/ai_guidance/rules/e2e-testing.mdc)**: Frontend validation via MCP and Playwright test updates.
+-   **[Internationalization](docs/ai_guidance/rules/internationalization.mdc)**: Handling translations (en/pt).
+
+### How to Apply Rules
+
+1.  **Context Loading**: When starting a task, load the relevant `.mdc` file to understanding specific constraints (e.g., `react.mdc` for frontend work).
+2.  **Code Validations**: Before submitting changes, cross-reference with `code-standards.mdc`.
+3.  **Architecture Checks**: Ensure new modules align with `folder-structure.mdc`.
 
 
 

@@ -17,8 +17,8 @@ public class TaskSchedulerService {
         this.taskRepository = taskRepository;
     }
 
-    // Cron runs at midnight (00:00:00) every day
-    @Scheduled(cron = "0 0 0 * * *")
+    // Cron runs at 9:10 AM every day
+    @Scheduled(cron = "0 10 9 * * *")
     public void resetRecurringTasks() throws ExecutionException, InterruptedException {
         System.out.println("Starting daily recurring task reset...");
 

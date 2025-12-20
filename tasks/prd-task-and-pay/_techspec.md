@@ -60,11 +60,16 @@ A lista a seguir representa os endpoints que estão de fato implementados e send
 -   `GET /api/v1/giftcards` - Retorna uma lista mockada de gift cards (Premium).
 -   `POST /api/v1/giftcards/{giftCardId}/redeem` - Simula o resgate de um gift card (Premium).
 -   `POST /api/v1/whatsapp/webhook` - Webhook para receber eventos do WhatsApp (Twilio).
+-   `POST /api/v1/tasks/{id}/approve` - Aprova uma tarefa.
+-   `POST /api/v1/tasks/{id}/acknowledge` - Reconhece uma tarefa auto-aprovada.
+-   `POST /api/v1/tasks/{id}/reject` - Rejeita uma tarefa.
+-   `GET /api/v1/users/{id}` - Obtém detalhes de um usuário.
+-   `GET /api/v1/children` - Obtém lista de filhos do pai autenticado.
+-   `GET /api/v1/children/{id}` - Obtém detalhes de um filho.
 
 ### GAPs e Desvios da API
 
--   **Endpoint Ausente**: `POST /api/v1/tasks/{id}/approve`. A aprovação de tarefas pelo pai no portal web não foi implementada.
--   **Endpoint Ausente**: Não existem endpoints `GET` para recuperar entidades individuais, como `GET /api/v1/children/{id}`. O frontend contorna essa limitação utilizando `localStorage`, uma solução frágil.
+-   **Nenhum**: Os endpoints críticos de gerenciamento de dados e fluxo de aprovação foram implementados.
 
 ## Abordagem de Testes
 
@@ -73,12 +78,10 @@ A lista a seguir representa os endpoints que estão de fato implementados e send
 
 ## Sequenciamento de Desenvolvimento (Status)
 
-1.  **Concluído**: Módulos `identity` & `tasks` (com os GAPs mencionados), `allowance`, `whatsapp`, `ai`, `giftcard`, e `subscription`.
-2.  **Concluído**: Integração básica com o frontend para as funcionalidades existentes.
-3.  **Próximos Passos (Críticos)**:
-    -   Implementar o endpoint `POST /api/v1/tasks/{id}/approve`.
-    -   Desenvolver a UI no frontend para o pai visualizar provas e aprovar tarefas.
-    -   Implementar endpoints `GET` para entidades (`children`, `users`) para remover a dependência do `localStorage` no frontend.
+1.  **Concluído**: Módulos `identity` & `tasks`, `allowance`, `whatsapp`, `ai`, `giftcard`, e `subscription`.
+2.  **Concluído**: Integração completa com o frontend incluindo Portal da Criança e Dashboard dos Pais.
+3.  **Concluído**: Fluxos de Aprovação e Gestão de Dados (GETs) implementados.
+4.  **Próximos Passos**: Monitoramento de custos de IA e refatoração para escalabilidade.
 
 ## Considerações Técnicas
 
@@ -90,10 +93,9 @@ A lista a seguir representa os endpoints que estão de fato implementados e send
 
 ### Riscos Conhecidos
 
--   **Dependência do Frontend em `localStorage`**: O frontend depende do `localStorage` para compartilhar estado (ex: dados da criança) entre as páginas. Isso é frágil e pode levar a bugs de inconsistência de dados. A falta de endpoints `GET` para buscar dados frescos é a causa raiz e representa um débito técnico.
--   **Fluxo de Aprovação Incompleto**: O fluxo de negócio mais importante (aprovação de tarefas) está quebrado. A criança pode submeter, mas o pai não pode aprovar via web, impedindo a conclusão do ciclo de valor.
+-   **Dependência do Frontend em `localStorage`**: [MITIGADO] Endpoints GET foram implementados e o frontend está sendo migrado para consumir dados frescos.
 -   **Custo da IA**: O custo do Gemini Vision para validação de imagens em escala é um risco financeiro. O monitoramento é essencial.
 
 ### Conformidade com Padrões
 
--   A arquitetura e a implementação seguem em grande parte os padrões definidos, com os desvios e GAPs agora documentados nesta especificação.
+-   A arquitetura e a implementação seguem os padrões definidos e documentados em `AGENTS.MD`.
