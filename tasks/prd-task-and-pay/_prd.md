@@ -27,6 +27,10 @@ Este documento serve como uma baseline, refletindo o estado atual da implementa�
     - ✅ Aprovar tarefas e ver provas enviadas pelo filho na interface web.
     - ✅ Ver uma foto enviada pelo meu filho via WhatsApp na interface web.
     - ✅ Criar um login simples para meu filho (código de onboarding para WhatsApp).
+    - 🆕 **(Assinatura)** Quero assinar o plano Premium pagando via Asaas (cartão/boleto/pix) para liberar recursos exclusivos.
+    - 🆕 **(IA)** Quero definir um perfil comportamental (Bio) do meu filho para que a IA sugira tarefas mais adequadas.
+    - 🆕 **(Saque)** Quero receber uma notificação no WhatsApp quando meu filho solicitar um saque.
+    - 🆕 **(Saque)** Quero aprovar um saque e marcar como "Pago" manualmente após transferir o dinheiro.
 
 - **Como filho(a), eu quero...**
     - ✅ Acessar um portal web simples com meu login para ver minhas tarefas.
@@ -35,6 +39,8 @@ Este documento serve como uma baseline, refletindo o estado atual da implementa�
     - ⚠️ Acompanhar quanto dinheiro ganhei com minhas tarefas. *(Disponível para pais, em breve para filhos com Coach Financeiro)*.
     - ✅ Receber notificações sobre novas tarefas no WhatsApp.
     - ✅ **(Plano Pago)** Trocar meu saldo acumulado por Gift Cards (Roblox, iFood, etc.) diretamente no app. *(Funcionalidade mockada disponível para pais Premium)*.
+    - 🆕 **(Saque)** Quero solicitar o saque do meu saldo acumulado.
+    - 🆕 **(Saque)** Quero ser avisado no WhatsApp quando meu saque for aprovado/pago.
 
 ## Funcionalidades Essenciais (Status de Implementação)
 
@@ -46,8 +52,20 @@ Este documento serve como uma baseline, refletindo o estado atual da implementa�
 | **4. Recursos com IA (Premium)** | **Parcialmente Implementado** | **Sugestão de Tarefas**: Implementado e funcional. **Validação de Imagem**: Backend está pronto para receber imagem e processar de forma assíncrona, mas o fluxo completo de aprovação não está finalizado. |
 | **5. Fluxo de Conclusão** | **Implementado** | **Criança**: Submete via WhatsApp ou Portal. **Pais**: Aprovam via Dashboard Web. |
 | **6. Registro Financeiro** | **Implementado** | Extrato financeiro (Ledger) disponível para pais. |
-| **7. Planos e Monetização** | **Implementado** | A lógica de negócio para diferenciar os planos Free e Premium está implementada no backend (`SubscriptionService`), controlando o acesso a funcionalidades como IA, número de tarefas e Loja de Gift Cards. |
+| **7. Planos e Monetização** | **Implementado** | Integração com **Asaas** para gestão de assinaturas (Checkout transparente ou Link). Controla acesso a funcionalidades Premium. |
 | **8. Loja de Gift Cards (Premium)** | **Implementado (Mock)** | Pais com plano Premium podem acessar uma loja de gift cards e "resgatar" itens. A funcionalidade é simulada. |
+| **9. Controle de Saque** | **Planejado** | Fluxo: Solicitação (Filho) -> Notificação (Pai) -> Pagamento Externo -> Baixa manual no sistema (Pai). (Sem custódia de valores). |
+| **10. AI Context** | **Planejado** | Cadastro de "Bio/Interesses" da criança para personalizar sugestões de tarefas. |
+
+## Fluxo de Notificações (WhatsApp)
+
+| Evento | Destinatário | Conteúdo |
+| :--- | :--- | :--- |
+| **Tarefa Concluída** | Pai/Mãe | "João terminou 'Lavar a louça'. Aprove agora!" + Link/Foto |
+| **Tarefa Aprovada** | Filho | "Parabéns! Você ganhou R$ 5,00." |
+| **Tarefa Rejeitada** | Filho | "Sua tarefa precisa de revisão: 'Faltou secar'." |
+| **Solicitação de Saque** | Pai/Mãe | "João quer sacar R$ 50,00." |
+| **Saque Pago** | Filho | "Seu saque de R$ 50,00 foi pago!" |
 
 ## AI Roadmap & Funcionalidades Futuras
 

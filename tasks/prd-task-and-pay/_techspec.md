@@ -1,4 +1,4 @@
-# Especificação Técnica: TaskAndPay (Baseline Novembro 2025)
+/# Especificação Técnica: TaskAndPay (Baseline Novembro 2025)
 
 ## Resumo Executivo
 
@@ -19,6 +19,8 @@ A aplicação é um monólito com uma estrutura interna modular. O código está
 -   `whatsapp/` - Orquestra interações com a API do WhatsApp (Twilio), incluindo o webhook para conclusão de tarefas.
 -   `giftcard/` - **(Novo)** Lógica de negócios para a loja de Gift Cards (funcionalidade Premium).
 -   `subscription/` - **(Novo)** Lógica de negócio que governa as permissões e limites dos planos Free vs. Premium.
+-   `payment/` - **(Novo)** Integração com gateway Asaas para assinaturas (Customer, Subscription, Webhook).
+-   `notification/` - **(Novo)** Hub de notificações (WhatsApp) para avisos de tarefas e saques.
 -   `shared/` - Utilitários, configurações e tipos de dados compartilhados.
 
 ### Visão Geral dos Componentes
@@ -44,6 +46,20 @@ A estrutura no Firestore segue o design original, com a adição de um campo par
 -   **Coleção:** `users`
     -   **Campos Adicionais:**
         -   `subscriptionTier`: STRING ('FREE' ou 'PREMIUM')
+        -   `subscriptionStatus`: STRING ('ACTIVE', 'OVERDUE', 'CANCELED')
+        -   `asaasCustomerId`: STRING
+        -   `subscriptionId`: STRING (ID da assinatura no Asaas)
+
+-   **Coleção:** `children`
+    -   **Campos Adicionais:**
+        -   `aiContext`: STRING (Texto livre sobre interesses/bio da criança para a IA)
+        -   `balance`: NUMBER (Saldo recalculado ou persistido para performance)
+
+-   **Coleção:** `ledger`
+    -   **Campos Adicionais:**
+        -   `type`: STRING ('TASK_EARNING', 'WITHDRAWAL')
+        -   `status`: STRING ('COMPLETED', 'PENDING_APPROVAL', 'PAID', 'REJECTED')
+        -   `paymentProof`: STRING (Opcional - link ou código de comprovante manual)
 
 ### Endpoints da API (Implementados)
 
@@ -66,6 +82,15 @@ A lista a seguir representa os endpoints que estão de fato implementados e send
 -   `GET /api/v1/users/{id}` - Obtém detalhes de um usuário.
 -   `GET /api/v1/children` - Obtém lista de filhos do pai autenticado.
 -   `GET /api/v1/children/{id}` - Obtém detalhes de um filho.
+-   **Novos Endpoints (Assinatura):**
+    -   `POST /api/v1/subscription/subscribe` - Cria uma `Checkout Session` no Asaas e retorna a URL segura. **(Zero Data: Não recebe dados sensíveis do frontend)**.
+    -   `GET /api/v1/subscription/status` - Consulta status atual da assinatura.
+    -   `POST /api/v1/webhooks/asaas` - Recebe atualizações de pagamento do Asaas.
+-   **Novos Endpoints (Saque):**
+    -   `POST /api/v1/children/{childId}/withdraw` - Solicita saque (Criança).
+    -   `POST /api/v1/withdrawals/{id}/approve` - Marca saque como pago (Pai).
+-   **Novos Endpoints (AI Context):**
+    -   `PATCH /api/v1/children/{childId}/context` - Atualiza bio/interesses.
 
 ### GAPs e Desvios da API
 
@@ -90,6 +115,7 @@ A lista a seguir representa os endpoints que estão de fato implementados e send
 -   **Arquitetura**: Monólito Modular provou ser eficaz para a velocidade de desenvolvimento do MVP.
 -   **Stack de Tecnologia**: A stack do Google Cloud (Cloud Run, Firestore, Pub/Sub, Vertex AI) está funcionando conforme o esperado.
 -   **Interação da Criança**: A decisão de usar o WhatsApp como a interface primária da criança para o MVP simplificou o desenvolvimento, mas introduziu dependência em um único canal.
+-   **Privacidade e Compliance**: Uso estrito de **Checkout Session** (Redirect) para pagamentos, garantindo que dados sensíveis (CPF, Cartão) nunca transitem pela infraestrutura do TaskAndPay.
 
 ### Riscos Conhecidos
 

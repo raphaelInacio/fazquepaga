@@ -2,46 +2,43 @@
 status: completed
 ---
 
-# Tarefa 1.0: Configuração do Projeto e Ambiente de Desenvolvimento
+# Task 1.0: Infrastructure & Payment Module (Asaas)
 
-## Visão Geral
+## Overview
 
-Esta tarefa fundamental envolve a criação da estrutura inicial do projeto para o monólito modular e a configuração do ambiente de desenvolvimento local usando Docker. O objetivo é ter um ponto de partida limpo e um ambiente de desenvolvimento consistente e fácil de replicar para todos os desenvolvedores.
+Create the foundation for the payment system. This involves creating the `payment` module, configuring the Asaas API client (using RestTemplate/WebClient), and implementing the service to create Customers on Asaas.
 
-**LEITURA OBRIGATÓRIA**: Antes de iniciar, revise as regras do projeto em `docs/ai_guidance/rules/`.
+**MUST READ**: Before starting, review the relevant project rules in `docs/ai_guidance/rules/`.
+ - Use `resources/asaas_integration_guide.md` for Asaas integration details.
+ - Use asaas mcp para tirar duvidas sobre a plataforma
 
-## Requisitos
+## Requirements
 
--   Criar a estrutura de diretórios para o projeto Java/Spring Boot.
--   Configurar um arquivo `docker-compose.yml` para orquestrar a aplicação e os serviços de emulador.
--   O ambiente Docker deve incluir a aplicação, o emulador do Firestore e o emulador do Pub/Sub.
--   Fornecer um `README.md` com instruções claras sobre como iniciar o ambiente de desenvolvimento.
+- Create `payment` package.
+- Implement `AsaasClient` (or Service) to wrap HTTP calls.
+- Handle Asaas API Key from environment variables.
+- Implement `createCustomer` method in the service.
+- Update `User` model to store `asaasCustomerId`.
 
-## Subtarefas
+## Subtasks
 
-- [ ] 1.1 Inicializar um novo projeto Spring Boot com as dependências necessárias (Web, Lombok, Firestore, Pub/Sub).
-- [ ] 1.2 Criar a estrutura de pacotes para os módulos: `identity`, `tasks`, `allowance`, `ai`, `whatsapp`, `shared`.
-- [ ] 1.3 Criar um `Dockerfile` para a aplicação Java.
-- [ ] 1.4 Criar o arquivo `docker-compose.yml` definindo os serviços da aplicação, do emulador do Firestore e do emulador do Pub/Sub.
-- [ ] 1.5 Adicionar um `README.md` na raiz do projeto com a seção "Como Rodar Localmente".
-- [ ] 1.6 Implementar testes unitários básicos para garantir que a configuração do projeto está correta e o contexto do Spring Boot carrega.
+- [ ] 1.1 Create `payment` package and `AsaasConfig` (API Key handling).
+- [ ] 1.2 Implement `AsaasService.createCustomer(User user)`.
+- [ ] 1.3 Update `User` entity (add `asaasCustomerId`, `subscriptionStatus`).
+- [ ] 1.4 Test integration with Asaas Sandbox (Unit/Integration test).
 
-## Detalhes da Implementação
+## Implementation Details
 
-Conforme a seção "Ambiente de Desenvolvimento" da especificação técnica, o `docker-compose.yml` é a peça central desta tarefa.
+Reference `docs/asaas_integration_guide.md` for JSON schemas.
+Use `sandbox.asaas.com`.
 
-### Arquivos Relevantes
+### Relevant Files
 
--   `pom.xml`
--   `Dockerfile`
--   `docker-compose.yml`
--   `README.md`
--   `src/main/java/com/fazquepaga/...`
+- `src/main/java/.../payment/AsaasService.java`
+- `src/main/java/.../domain/User.java`
 
-## Critérios de Sucesso
+## Success Criteria
 
--   Um novo desenvolvedor consegue clonar o repositório e executar `docker-compose up` para ter um ambiente funcional.
--   A aplicação Spring Boot inicia sem erros no contêiner.
--   Os emuladores do Firestore e Pub/Sub estão acessíveis a partir do contêiner da aplicação.
--   O código é revisado e aprovado.
--   Todos os testes passam.
+- Application starts with `payment` module active.
+- Can successfully create a customer in Asaas Sandbox via Service test.
+- User entity has new fields.

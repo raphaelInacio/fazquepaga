@@ -29,6 +29,9 @@ public class User implements UserDetails {
     private Integer age; // Used for children
     private SubscriptionTier subscriptionTier; // Subscription tier (only for PARENT role)
     private SubscriptionStatus subscriptionStatus; // Subscription status (only for PARENT role)
+    private String asaasCustomerId; // Asaas Customer ID (only for PARENT role)
+    private String subscriptionId; // Asaas Subscription ID (only for PARENT role)
+    private String document; // CPF/CNPJ for payment registration
 
     public enum Role {
         PARENT,
