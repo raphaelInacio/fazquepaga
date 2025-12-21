@@ -4,6 +4,8 @@ import com.fazquepaga.taskandpay.identity.User;
 import com.fazquepaga.taskandpay.identity.UserRepository;
 import com.fazquepaga.taskandpay.payment.dto.AsaasCustomerRequest;
 import com.fazquepaga.taskandpay.payment.dto.AsaasCustomerResponse;
+import com.fazquepaga.taskandpay.payment.dto.AsaasCheckoutRequest;
+import com.fazquepaga.taskandpay.payment.dto.AsaasCheckoutResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
@@ -65,6 +67,47 @@ public class AsaasService {
         } catch (Exception e) {
             log.error("Error creating Asaas Customer", e);
             throw new RuntimeException("Error communicating with Asaas", e);
+        }
+    }
+
+    public String createCheckoutSession(User user) {
+        log.info("Creating Checkout Session for user: {}", user.getEmail());
+
+        // TODO: Extract these to application.properties
+        String successUrl = "http://localhost:3000/app/settings?success=true";
+        String cancelUrl = "http://localhost:3000/app/settings?cancel=true";
+
+        AsaasCheckoutRequest request = AsaasCheckoutRequest.builder()
+                .chargeTypes(java.util.List.of("RECURRENT"))
+                .billingTypes(java.util.List.of("CREDIT_CARD", "PIX", "BOLETO"))
+                .items(java.util.List.of(AsaasCheckoutRequest.Item.builder()
+                        .name("TaskAndPay Premium")
+                        .value(new java.math.BigDecimal("29.90"))
+                        .build()))
+                .subscription(AsaasCheckoutRequest.SubscriptionInfo.builder()
+                        .cycle("MONTHLY")
+                        .description("Assinatura Mensal TaskAndPay")
+                        .build())
+                .callback(AsaasCheckoutRequest.CallbackInfo.builder()
+                        .successUrl(successUrl)
+                        .cancelUrl(cancelUrl)
+                        .build())
+                .externalReference(user.getId())
+                .notificationEnabled(true)
+                .build();
+
+        try {
+            AsaasCheckoutResponse response = restTemplate.postForObject("/checkouts", request,
+                    AsaasCheckoutResponse.class);
+            if (response != null && response.getCheckoutUrl() != null) {
+                log.info("Checkout Session created: {}", response.getId());
+                return response.getCheckoutUrl();
+            } else {
+                throw new RuntimeException("Failed to create Checkout Session: Empty response");
+            }
+        } catch (Exception e) {
+            log.error("Error creating Checkout Session", e);
+            throw new RuntimeException("Error communicating with Asaas for Checkout", e);
         }
     }
 }

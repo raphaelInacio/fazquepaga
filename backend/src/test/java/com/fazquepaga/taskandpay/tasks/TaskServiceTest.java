@@ -47,6 +47,9 @@ class TaskServiceTest {
         @Mock
         private com.fazquepaga.taskandpay.allowance.AllowanceService allowanceService;
 
+        @Mock
+        private com.fazquepaga.taskandpay.notification.NotificationService notificationService;
+
         @InjectMocks
         private TaskService taskService;
 

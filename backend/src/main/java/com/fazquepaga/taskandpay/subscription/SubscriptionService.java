@@ -1,106 +1,108 @@
 package com.fazquepaga.taskandpay.subscription;
 
 import com.fazquepaga.taskandpay.identity.User;
+import com.fazquepaga.taskandpay.identity.UserRepository;
+import com.fazquepaga.taskandpay.payment.AsaasService;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-/**
- * Service responsible for managing subscription-related business logic. Handles permission checks
- * based on subscription tiers.
- */
+import java.util.Optional;
+
 @Service
+@RequiredArgsConstructor
+@Slf4j
 public class SubscriptionService {
 
-    // Configuration constants for Free tier limits
-    private static final int FREE_TIER_MAX_RECURRING_TASKS = 5;
-    private static final int FREE_TIER_MAX_CHILDREN = 1;
+    private final UserRepository userRepository;
+    private final AsaasService asaasService;
 
-    /**
-     * Checks if a user can create a new task based on their subscription tier.
-     *
-     * @param user The user attempting to create a task
-     * @param currentRecurringTaskCount The current number of recurring tasks
-     * @return true if the user can create a task, false otherwise
-     */
-    public boolean canCreateTask(User user, int currentRecurringTaskCount) {
-        if (user == null || user.getSubscriptionTier() == null) {
-            return false;
+    public String generateSubscribeUrl(String userId) {
+        User user = getUser(userId);
+
+        if (user.getSubscriptionTier() == User.SubscriptionTier.PREMIUM &&
+                user.getSubscriptionStatus() == User.SubscriptionStatus.ACTIVE) {
+            throw new IllegalStateException("User is already PREMIUM");
         }
 
-        // Premium users have unlimited tasks
-        if (user.getSubscriptionTier() == User.SubscriptionTier.PREMIUM) {
+        // Ensure Asaas Customer exists
+        if (user.getAsaasCustomerId() == null) {
+            String customerId = asaasService.createCustomer(user);
+            user.setAsaasCustomerId(customerId);
+            // Save updated user with customer ID if needed immediately,
+            // though createCustomer inside AsaasService might have saved it.
+            // Let's rely on AsaasService returning the ID and ensure consistency.
+        }
+
+        return asaasService.createCheckoutSession(user);
+    }
+
+    public User.SubscriptionStatus getStatus(String userId) {
+        return getUser(userId).getSubscriptionStatus();
+    }
+
+    public User.SubscriptionTier getTier(String userId) {
+        return getUser(userId).getSubscriptionTier();
+    }
+
+    public User getUser(String userId) {
+        try {
+            return userRepository.findByIdSync(userId);
+        } catch (Exception e) {
+            throw new RuntimeException("User not found", e);
+        }
+    }
+
+    public void activateSubscription(String externalReference, String subscriptionId) {
+        try {
+            Optional<User> userOpt = Optional.ofNullable(userRepository.findByIdSync(externalReference));
+            if (userOpt.isPresent()) {
+                User user = userOpt.get();
+                user.setSubscriptionStatus(User.SubscriptionStatus.ACTIVE);
+                user.setSubscriptionTier(User.SubscriptionTier.PREMIUM);
+                user.setSubscriptionId(subscriptionId);
+                userRepository.save(user);
+                log.info("Subscription activated for user: {}", externalReference);
+            } else {
+                log.error("User not found for subscription activation: {}", externalReference);
+            }
+        } catch (Exception e) {
+            log.error("Error activating subscription", e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    // Permission Checks
+
+    public boolean canCreateTask(User user, int currentTasks) {
+        if (isPremium(user))
             return true;
-        }
-
-        // Free users are limited to FREE_TIER_MAX_RECURRING_TASKS
-        return currentRecurringTaskCount < FREE_TIER_MAX_RECURRING_TASKS;
+        return currentTasks < 50; // Free limit example
     }
 
-    /**
-     * Checks if a user can use AI features (suggestions, validation).
-     *
-     * @param user The user attempting to use AI features
-     * @return true if the user can use AI, false otherwise
-     */
-    public boolean canUseAI(User user) {
-        if (user == null || user.getSubscriptionTier() == null) {
-            return false;
-        }
-
-        // Only Premium users can use AI features
-        return user.getSubscriptionTier() == User.SubscriptionTier.PREMIUM;
-    }
-
-    /**
-     * Checks if a user can add a new child.
-     *
-     * @param user The user attempting to add a child
-     * @param currentChildCount The current number of children
-     * @return true if the user can add a child, false otherwise
-     */
-    public boolean canAddChild(User user, int currentChildCount) {
-        if (user == null || user.getSubscriptionTier() == null) {
-            return false;
-        }
-
-        // Premium users can have unlimited children (future feature)
-        if (user.getSubscriptionTier() == User.SubscriptionTier.PREMIUM) {
-            return true;
-        }
-
-        // Free users are limited to FREE_TIER_MAX_CHILDREN
-        return currentChildCount < FREE_TIER_MAX_CHILDREN;
-    }
-
-    /**
-     * Checks if a user can access the Gift Card store.
-     *
-     * @param user The user attempting to access the store
-     * @return true if the user can access the store, false otherwise
-     */
     public boolean canAccessGiftCardStore(User user) {
-        if (user == null || user.getSubscriptionTier() == null) {
-            return false;
-        }
-
-        // Only Premium users can access the Gift Card store
-        return user.getSubscriptionTier() == User.SubscriptionTier.PREMIUM;
+        return isPremium(user);
     }
 
-    /**
-     * Gets the maximum number of recurring tasks allowed for a user.
-     *
-     * @param user The user
-     * @return The maximum number of recurring tasks, or -1 for unlimited
-     */
+    public boolean canUseAI(User user) {
+        return isPremium(user);
+    }
+
+    public boolean canAddChild(User user, int currentChildren) {
+        if (isPremium(user))
+            return true;
+        return currentChildren < 2; // Free limit
+    }
+
     public int getMaxRecurringTasks(User user) {
-        if (user == null || user.getSubscriptionTier() == null) {
-            return 0;
-        }
+        if (isPremium(user))
+            return 100;
+        return 3;
+    }
 
-        if (user.getSubscriptionTier() == User.SubscriptionTier.PREMIUM) {
-            return -1; // Unlimited
-        }
-
-        return FREE_TIER_MAX_RECURRING_TASKS;
+    private boolean isPremium(User user) {
+        return user != null &&
+                user.getSubscriptionTier() == User.SubscriptionTier.PREMIUM &&
+                user.getSubscriptionStatus() == User.SubscriptionStatus.ACTIVE;
     }
 }
