@@ -14,6 +14,7 @@ import ChildPortal from "./pages/ChildPortal";
 import Login from "./pages/Login"; // Added
 import { AuthProvider } from "./context/AuthContext"; // Added
 import { GiftCardStorePage } from "./pages/GiftCardStorePage";
+import PricingPage from "./pages/PricingPage";
 import { LanguageSwitcher } from "./components/LanguageSwitcher";
 
 
@@ -39,6 +40,7 @@ const App = () => (
             <Route path="/gift-cards" element={<GiftCardStorePage />} />
             <Route path="/child-login" element={<ChildLogin />} />
             <Route path="/child-portal" element={<ChildPortal />} />
+            <Route path="/subscription" element={<PricingPage />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

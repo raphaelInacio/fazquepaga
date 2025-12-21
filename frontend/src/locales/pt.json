@@ -63,6 +63,10 @@
             "success": "Criança adicionada com sucesso!",
             "error": "Falha ao adicionar criança. Por favor, tente novamente.",
             "errorParentNotFound": "ID do responsável não encontrado. Por favor, faça login novamente."
+        },
+        "aiContext": {
+            "label": "Bio / Interesses (IA)",
+            "placeholder": "Ex: Gosta de dinossauros, tem medo de escuro. Isso ajuda a IA a sugerir tarefas melhores."
         }
     },
     "dashboard": {
@@ -179,8 +183,6 @@
         },
         "review": {
             "title": "Revisar Tarefa",
-            "aiValidatedMessage": "✅ Nossa IA pré-validou esta tarefa e acredita que foi concluída.",
-            "proof": "Comprovante:",
             "aiValidatedMessage": "✅ Nossa IA pré-validou esta tarefa e acredita que foi concluída.",
             "proof": "Comprovante:",
             "noProof": "Nenhuma imagem de comprovante enviada ainda",

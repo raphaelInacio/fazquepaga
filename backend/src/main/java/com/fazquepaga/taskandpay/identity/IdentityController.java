@@ -134,4 +134,14 @@ public class IdentityController {
         identityService.deleteChild(childId, parentId);
         return ResponseEntity.noContent().build();
     }
+
+    @PatchMapping("/children/{childId}/context")
+    public ResponseEntity<User> updateAiContext(
+            @PathVariable String childId,
+            @RequestBody com.fazquepaga.taskandpay.identity.dto.UpdateAiContextRequest request,
+            @RequestParam("parent_id") String parentId)
+            throws ExecutionException, InterruptedException {
+        User updatedChild = identityService.updateAiContext(childId, request.getContext(), parentId);
+        return ResponseEntity.ok(updatedChild);
+    }
 }

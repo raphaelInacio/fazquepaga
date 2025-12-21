@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.Map;
 
 @Service
@@ -29,7 +30,7 @@ public class NotificationService {
                 .recipientName(parent.getName())
                 .data(Map.of(
                         "childName", child.getName(),
-                        "taskName", task.getDescription(), // Fixed: getTitle -> getDescription
+                        "taskName", task.getDescription(),
                         "taskId", task.getId()))
                 .build());
     }
@@ -40,10 +41,29 @@ public class NotificationService {
                 .recipientPhone(child.getPhoneNumber())
                 .recipientName(child.getName())
                 .data(Map.of(
-                        "taskName", task.getDescription(), // Fixed: getTitle -> getDescription
-                        "reward", task.getValue() != null ? String.valueOf(task.getValue()) : "0" // Fixed: getReward ->
-                                                                                                  // getValue
-                ))
+                        "taskName", task.getDescription(),
+                        "reward", task.getValue() != null ? String.valueOf(task.getValue()) : "0"))
+                .build());
+    }
+
+    public void sendWithdrawalRequested(User parent, User child, BigDecimal amount) {
+        publish(NotificationEvent.builder()
+                .type(NotificationType.WITHDRAWAL_REQUESTED)
+                .recipientPhone(parent.getPhoneNumber())
+                .recipientName(parent.getName())
+                .data(Map.of(
+                        "childName", child.getName(),
+                        "amount", amount.toString()))
+                .build());
+    }
+
+    public void sendWithdrawalPaid(User child, BigDecimal amount) {
+        publish(NotificationEvent.builder()
+                .type(NotificationType.WITHDRAWAL_PAID)
+                .recipientPhone(child.getPhoneNumber())
+                .recipientName(child.getName())
+                .data(Map.of(
+                        "amount", amount.toString()))
                 .build());
     }
 

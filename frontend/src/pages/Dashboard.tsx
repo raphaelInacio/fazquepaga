@@ -11,12 +11,17 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { childService } from "@/services/childService";
 import { taskService } from "@/services/taskService";
+import { AiContextInput } from "@/components/AiContextInput";
+import { getLedger, approveWithdrawal, Transaction } from "@/services/ledgerService";
 import { toast } from "sonner";
+import { Banknote } from "lucide-react";
 import confetti from "canvas-confetti";
+import { useSubscription } from "@/contexts/SubscriptionContext";
 
 export default function Dashboard() {
     const { t } = useTranslation();
     const navigate = useNavigate();
+    const { isPremium } = useSubscription();
     const [children, setChildren] = useState<User[]>([]);
     const [parentName, setParentName] = useState("");
     const [selectedChildId, setSelectedChildId] = useState<string | null>(null);
@@ -26,8 +31,10 @@ export default function Dashboard() {
     const [selectedChildForCode, setSelectedChildForCode] = useState<string | null>(null);
     const [editingChild, setEditingChild] = useState<User | null>(null);
     const [deletingChild, setDeletingChild] = useState<User | null>(null);
-    const [editForm, setEditForm] = useState({ name: "", age: 0, phoneNumber: "" });
+    const [editForm, setEditForm] = useState({ name: "", age: 0, phoneNumber: "", aiContext: "" });
+
     const [pendingTasks, setPendingTasks] = useState<{ childId: string, childName: string, task: Task }[]>([]);
+    const [pendingWithdrawals, setPendingWithdrawals] = useState<{ childId: string, childName: string, transaction: Transaction }[]>([]);
 
     useEffect(() => {
         const parentId = localStorage.getItem("parentId");
@@ -46,6 +53,7 @@ export default function Dashboard() {
 
                 // Fetch pending tasks for all children
                 const allPendingTasks: { childId: string, childName: string, task: Task }[] = [];
+                const allPendingWithdrawals: { childId: string, childName: string, transaction: Transaction }[] = [];
                 for (const child of childrenData) {
                     if (child.id) {
                         const tasks = await taskService.getTasks(child.id);
@@ -57,9 +65,23 @@ export default function Dashboard() {
                                 task
                             });
                         });
+
+                        // Fetch pending withdrawals
+                        const ledger = await getLedger(child.id, parentId);
+                        const withdrawals = ledger.transactions.filter(
+                            (tx: any) => tx.type === 'WITHDRAWAL' && tx.status === 'PENDING_APPROVAL'
+                        );
+                        withdrawals.forEach((tx: any) => {
+                            allPendingWithdrawals.push({
+                                childId: child.id!,
+                                childName: child.name,
+                                transaction: tx
+                            });
+                        });
                     }
                 }
                 setPendingTasks(allPendingTasks);
+                setPendingWithdrawals(allPendingWithdrawals);
 
             } catch (error) {
                 console.error("Failed to fetch children", error);
@@ -161,6 +183,32 @@ export default function Dashboard() {
         }
     };
 
+    const handleApproveWithdrawal = async (childId: string, withdrawalId: string) => {
+        const parentId = localStorage.getItem("parentId");
+        if (!parentId) return;
+
+        try {
+            await approveWithdrawal(withdrawalId, parentId);
+            toast.success(t("dashboard.withdrawals.approved") || "Saque marcado como pago!");
+
+            confetti({
+                particleCount: 80,
+                spread: 70,
+                origin: { y: 0.7 },
+                colors: ['#32CD32', '#FFD700']
+            });
+
+            setPendingWithdrawals(prev => prev.filter(item => item.transaction.id !== withdrawalId));
+
+            // Refresh children to update balance if needed
+            const childrenData = await childService.getChildren(parentId);
+            setChildren(childrenData);
+        } catch (error) {
+            toast.error(t("dashboard.withdrawals.error") || "Erro ao aprovar saque");
+            console.error(error);
+        }
+    };
+
     const handleLogout = () => {
         // Clear all authentication data
         localStorage.removeItem("parentId");
@@ -176,7 +224,8 @@ export default function Dashboard() {
         setEditForm({
             name: child.name,
             age: child.age || 0,
-            phoneNumber: child.phoneNumber || ""
+            phoneNumber: child.phoneNumber || "",
+            aiContext: child.aiContext || ""
         });
     };
 
@@ -186,7 +235,18 @@ export default function Dashboard() {
         if (!parentId) return;
 
         try {
-            await childService.updateChild(editingChild.id, editForm, parentId);
+            // Update basic info
+            await childService.updateChild(editingChild.id!, {
+                name: editForm.name,
+                age: editForm.age,
+                phoneNumber: editForm.phoneNumber
+            }, parentId);
+
+            // Update AI Context if changed
+            if (editForm.aiContext !== (editingChild.aiContext || "")) {
+                await childService.updateAiContext(editingChild.id!, editForm.aiContext, parentId);
+            }
+
             toast.success(t("dashboard.child.updateSuccess"));
             setEditingChild(null);
 
@@ -231,6 +291,14 @@ export default function Dashboard() {
                         </p>
                     </div>
                     <div className="flex gap-3 flex-wrap">
+                        {!isPremium() && (
+                            <Button
+                                onClick={() => navigate("/subscription")}
+                                className="bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-white border-0 shadow-lg shadow-yellow-500/20"
+                            >
+                                <Sparkles className="mr-2 h-4 w-4" /> Upgrade
+                            </Button>
+                        )}
                         <Button
                             variant="outline"
                             onClick={() => navigate("/gift-cards")}
@@ -263,6 +331,45 @@ export default function Dashboard() {
                     </div>
                 ) : (
                     <div className="space-y-10">
+                        {/* Pending Withdrawals Section */}
+                        {pendingWithdrawals.length > 0 && (
+                            <Card className="border-none bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 shadow-glow relative overflow-hidden group mb-8">
+                                <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                                    <Banknote className="h-24 w-24 text-green-500" />
+                                </div>
+                                <CardHeader>
+                                    <CardTitle className="text-2xl font-bold text-green-700 dark:text-green-400 flex items-center gap-3">
+                                        <div className="p-2 bg-green-100 dark:bg-green-900/50 rounded-lg">
+                                            <Banknote className="h-6 w-6 text-green-600 dark:text-green-400" />
+                                        </div>
+                                        {t("dashboard.withdrawals.title") || "Solicitações de Saque"}
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="space-y-4">
+                                        {pendingWithdrawals.map((item) => (
+                                            <div key={item.transaction.id} className="flex items-center justify-between bg-card/80 backdrop-blur-sm p-4 rounded-xl shadow-sm border border-green-200/50 dark:border-green-800/50 hover:shadow-md transition-all">
+                                                <div>
+                                                    <p className="font-bold text-lg text-foreground">
+                                                        {t("dashboard.withdrawals.request", { amount: item.transaction.amount.toFixed(2) }) || `Saque de R$ ${item.transaction.amount.toFixed(2)}`}
+                                                    </p>
+                                                    <p className="text-sm text-muted-foreground mt-1">
+                                                        {t("dashboard.withdrawals.requestedBy") || "Solicitado por"}: <span className="font-semibold text-primary">{item.childName}</span>
+                                                    </p>
+                                                </div>
+                                                <Button
+                                                    onClick={() => handleApproveWithdrawal(item.childId, item.transaction.id)}
+                                                    className="bg-green-600 hover:bg-green-700 text-white shadow-md hover:shadow-green-500/20 rounded-full px-6 font-bold"
+                                                >
+                                                    {t("dashboard.withdrawals.pay") || "Marcar como Pago"}
+                                                </Button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        )}
+
                         {/* Pending Approvals Section */}
                         {pendingTasks.length > 0 && (
                             <Card className="border-none bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30 shadow-glow relative overflow-hidden group">
@@ -505,6 +612,12 @@ export default function Dashboard() {
                                         placeholder={t("child.add.phonePlaceholder")}
                                     />
                                 </div>
+                            </div>
+                            <div className="space-y-2">
+                                <AiContextInput
+                                    value={editForm.aiContext}
+                                    onChange={(value) => setEditForm({ ...editForm, aiContext: value })}
+                                />
                             </div>
                         </div>
                         <div className="flex gap-3 justify-end">

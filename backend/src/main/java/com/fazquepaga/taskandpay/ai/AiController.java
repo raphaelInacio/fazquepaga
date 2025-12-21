@@ -28,8 +28,9 @@ public class AiController {
     @GetMapping("/tasks/suggestions")
     public List<String> getTaskSuggestions(
             @RequestParam int age,
+            @RequestParam(name = "child_id", required = false) String childId,
             @RequestHeader(value = "Accept-Language", defaultValue = "pt") String language) {
-        return suggestionService.getSuggestions(age, language);
+        return suggestionService.getSuggestions(age, language, childId);
     }
 
     @PostMapping("/goal-coach")

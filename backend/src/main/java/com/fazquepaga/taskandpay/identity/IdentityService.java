@@ -226,6 +226,14 @@ public class IdentityService {
         return user;
     }
 
+    public User updateAiContext(String childId, String context, String parentId)
+            throws ExecutionException, InterruptedException {
+        User child = getChild(childId, parentId); // Validates existence and ownership
+        child.setAiContext(context);
+        userRepository.save(child).get();
+        return child;
+    }
+
     public void deleteChild(String childId, String parentId)
             throws ExecutionException, InterruptedException {
         // SECURITY: Validate child belongs to parent before deleting

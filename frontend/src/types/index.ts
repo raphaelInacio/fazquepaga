@@ -33,7 +33,13 @@ export interface User {
     monthlyAllowance?: number;
     age?: number;
     subscriptionTier?: 'FREE' | 'PREMIUM';
-    subscriptionStatus?: 'ACTIVE' | 'CANCELED' | 'PAST_DUE';
+    subscriptionStatus?: 'ACTIVE' | 'CANCELED' | 'PAST_DUE' | 'NONE';
+    balance?: number;
+    aiContext?: string;
+}
+
+export interface WithdrawalRequest {
+    amount: number;
 }
 
 export interface CreateChildRequest {

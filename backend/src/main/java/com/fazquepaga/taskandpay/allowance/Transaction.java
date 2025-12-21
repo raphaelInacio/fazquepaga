@@ -14,16 +14,28 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class Transaction {
 
-    @DocumentId private String id;
+    @DocumentId
+    private String id;
 
     private String childId;
     private BigDecimal amount;
     private String description;
     private Instant date;
     private TransactionType type;
+    private TransactionStatus status;
+    private String paymentProof;
 
     public enum TransactionType {
         CREDIT,
-        DEBIT
+        DEBIT,
+        WITHDRAWAL,
+        TASK_EARNING
+    }
+
+    public enum TransactionStatus {
+        PENDING,
+        PAID,
+        REJECTED,
+        COMPLETED // For immediate transactions like tasks
     }
 }

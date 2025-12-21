@@ -36,5 +36,17 @@ export const childService = {
 
     deleteChild: async (childId: string, parentId: string): Promise<void> => {
         await api.delete(`/api/v1/children/${childId}?parent_id=${parentId}`);
+    },
+
+    requestWithdrawal: async (childId: string, amount: number) => {
+        const response = await api.post(`/api/v1/children/${childId}/withdraw`, { amount });
+        return response.data;
+    },
+
+
+    updateAiContext: async (childId: string, context: string, parentId: string): Promise<User> => {
+        const response = await api.patch(`/api/v1/children/${childId}/context?parent_id=${parentId}`, { context });
+        return response.data;
     }
 };
+

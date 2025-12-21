@@ -27,6 +27,7 @@ public class User implements UserDetails {
     private java.math.BigDecimal monthlyAllowance;
     private java.math.BigDecimal balance; // Current balance for the child
     private Integer age; // Used for children
+    private String aiContext; // Free text context about the child for AI prompts
     private SubscriptionTier subscriptionTier; // Subscription tier (only for PARENT role)
     private SubscriptionStatus subscriptionStatus; // Subscription status (only for PARENT role)
     private String asaasCustomerId; // Asaas Customer ID (only for PARENT role)

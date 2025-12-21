@@ -44,7 +44,7 @@ class AiControllerTest {
                                 "Feed the pet",
                                 "Water the plants");
 
-                when(aiSuggestionService.getSuggestions(eq(age), anyString())).thenReturn(suggestions);
+                when(aiSuggestionService.getSuggestions(eq(age), anyString(), any())).thenReturn(suggestions);
 
                 // When & Then
                 mockMvc.perform(get("/api/v1/ai/tasks/suggestions").param("age", String.valueOf(age)))
@@ -63,7 +63,7 @@ class AiControllerTest {
                 int age = 5;
                 List<String> suggestions = Arrays.asList("Put toys away", "Brush teeth", "Help set table");
 
-                when(aiSuggestionService.getSuggestions(eq(age), anyString())).thenReturn(suggestions);
+                when(aiSuggestionService.getSuggestions(eq(age), anyString(), any())).thenReturn(suggestions);
 
                 // When & Then
                 mockMvc.perform(get("/api/v1/ai/tasks/suggestions").param("age", String.valueOf(age)))
@@ -79,7 +79,7 @@ class AiControllerTest {
                 int age = 15;
                 List<String> suggestions = Arrays.asList("Mow the lawn", "Wash the car", "Cook a meal", "Do laundry");
 
-                when(aiSuggestionService.getSuggestions(eq(age), anyString())).thenReturn(suggestions);
+                when(aiSuggestionService.getSuggestions(eq(age), anyString(), any())).thenReturn(suggestions);
 
                 // When & Then
                 mockMvc.perform(get("/api/v1/ai/tasks/suggestions").param("age", String.valueOf(age)))
@@ -93,7 +93,7 @@ class AiControllerTest {
         void shouldHandleEmptySuggestionsList() throws Exception {
                 // Given
                 int age = 10;
-                when(aiSuggestionService.getSuggestions(anyInt(), anyString())).thenReturn(List.of());
+                when(aiSuggestionService.getSuggestions(anyInt(), anyString(), any())).thenReturn(List.of());
 
                 // When & Then
                 mockMvc.perform(get("/api/v1/ai/tasks/suggestions").param("age", String.valueOf(age)))

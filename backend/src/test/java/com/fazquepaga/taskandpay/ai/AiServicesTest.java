@@ -41,7 +41,7 @@ class AiServicesTest {
         ChatResponse chatResponse = new ChatResponse(List.of(generation));
         when(chatModel.call(any(Prompt.class))).thenReturn(chatResponse);
 
-        List<String> suggestions = suggestionService.getSuggestions(10, "pt");
+        List<String> suggestions = suggestionService.getSuggestions(10, "pt", null);
 
         assertEquals(3, suggestions.size());
         assertEquals(" task 2", suggestions.get(1));
@@ -54,7 +54,7 @@ class AiServicesTest {
         ChatResponse chatResponse = new ChatResponse(List.of(generation));
         when(chatModel.call(any(Prompt.class))).thenReturn(chatResponse);
 
-        List<String> suggestions = suggestionService.getSuggestions(10, "en");
+        List<String> suggestions = suggestionService.getSuggestions(10, "en", null);
 
         assertEquals(3, suggestions.size());
         assertTrue(suggestions.get(0).contains("clean"));

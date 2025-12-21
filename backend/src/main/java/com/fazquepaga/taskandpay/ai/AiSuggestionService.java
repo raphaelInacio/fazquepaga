@@ -26,17 +26,35 @@ public class AiSuggestionService {
         this.userRepository = userRepository;
     }
 
-    public List<String> getSuggestions(int age, String language) {
+    public List<String> getSuggestions(int age, String language, String childId) {
         String languageInstruction = language.startsWith("en") ? "Respond in English." : "Responda em Português.";
+
+        String contextPrompt = "";
+        try {
+            if (childId != null && !childId.isEmpty()) {
+                User child = userRepository.findByIdSync(childId);
+                if (child != null && child.getAiContext() != null && !child.getAiContext().isEmpty()) {
+                    contextPrompt = "Context about the child: " + child.getAiContext() + "\n";
+                }
+            }
+        } catch (Exception e) {
+            // Ignore error fetching child context to ensure suggestions still work
+            System.err.println("Error fetching child context: " + e.getMessage());
+        }
 
         PromptTemplate promptTemplate = new PromptTemplate(
                 """
                         {languageInstruction}
+                        {contextPrompt}
                         Suggest a list of 5 simple and motivating household tasks for a {age}-year-old child.
+                        If context is provided, tailor the suggestions to their interests.
                         Return the answer as a comma-separated list. For example:
                         task 1, task 2, task 3, task 4, task 5
                         """);
-        Prompt prompt = promptTemplate.create(Map.of("age", age, "languageInstruction", languageInstruction));
+        Prompt prompt = promptTemplate.create(Map.of(
+                "age", age,
+                "languageInstruction", languageInstruction,
+                "contextPrompt", contextPrompt));
         ChatResponse response = chatModel.call(prompt);
 
         String content = response.getResult().getOutput().getText();

@@ -1,15 +1,15 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { User } from '../types';
+import React, { createContext, useContext, ReactNode } from 'react';
+import { useAuth } from '../context/AuthContext';
+import { subscriptionService } from '../services/subscriptionService';
 
 interface SubscriptionContextType {
-    user: User | null;
-    setUser: (user: User | null) => void;
     canCreateTask: (currentRecurringTaskCount: number) => boolean;
     canUseAI: () => boolean;
     canAccessGiftCardStore: () => boolean;
     canAddChild: (currentChildCount: number) => boolean;
     getMaxRecurringTasks: () => number;
     isPremium: () => boolean;
+    reloadUser: () => Promise<void>;
 }
 
 const SubscriptionContext = createContext<SubscriptionContextType | undefined>(undefined);
@@ -18,20 +18,7 @@ const FREE_TIER_MAX_RECURRING_TASKS = 5;
 const FREE_TIER_MAX_CHILDREN = 1;
 
 export const SubscriptionProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-    const [user, setUser] = useState<User | null>(null);
-
-    // Load user from localStorage on mount
-    useEffect(() => {
-        const storedParent = localStorage.getItem('parent');
-        if (storedParent) {
-            try {
-                const parentData = JSON.parse(storedParent);
-                setUser(parentData);
-            } catch (error) {
-                console.error('Failed to parse parent data:', error);
-            }
-        }
-    }, []);
+    const { user, updateUser, isAuthenticated } = useAuth();
 
     const isPremium = (): boolean => {
         return user?.subscriptionTier === 'PREMIUM';
@@ -63,17 +50,30 @@ export const SubscriptionProvider: React.FC<{ children: ReactNode }> = ({ childr
         return FREE_TIER_MAX_RECURRING_TASKS;
     };
 
+    const reloadUser = async () => {
+        if (!isAuthenticated || !user) return;
+        try {
+            const status = await subscriptionService.getStatus();
+            updateUser({
+                ...user,
+                subscriptionTier: status.tier,
+                subscriptionStatus: status.status
+            });
+        } catch (error) {
+            console.error("Failed to reload subscription status:", error);
+        }
+    };
+
     return (
         <SubscriptionContext.Provider
             value={{
-                user,
-                setUser,
                 canCreateTask,
                 canUseAI,
                 canAccessGiftCardStore,
                 canAddChild,
                 getMaxRecurringTasks,
                 isPremium,
+                reloadUser,
             }}
         >
             {children}

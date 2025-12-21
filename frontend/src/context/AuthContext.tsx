@@ -1,18 +1,13 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
-interface User {
-    id: string;
-    name: string;
-    email?: string;
-    role: 'PARENT' | 'CHILD';
-    // Add other fields as needed
-}
+import { User } from '@/types';
 
 interface AuthContextType {
     user: User | null;
     token: string | null;
     login: (token: string, user: User) => void;
     logout: () => void;
+    updateUser: (user: User) => void;
     isAuthenticated: boolean;
 }
 
@@ -57,8 +52,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         localStorage.removeItem('fazquepaga_child');
     };
 
+    const updateUser = (updatedUser: User) => {
+        setUser(updatedUser);
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+
+        // Legacy compatibility
+        if (updatedUser.id) localStorage.setItem('parentId', updatedUser.id);
+        if (updatedUser.name) localStorage.setItem('parentName', updatedUser.name);
+    };
+
     return (
-        <AuthContext.Provider value={{ user, token, login, logout, isAuthenticated: !!token }}>
+        <AuthContext.Provider value={{ user, token, login, logout, updateUser, isAuthenticated: !!token }}>
             {children}
         </AuthContext.Provider>
     );
