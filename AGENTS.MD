@@ -14,6 +14,8 @@ The frontend is a React application built with Vite, TypeScript, and Tailwind CS
 
 The backend is a Java application built with Spring Boot and Maven. It uses several Google Cloud services, including Firestore as a NoSQL database, Pub/Sub for messaging, and Vertex AI (Gemini) for AI-powered features like task suggestions and proof validation. It also integrates with Twilio for WhatsApp notifications.
 
+**Task Scheduling**: The system ignores local cron jobs for task resets. Instead, it listens for a Google Cloud Pub/Sub message `{"action": "RESET_TASKS"}` to trigger the daily task reset process.
+
 The backend is designed as a modular monolith, with distinct modules for identity, tasks, allowance, AI, and WhatsApp.
 
 ## Building and Running

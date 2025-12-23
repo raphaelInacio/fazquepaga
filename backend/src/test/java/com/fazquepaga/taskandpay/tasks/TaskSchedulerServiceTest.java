@@ -3,6 +3,11 @@ package com.fazquepaga.taskandpay.tasks;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.messaging.Message;
+import org.springframework.messaging.MessageHandler;
+import org.springframework.messaging.support.GenericMessage;
 
 import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.CollectionReference;
@@ -26,6 +31,9 @@ class TaskSchedulerServiceTest {
     private TaskRepository taskRepository;
 
     @Mock
+    private ObjectMapper objectMapper;
+
+    @Mock
     private ApiFuture<QuerySnapshot> queryFuture;
 
     @Mock
@@ -47,7 +55,7 @@ class TaskSchedulerServiceTest {
 
     @BeforeEach
     void setUp() {
-        taskSchedulerService = new TaskSchedulerService(taskRepository);
+        taskSchedulerService = new TaskSchedulerService(taskRepository, objectMapper);
     }
 
     @Test
@@ -117,5 +125,39 @@ class TaskSchedulerServiceTest {
         // Assert
         verify(taskRepository).save(eq("user-456"), argThat(task -> task.getStatus() == Task.TaskStatus.PENDING &&
                 !task.getAcknowledged()));
+    }
+
+    @Test
+    void messageReceiver_shouldCallResetRecurringTasks_whenActionIsResetTasks() throws Exception {
+        // Arrange
+        String payload = "{\"action\": \"RESET_TASKS\"}";
+        Message<byte[]> message = new GenericMessage<>(payload.getBytes());
+
+        JsonNode jsonNode = mock(JsonNode.class);
+        when(objectMapper.readTree(payload)).thenReturn(jsonNode);
+        when(jsonNode.has("action")).thenReturn(true);
+        when(jsonNode.get("action")).thenReturn(jsonNode);
+        when(jsonNode.asText()).thenReturn("RESET_TASKS");
+
+        // Mock internal reset call by mocking what resetRecurringTasks does,
+        // OR we just assume resetRecurringTasks logic runs.
+        // Since we are testing the service itself (not a spy), calling the handler will
+        // execute resetRecurringTasks.
+        // We can verify taskRepository interaction which happens inside
+        // resetRecurringTasks.
+
+        // Mock empty return for daily tasks to avoid NPE/complex setup for this
+        // specific test
+        when(taskRepository.findRecurringTasks("DAILY")).thenReturn(queryFuture);
+        when(queryFuture.get()).thenReturn(querySnapshot);
+        when(querySnapshot.getDocuments()).thenReturn(Collections.emptyList());
+        when(taskRepository.findRecurringTasks("WEEKLY")).thenReturn(queryFuture);
+
+        // Act
+        MessageHandler handler = taskSchedulerService.taskResetMessageReceiver();
+        handler.handleMessage(message);
+
+        // Assert
+        verify(taskRepository, times(1)).findRecurringTasks("DAILY");
     }
 }

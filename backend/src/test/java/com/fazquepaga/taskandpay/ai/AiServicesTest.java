@@ -70,4 +70,30 @@ class AiServicesTest {
 
         assertTrue(isValid);
     }
+
+    @Test
+    void shouldIncludeAiContextInPrompt() throws Exception {
+        // Given
+        String childId = "child1";
+        String aiContext = "loves dinosaurs";
+        com.fazquepaga.taskandpay.identity.User child = com.fazquepaga.taskandpay.identity.User.builder()
+                .id(childId)
+                .aiContext(aiContext)
+                .build();
+
+        when(userRepository.findByIdSync(childId)).thenReturn(child);
+
+        String suggestionText = "task 1, task 2, task 3";
+        Generation generation = new Generation(new AssistantMessage(suggestionText));
+        ChatResponse chatResponse = new ChatResponse(List.of(generation));
+        org.mockito.ArgumentCaptor<Prompt> promptCaptor = org.mockito.ArgumentCaptor.forClass(Prompt.class);
+        when(chatModel.call(promptCaptor.capture())).thenReturn(chatResponse);
+
+        // When
+        suggestionService.getSuggestions(10, "en", childId);
+
+        // Then
+        String promptContent = promptCaptor.getValue().getContents();
+        assertTrue(promptContent.contains("Context about the child: " + aiContext));
+    }
 }

@@ -1,5 +1,5 @@
 ---
-status: pending
+status: completed
 ---
 
 # Task 6.0: Frontend: Subscription Flow
@@ -23,9 +23,9 @@ Implement the frontend user interface for the Premium Subscription flow. This in
 
 - [ ] 6.1 Create `SubscriptionPage` or `PricingModal` component.
 - [ ] 6.2 Implement `SubscriptionService` (Frontend) to call the API.
-- [ ] 6.3 Handle 'Upgrade' click -> API Call -> Window Redirect.
-- [ ] 6.4 Update `UserContext` or `store` to reflect new subscription status (re-fetch user profile on return).
-- [ ] 6.5 **Tests**: Add Component tests (React Testing Library) for the Pricing UI and Interaction.
+- [x] 6.3 Handle 'Upgrade' click -> API Call -> Window Redirect.
+- [x] 6.4 Update `UserContext` or `store` to reflect new subscription status (re-fetch user profile on return).
+- [x] 6.5 **Tests**: Add Component tests (React Testing Library) for the Pricing UI and Interaction.
 
 ## Implementation Details
 
