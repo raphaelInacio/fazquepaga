@@ -8,12 +8,28 @@ import com.fazquepaga.taskandpay.payment.dto.AsaasCheckoutRequest;
 import com.fazquepaga.taskandpay.payment.dto.AsaasCheckoutResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 @Service
 @Slf4j
 public class AsaasService {
+
+    @Value("${asaas.subscription.price}")
+    private String subscriptionPrice;
+
+    @Value("${asaas.subscription.name}")
+    private String subscriptionName;
+
+    @Value("${asaas.subscription.cycle}")
+    private String subscriptionCycle;
+
+    @Value("${asaas.subscription.success-url}")
+    private String successUrl;
+
+    @Value("${asaas.subscription.cancel-url}")
+    private String cancelUrl;
 
     private final RestTemplate restTemplate;
     private final UserRepository userRepository;
@@ -73,19 +89,16 @@ public class AsaasService {
     public String createCheckoutSession(User user) {
         log.info("Creating Checkout Session for user: {}", user.getEmail());
 
-        // TODO: Extract these to application.properties
-        String successUrl = "http://localhost:3000/app/settings?success=true";
-        String cancelUrl = "http://localhost:3000/app/settings?cancel=true";
-
         AsaasCheckoutRequest request = AsaasCheckoutRequest.builder()
                 .chargeTypes(java.util.List.of("RECURRENT"))
-                .billingTypes(java.util.List.of("CREDIT_CARD", "PIX", "BOLETO"))
+                .billingTypes(java.util.List.of("CREDIT_CARD"))
                 .items(java.util.List.of(AsaasCheckoutRequest.Item.builder()
-                        .name("TaskAndPay Premium")
-                        .value(new java.math.BigDecimal("29.90"))
+                        .name(subscriptionName)
+                        .value(new java.math.BigDecimal(subscriptionPrice))
+                        .quantity(1)
                         .build()))
                 .subscription(AsaasCheckoutRequest.SubscriptionInfo.builder()
-                        .cycle("MONTHLY")
+                        .cycle(subscriptionCycle)
                         .description("Assinatura Mensal TaskAndPay")
                         .build())
                 .callback(AsaasCheckoutRequest.CallbackInfo.builder()

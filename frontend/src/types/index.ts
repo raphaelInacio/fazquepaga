@@ -47,6 +47,7 @@ export interface CreateChildRequest {
     parentId: string;
     phoneNumber: string;
     age?: number;
+    aiContext?: string;
 }
 
 

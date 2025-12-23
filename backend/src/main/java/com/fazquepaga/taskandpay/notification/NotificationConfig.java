@@ -1,8 +1,8 @@
 package com.fazquepaga.taskandpay.notification;
 
 import com.google.cloud.spring.pubsub.core.PubSubTemplate;
+import com.google.cloud.spring.pubsub.integration.AckMode;
 import com.google.cloud.spring.pubsub.integration.inbound.PubSubInboundChannelAdapter;
-import com.google.cloud.spring.pubsub.support.AckMode; // Added import
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -21,7 +21,7 @@ public class NotificationConfig {
         return new DirectChannel();
     }
 
-    @Bean
+    @Bean(name = "notificationChannelAdapter")
     public PubSubInboundChannelAdapter messageChannelAdapter(
             @Qualifier("notificationInputChannel") MessageChannel inputChannel,
             PubSubTemplate pubSubTemplate) {

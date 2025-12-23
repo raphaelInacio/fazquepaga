@@ -39,7 +39,7 @@ export const childService = {
     },
 
     requestWithdrawal: async (childId: string, amount: number) => {
-        const response = await api.post(`/api/v1/children/${childId}/withdraw`, { amount });
+        const response = await api.post(`/api/v1/allowance/children/${childId}/withdraw`, { amount });
         return response.data;
     },
 

@@ -97,6 +97,29 @@ class IdentityServiceTest {
     }
 
     @Test
+    void shouldCreateChildWithAiContext() throws ExecutionException, InterruptedException {
+        // Given
+        String parentId = "parent-id";
+        User parent = User.builder().id(parentId).role(User.Role.PARENT).build();
+
+        CreateChildRequest request = new CreateChildRequest();
+        request.setName("Test Child");
+        request.setParentId(parentId);
+        request.setAiContext("Loves coding and robots");
+
+        when(userRepository.findByIdSync(parentId)).thenReturn(parent);
+        when(userRepository.save(any(User.class))).thenReturn(ApiFutures.immediateFuture(null));
+        when(userRepository.findByAccessCode(any())).thenReturn(java.util.Optional.empty());
+
+        // When
+        User result = identityService.createChild(request);
+
+        // Then
+        assertNotNull(result);
+        assertEquals("Loves coding and robots", result.getAiContext());
+    }
+
+    @Test
     void shouldThrowExceptionWhenParentNotFoundForChildCreation()
             throws ExecutionException, InterruptedException {
 
@@ -388,5 +411,28 @@ class IdentityServiceTest {
                 () -> identityService.deleteChild(childId, parentId));
 
         assertEquals("Child not found", exception.getMessage());
+    }
+
+    @Test
+    void shouldUpdateAiContext() throws ExecutionException, InterruptedException {
+        // Given
+        String childId = "child-id";
+        String parentId = "parent-id";
+        String context = "Loves dinosaurs and space.";
+        User child = User.builder()
+                .id(childId)
+                .parentId(parentId)
+                .role(User.Role.CHILD)
+                .build();
+
+        when(userRepository.findByIdSync(childId)).thenReturn(child);
+        when(userRepository.save(any(User.class))).thenReturn(ApiFutures.immediateFuture(null));
+
+        // When
+        User result = identityService.updateAiContext(childId, context, parentId);
+
+        // Then
+        assertNotNull(result);
+        assertEquals(context, result.getAiContext());
     }
 }

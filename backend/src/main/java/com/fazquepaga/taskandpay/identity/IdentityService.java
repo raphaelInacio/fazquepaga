@@ -145,6 +145,7 @@ public class IdentityService {
                 .role(User.Role.CHILD)
                 .parentId(parentId)
                 .accessCode(accessCode) // Save access code
+                .aiContext(request.getAiContext())
                 .build();
 
         userRepository.save(child).get();

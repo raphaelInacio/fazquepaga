@@ -1,10 +1,11 @@
-
+import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import PricingPage from './PricingPage';
 import { subscriptionService } from '@/services/subscriptionService';
 import { useSubscription } from '@/contexts/SubscriptionContext';
 import { BrowserRouter } from 'react-router-dom';
+import * as utils from '@/lib/utils';
 
 // Mock SubscriptionService
 jest.mock('@/services/subscriptionService', () => ({
@@ -18,22 +19,19 @@ jest.mock('@/contexts/SubscriptionContext', () => ({
     useSubscription: jest.fn(),
 }));
 
+// Mock utils
+jest.mock('@/lib/utils', () => ({
+    ...jest.requireActual('@/lib/utils'),
+    navigateTo: jest.fn(),
+}));
+
 describe('PricingPage', () => {
     const mockSubscribe = subscriptionService.subscribe as jest.Mock;
     const mockUseSubscription = useSubscription as jest.Mock;
-    const originalLocation = window.location;
+    const mockNavigateTo = utils.navigateTo as jest.Mock;
 
     beforeEach(() => {
         jest.clearAllMocks();
-        // Mock window.location
-        Object.defineProperty(window, 'location', {
-            writable: true,
-            value: { href: '' },
-        });
-    });
-
-    afterEach(() => {
-        window.location = originalLocation;
     });
 
     test('renders pricing plans correctly', () => {
@@ -80,7 +78,7 @@ describe('PricingPage', () => {
         expect(mockSubscribe).toHaveBeenCalledTimes(1);
 
         await waitFor(() => {
-            expect(window.location.href).toBe('https://asaas.com/checkout');
+            expect(mockNavigateTo).toHaveBeenCalledWith('https://asaas.com/checkout');
         });
     });
 });

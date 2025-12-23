@@ -26,6 +26,6 @@ export const getLedgerInsights = async (childId: string, parentId: string): Prom
 };
 
 export const approveWithdrawal = async (withdrawalId: string, parentId: string) => {
-    const response = await api.post(`/api/v1/withdrawals/${withdrawalId}/approve?parent_id=${parentId}`);
+    const response = await api.post(`/api/v1/allowance/withdrawals/${withdrawalId}/approve?parent_id=${parentId}`);
     return response.data;
 };

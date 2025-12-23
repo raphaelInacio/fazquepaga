@@ -19,9 +19,9 @@ public class NotificationListener {
     private final ObjectMapper objectMapper;
     private final WhatsAppClient whatsAppClient;
 
-    @Bean
+    @Bean(name = "taskNotificationListener")
     @ServiceActivator(inputChannel = "notificationInputChannel")
-    public MessageHandler messageReceiver() {
+    public MessageHandler notificationMessageReceiver() {
         return message -> {
             log.info("Message received from Pub/Sub");
             String payload = new String((byte[]) message.getPayload());

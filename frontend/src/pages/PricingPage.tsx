@@ -1,5 +1,6 @@
 
-import { useState } from "react";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Check, Loader2, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -7,10 +8,12 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { subscriptionService } from "@/services/subscriptionService";
 import { useSubscription } from "@/contexts/SubscriptionContext";
 import { toast } from "sonner";
+import { navigateTo } from "@/lib/utils";
 
 export default function PricingPage() {
     const { t } = useTranslation();
     const { isPremium } = useSubscription();
+    const navigate = useNavigate();
     const [isLoading, setIsLoading] = useState(false);
 
     const handleSubscribe = async () => {
@@ -18,7 +21,7 @@ export default function PricingPage() {
         try {
             const response = await subscriptionService.subscribe();
             if (response.checkoutUrl) {
-                window.location.href = response.checkoutUrl;
+                navigateTo(response.checkoutUrl);
             } else {
                 toast.error("Failed to generate checkout link.");
             }
@@ -41,6 +44,13 @@ export default function PricingPage() {
 
     return (
         <div className="container mx-auto py-10 px-4">
+            <Button
+                variant="ghost"
+                onClick={() => navigate(-1)}
+                className="mb-4"
+            >
+                {t("common.back")}
+            </Button>
             <div className="text-center mb-10">
                 <h1 className="text-4xl font-bold mb-4">Upgrade to Premium</h1>
                 <p className="text-xl text-muted-foreground">Unlock the full potential of TaskAndPay for your family.</p>
@@ -78,7 +88,7 @@ export default function PricingPage() {
                         <CardDescription>Supercharge your parenting with AI</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                        <div className="text-3xl font-bold">R$ 19,90<span className="text-sm font-normal text-muted-foreground">/mo</span></div>
+                        <div className="text-3xl font-bold">R$ 29,90<span className="text-sm font-normal text-muted-foreground">/mo</span></div>
                         <ul className="space-y-2">
                             {features.map((feature, i) => (
                                 <li key={i} className="flex items-center gap-2">

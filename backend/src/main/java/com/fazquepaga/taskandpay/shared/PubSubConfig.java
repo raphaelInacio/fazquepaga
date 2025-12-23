@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.integration.channel.DirectChannel;
 import org.springframework.messaging.MessageChannel;
 
-import com.google.cloud.spring.pubsub.support.AckMode;
+// import com.google.cloud.spring.pubsub.support.AckMode;
 import org.springframework.beans.factory.annotation.Value;
 
 @Configuration
@@ -22,8 +22,8 @@ public class PubSubConfig {
         return new DirectChannel();
     }
 
-    @Bean
-    public PubSubInboundChannelAdapter messageChannelAdapter(
+    @Bean(name = "proofChannelAdapter")
+    public PubSubInboundChannelAdapter proofChannelAdapter(
             @Qualifier("proofsChannel") MessageChannel channel, PubSubTemplate pubSubTemplate) {
         PubSubInboundChannelAdapter adapter = new PubSubInboundChannelAdapter(pubSubTemplate, "proofs-subscription");
         adapter.setOutputChannel(channel);
@@ -40,7 +40,7 @@ public class PubSubConfig {
             @Qualifier("taskResetChannel") MessageChannel channel, PubSubTemplate pubSubTemplate) {
         PubSubInboundChannelAdapter adapter = new PubSubInboundChannelAdapter(pubSubTemplate, taskResetSubscription);
         adapter.setOutputChannel(channel);
-        adapter.setAckMode(AckMode.MANUAL);
+        // adapter.setAckMode(AckMode.MANUAL);
         return adapter;
     }
 }

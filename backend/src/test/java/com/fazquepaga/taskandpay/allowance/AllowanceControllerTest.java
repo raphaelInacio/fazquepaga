@@ -20,6 +20,8 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 
 @WebMvcTest(controllers = AllowanceController.class)
 @AutoConfigureMockMvc(addFilters = false)
+@org.springframework.test.context.ActiveProfiles("test")
+@org.springframework.test.context.TestPropertySource(properties = "asaas.api-key=dummy-test-key")
 class AllowanceControllerTest {
 
         @Autowired
@@ -30,6 +32,10 @@ class AllowanceControllerTest {
 
         @MockBean
         private LedgerService ledgerService;
+
+        @MockBean
+        private WithdrawalService withdrawalService;
+
         @MockBean
         private com.fazquepaga.taskandpay.identity.UserRepository userRepository;
         @MockBean
@@ -101,5 +107,32 @@ class AllowanceControllerTest {
                                                 .param("parent_id", parentId))
                                 .andExpect(status().isOk())
                                 .andExpect(jsonPath("$.insight").value(aiInsight));
+        }
+
+        @Test
+        void shouldRequestWithdrawal() throws Exception {
+                // Given
+                String childId = "child-id";
+                BigDecimal amount = BigDecimal.valueOf(20.0);
+                Transaction transaction = Transaction.builder()
+                                .id("tx-2")
+                                .amount(amount)
+                                .description("Withdrawal Request")
+                                .type(Transaction.TransactionType.WITHDRAWAL)
+                                .status(Transaction.TransactionStatus.PENDING)
+                                .build();
+
+                when(withdrawalService.requestWithdrawal(childId, amount)).thenReturn(transaction);
+
+                // When & Then
+                mockMvc.perform(
+                                org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+                                                .post("/api/v1/allowance/children/{childId}/withdraw", childId)
+                                                .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                                                .content("{\"amount\": 20.0}"))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.id").value("tx-2"))
+                                .andExpect(jsonPath("$.amount").value(20.0))
+                                .andExpect(jsonPath("$.status").value("PENDING"));
         }
 }

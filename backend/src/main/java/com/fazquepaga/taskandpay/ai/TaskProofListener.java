@@ -31,24 +31,22 @@ public class TaskProofListener {
         this.taskRepository = taskRepository;
     }
 
-    @Bean
+    @Bean(name = "proofListener")
     @ServiceActivator(inputChannel = "proofsChannel")
-    public MessageHandler messageReceiver() {
+    public MessageHandler proofMessageReceiver() {
         return message -> {
             String payload = new String((byte[]) message.getPayload());
             logger.info("Message received: " + payload);
             try {
-                ProofSubmittedEvent event =
-                        objectMapper.readValue(payload, ProofSubmittedEvent.class);
+                ProofSubmittedEvent event = objectMapper.readValue(payload, ProofSubmittedEvent.class);
                 handleEvent(event);
             } catch (IOException | ExecutionException | InterruptedException e) {
                 logger.error("Error processing message: " + payload, e);
             }
-            BasicAcknowledgeablePubsubMessage originalMessage =
-                    message.getHeaders()
-                            .get(
-                                    GcpPubSubHeaders.ORIGINAL_MESSAGE,
-                                    BasicAcknowledgeablePubsubMessage.class);
+            BasicAcknowledgeablePubsubMessage originalMessage = message.getHeaders()
+                    .get(
+                            GcpPubSubHeaders.ORIGINAL_MESSAGE,
+                            BasicAcknowledgeablePubsubMessage.class);
             if (originalMessage != null) {
                 originalMessage.ack();
             }
@@ -57,16 +55,15 @@ public class TaskProofListener {
 
     private void handleEvent(ProofSubmittedEvent event)
             throws ExecutionException, InterruptedException {
-        // This is a simplified implementation. In a real application, you would download the image
+        // This is a simplified implementation. In a real application, you would
+        // download the image
         // from the URL and pass the bytes to the validator.
-        Task task =
-                taskRepository
-                        .findById(event.getChildId(), event.getTaskId())
-                        .get()
-                        .toObject(Task.class);
+        Task task = taskRepository
+                .findById(event.getChildId(), event.getTaskId())
+                .get()
+                .toObject(Task.class);
         if (task != null) {
-            boolean isValid =
-                    aiValidator.validateTaskCompletionImage(new byte[0], task.getDescription());
+            boolean isValid = aiValidator.validateTaskCompletionImage(new byte[0], task.getDescription());
             task.setAiValidated(isValid);
             task.setStatus(Task.TaskStatus.PENDING_APPROVAL);
             taskRepository.save(event.getChildId(), task);

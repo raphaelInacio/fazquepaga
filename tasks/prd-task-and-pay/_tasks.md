@@ -7,6 +7,6 @@
 - [x] 3.0 Logic: Notification Hub & WhatsApp Templates
 - [x] 4.0 Feature: Allowance Withdrawal
 - [ ] 5.0 Feature: AI Context & Prompt Refinement
-- [ ] 6.0 Frontend: Subscription Flow
-- [ ] 7.0 Frontend: Allowance Withdrawal
+- [x] 6.0 Frontend: Subscription Flow
+- [x] 7.0 Frontend: Allowance Withdrawal
 - [ ] 8.0 Frontend: AI Context (Bio/Interests)

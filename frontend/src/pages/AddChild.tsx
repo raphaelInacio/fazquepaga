@@ -19,6 +19,8 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
 import { CreateChildRequest } from "@/types";
 
+import { Textarea } from "@/components/ui/textarea";
+
 export default function AddChild() {
     const { t } = useTranslation();
     const navigate = useNavigate();
@@ -29,6 +31,7 @@ export default function AddChild() {
         name: z.string().min(2, t("validation.nameMin", { min: 2 })),
         phoneNumber: z.string().min(10, t("validation.phoneMin", { min: 10 })),
         age: z.number().min(1, t("validation.ageMin", { min: 1 })).max(18, t("validation.ageMax", { max: 18 })),
+        aiContext: z.string().optional(),
     });
 
     const form = useForm<z.infer<typeof formSchema>>({
@@ -37,6 +40,7 @@ export default function AddChild() {
             name: "",
             phoneNumber: "",
             age: 10,
+            aiContext: "",
         },
     });
 
@@ -54,6 +58,7 @@ export default function AddChild() {
                 phoneNumber: values.phoneNumber,
                 parentId: parentId,
                 age: values.age,
+                aiContext: values.aiContext,
             };
             const createdChild = await childService.addChild(childData, parentId);
 
@@ -66,6 +71,7 @@ export default function AddChild() {
                 age: values.age,
                 phoneNumber: values.phoneNumber,
                 parentId: parentId,
+                aiContext: values.aiContext,
             });
             localStorage.setItem("children", JSON.stringify(children));
 
@@ -132,9 +138,36 @@ export default function AddChild() {
                                     </FormItem>
                                 )}
                             />
-                            <Button type="submit" className="w-full" disabled={isLoading} data-testid="add-child-submit-button">
-                                {isLoading ? t("child.add.buttonLoading") : t("child.add.button")}
-                            </Button>
+                            <FormField
+                                control={form.control}
+                                name="aiContext"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>{t("child.add.aiContext") || "Contexto da IA (Interesses, Hobbies)"}</FormLabel>
+                                        <FormControl>
+                                            <Textarea
+                                                placeholder={t("child.add.aiContextPlaceholder") || "Ex: Gosta de dinossauros, futebol e videogames..."}
+                                                className="resize-none"
+                                                {...field}
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <div className="flex gap-4">
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    className="w-full"
+                                    onClick={() => navigate("/dashboard")}
+                                >
+                                    {t("common.cancel")}
+                                </Button>
+                                <Button type="submit" className="w-full" disabled={isLoading} data-testid="add-child-submit-button">
+                                    {isLoading ? t("child.add.buttonLoading") : t("child.add.button")}
+                                </Button>
+                            </div>
                         </form>
                     </Form>
                 </CardContent>

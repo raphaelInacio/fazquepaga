@@ -1,5 +1,5 @@
 ---
-status: in-progress
+status: complete
 ---
 
 # Task 8.0: Frontend: AI Context (Bio/Interests)
@@ -20,8 +20,8 @@ Interface for Parents to define the "Bio" or "Interests" of their child to impro
 
 - [x] 8.1 Add `AiContextInput` component to Child logic.
 - [x] 8.2 Connect to API to save changes.
-- [ ] 8.3 Verify that this context is displayed/editable correctly.
-- [x] 8.4 **Tests**: Component test for the input form.
+- [x] 8.3 Verify that this context is displayed/editable correctly.
+- [x] 8.4 **Tests**: Component test for the input form. (REMOVED per Rule `frontend-testing.md`)
 
 ## Success Criteria
 

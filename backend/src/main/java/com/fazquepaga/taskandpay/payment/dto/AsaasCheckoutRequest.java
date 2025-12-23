@@ -21,6 +21,7 @@ public class AsaasCheckoutRequest {
     public static class Item {
         private String name;
         private BigDecimal value;
+        private Integer quantity;
     }
 
     @Data
