@@ -25,7 +25,8 @@ public class NotificationConfig {
     public PubSubInboundChannelAdapter messageChannelAdapter(
             @Qualifier("notificationInputChannel") MessageChannel inputChannel,
             PubSubTemplate pubSubTemplate) {
-        PubSubInboundChannelAdapter adapter = new PubSubInboundChannelAdapter(pubSubTemplate, subscriptionName);
+        PubSubInboundChannelAdapter adapter =
+                new PubSubInboundChannelAdapter(pubSubTemplate, subscriptionName);
         adapter.setOutputChannel(inputChannel);
         adapter.setAckMode(AckMode.MANUAL);
         return adapter;

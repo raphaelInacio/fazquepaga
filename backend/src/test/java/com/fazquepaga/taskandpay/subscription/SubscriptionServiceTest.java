@@ -13,13 +13,10 @@ import org.mockito.MockitoAnnotations;
 
 class SubscriptionServiceTest {
 
-    @Mock
-    private UserRepository userRepository;
-    @Mock
-    private AsaasService asaasService;
+    @Mock private UserRepository userRepository;
+    @Mock private AsaasService asaasService;
 
-    @InjectMocks
-    private SubscriptionService subscriptionService;
+    @InjectMocks private SubscriptionService subscriptionService;
 
     @BeforeEach
     void setUp() {
@@ -28,10 +25,11 @@ class SubscriptionServiceTest {
 
     @Test
     void testCanCreateTask_PremiumUser_ShouldAllowUnlimitedTasks() {
-        User premiumUser = User.builder()
-                .subscriptionTier(User.SubscriptionTier.PREMIUM)
-                .subscriptionStatus(User.SubscriptionStatus.ACTIVE)
-                .build();
+        User premiumUser =
+                User.builder()
+                        .subscriptionTier(User.SubscriptionTier.PREMIUM)
+                        .subscriptionStatus(User.SubscriptionStatus.ACTIVE)
+                        .build();
 
         assertTrue(subscriptionService.canCreateTask(premiumUser, 100));
         assertTrue(subscriptionService.canCreateTask(premiumUser, 1000));
@@ -39,10 +37,11 @@ class SubscriptionServiceTest {
 
     @Test
     void testCanCreateTask_FreeUser_ShouldEnforceLimit() {
-        User freeUser = User.builder()
-                .subscriptionTier(User.SubscriptionTier.FREE)
-                .subscriptionStatus(User.SubscriptionStatus.ACTIVE)
-                .build();
+        User freeUser =
+                User.builder()
+                        .subscriptionTier(User.SubscriptionTier.FREE)
+                        .subscriptionStatus(User.SubscriptionStatus.ACTIVE)
+                        .build();
 
         // Limit is 50 in code
         assertTrue(subscriptionService.canCreateTask(freeUser, 0));
@@ -58,8 +57,11 @@ class SubscriptionServiceTest {
 
     @Test
     void testCanUseAI_PremiumUser_ShouldReturnTrue() {
-        User premiumUser = User.builder().subscriptionTier(User.SubscriptionTier.PREMIUM)
-                .subscriptionStatus(User.SubscriptionStatus.ACTIVE).build();
+        User premiumUser =
+                User.builder()
+                        .subscriptionTier(User.SubscriptionTier.PREMIUM)
+                        .subscriptionStatus(User.SubscriptionStatus.ACTIVE)
+                        .build();
         assertTrue(subscriptionService.canUseAI(premiumUser));
     }
 
@@ -71,8 +73,11 @@ class SubscriptionServiceTest {
 
     @Test
     void testCanAccessGiftCardStore_PremiumUser_ShouldReturnTrue() {
-        User premiumUser = User.builder().subscriptionTier(User.SubscriptionTier.PREMIUM)
-                .subscriptionStatus(User.SubscriptionStatus.ACTIVE).build();
+        User premiumUser =
+                User.builder()
+                        .subscriptionTier(User.SubscriptionTier.PREMIUM)
+                        .subscriptionStatus(User.SubscriptionStatus.ACTIVE)
+                        .build();
         assertTrue(subscriptionService.canAccessGiftCardStore(premiumUser));
     }
 
@@ -95,15 +100,21 @@ class SubscriptionServiceTest {
 
     @Test
     void testCanAddChild_PremiumUser_ShouldAllowUnlimited() {
-        User premiumUser = User.builder().subscriptionTier(User.SubscriptionTier.PREMIUM)
-                .subscriptionStatus(User.SubscriptionStatus.ACTIVE).build();
+        User premiumUser =
+                User.builder()
+                        .subscriptionTier(User.SubscriptionTier.PREMIUM)
+                        .subscriptionStatus(User.SubscriptionStatus.ACTIVE)
+                        .build();
         assertTrue(subscriptionService.canAddChild(premiumUser, 10));
     }
 
     @Test
     void testGetMaxRecurringTasks_PremiumUser_ShouldReturnUnlimited() {
-        User premiumUser = User.builder().subscriptionTier(User.SubscriptionTier.PREMIUM)
-                .subscriptionStatus(User.SubscriptionStatus.ACTIVE).build();
+        User premiumUser =
+                User.builder()
+                        .subscriptionTier(User.SubscriptionTier.PREMIUM)
+                        .subscriptionStatus(User.SubscriptionStatus.ACTIVE)
+                        .build();
         assertEquals(100, subscriptionService.getMaxRecurringTasks(premiumUser));
     }
 

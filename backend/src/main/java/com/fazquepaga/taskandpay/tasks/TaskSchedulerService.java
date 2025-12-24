@@ -1,20 +1,21 @@
 package com.fazquepaga.taskandpay.tasks;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.cloud.firestore.QueryDocumentSnapshot;
-import java.time.DayOfWeek;
+import com.google.cloud.spring.pubsub.support.BasicAcknowledgeablePubsubMessage;
+import com.google.cloud.spring.pubsub.support.GcpPubSubHeaders;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.cloud.spring.pubsub.support.BasicAcknowledgeablePubsubMessage;
-import com.google.cloud.spring.pubsub.support.GcpPubSubHeaders;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.integration.annotation.ServiceActivator;
 import org.springframework.messaging.MessageHandler;
 import org.springframework.stereotype.Service;
 
 @Service
+@Slf4j
 public class TaskSchedulerService {
 
     private final TaskRepository taskRepository;
@@ -30,20 +31,22 @@ public class TaskSchedulerService {
     public MessageHandler taskResetMessageReceiver() {
         return message -> {
             String payload = new String((byte[]) message.getPayload());
-            System.out.println("Processing task reset message: " + payload);
+            log.info("Processing task reset message: {}", payload);
             try {
                 JsonNode json = objectMapper.readTree(payload);
                 if (json.has("action") && "RESET_TASKS".equals(json.get("action").asText())) {
                     resetRecurringTasks();
                 } else {
-                    System.err.println("Invalid action in task reset message: " + payload);
+                    log.error("Invalid action in task reset message: {}", payload);
                 }
             } catch (Exception e) {
-                System.err.println("Error processing task reset message: " + payload + " - " + e.getMessage());
+                log.error(
+                        "Error processing task reset message: {} - {}", payload, e.getMessage());
             }
 
             BasicAcknowledgeablePubsubMessage originalMessage = message.getHeaders()
-                    .get(GcpPubSubHeaders.ORIGINAL_MESSAGE,
+                    .get(
+                            GcpPubSubHeaders.ORIGINAL_MESSAGE,
                             BasicAcknowledgeablePubsubMessage.class);
             if (originalMessage != null) {
                 originalMessage.ack();
@@ -52,12 +55,12 @@ public class TaskSchedulerService {
     }
 
     public void resetRecurringTasks() throws ExecutionException, InterruptedException {
-        System.out.println("Starting daily recurring task reset...");
+        log.info("Starting daily recurring task reset...");
 
         resetDailyTasks();
         resetWeeklyTasks();
 
-        System.out.println("Finished daily recurring task reset.");
+        log.info("Finished daily recurring task reset.");
     }
 
     private void resetDailyTasks() throws ExecutionException, InterruptedException {
@@ -106,10 +109,10 @@ public class TaskSchedulerService {
                 task.setAiValidated(false); // Reset AI validation if any
 
                 taskRepository.save(userId, task);
-                System.out.println("Reset task " + task.getId() + " for user " + userId);
+                log.info("Reset task {} for user {}", task.getId(), userId);
             }
         } catch (Exception e) {
-            System.err.println("Failed to reset task " + doc.getId() + ": " + e.getMessage());
+            log.error("Failed to reset task {}: {}", doc.getId(), e.getMessage());
         }
     }
 }

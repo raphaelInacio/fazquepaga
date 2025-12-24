@@ -1,11 +1,10 @@
 package com.fazquepaga.taskandpay.notification;
 
+import java.util.Map;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
-
-import java.util.Map;
 
 @Data
 @Builder

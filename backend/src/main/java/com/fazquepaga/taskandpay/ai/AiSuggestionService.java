@@ -27,13 +27,16 @@ public class AiSuggestionService {
     }
 
     public List<String> getSuggestions(int age, String language, String childId) {
-        String languageInstruction = language.startsWith("en") ? "Respond in English." : "Responda em Português.";
+        String languageInstruction =
+                language.startsWith("en") ? "Respond in English." : "Responda em Português.";
 
         String contextPrompt = "";
         try {
             if (childId != null && !childId.isEmpty()) {
                 User child = userRepository.findByIdSync(childId);
-                if (child != null && child.getAiContext() != null && !child.getAiContext().isEmpty()) {
+                if (child != null
+                        && child.getAiContext() != null
+                        && !child.getAiContext().isEmpty()) {
                     contextPrompt = "Context about the child: " + child.getAiContext() + "\n";
                 }
             }
@@ -42,8 +45,9 @@ public class AiSuggestionService {
             System.err.println("Error fetching child context: " + e.getMessage());
         }
 
-        PromptTemplate promptTemplate = new PromptTemplate(
-                """
+        PromptTemplate promptTemplate =
+                new PromptTemplate(
+                        """
                         {languageInstruction}
                         {contextPrompt}
                         Suggest a list of 5 simple and motivating household tasks for a {age}-year-old child.
@@ -51,17 +55,20 @@ public class AiSuggestionService {
                         Return the answer as a comma-separated list. For example:
                         task 1, task 2, task 3, task 4, task 5
                         """);
-        Prompt prompt = promptTemplate.create(Map.of(
-                "age", age,
-                "languageInstruction", languageInstruction,
-                "contextPrompt", contextPrompt));
+        Prompt prompt =
+                promptTemplate.create(
+                        Map.of(
+                                "age", age,
+                                "languageInstruction", languageInstruction,
+                                "contextPrompt", contextPrompt));
         ChatResponse response = chatModel.call(prompt);
 
         String content = response.getResult().getOutput().getText();
         return List.of(content.split(","));
     }
 
-    public String generateGoalPlan(String childId, String goalDescription, BigDecimal targetAmount, String language)
+    public String generateGoalPlan(
+            String childId, String goalDescription, BigDecimal targetAmount, String language)
             throws ExecutionException, InterruptedException {
 
         // Get child info
@@ -70,14 +77,17 @@ public class AiSuggestionService {
             throw new IllegalArgumentException("Child not found");
         }
 
-        BigDecimal currentBalance = child.getBalance() != null ? child.getBalance() : BigDecimal.ZERO;
-        BigDecimal monthlyAllowance = child.getMonthlyAllowance() != null ? child.getMonthlyAllowance()
-                : BigDecimal.ZERO;
+        BigDecimal currentBalance =
+                child.getBalance() != null ? child.getBalance() : BigDecimal.ZERO;
+        BigDecimal monthlyAllowance =
+                child.getMonthlyAllowance() != null ? child.getMonthlyAllowance() : BigDecimal.ZERO;
 
-        String languageInstruction = language.startsWith("en") ? "Respond in English." : "Responda em Português.";
+        String languageInstruction =
+                language.startsWith("en") ? "Respond in English." : "Responda em Português.";
 
-        PromptTemplate promptTemplate = new PromptTemplate(
-                """
+        PromptTemplate promptTemplate =
+                new PromptTemplate(
+                        """
                         {languageInstruction}
                         You are a friendly financial coach for children. A child named {childName} wants to save for: {goalDescription}.
 
@@ -93,13 +103,14 @@ public class AiSuggestionService {
                         Use simple, encouraging language appropriate for a child. Be enthusiastic and positive!
                         """);
 
-        Map<String, Object> params = Map.of(
-                "languageInstruction", languageInstruction,
-                "childName", child.getName(),
-                "goalDescription", goalDescription,
-                "targetAmount", targetAmount.toString(),
-                "currentBalance", currentBalance.toString(),
-                "monthlyAllowance", monthlyAllowance.toString());
+        Map<String, Object> params =
+                Map.of(
+                        "languageInstruction", languageInstruction,
+                        "childName", child.getName(),
+                        "goalDescription", goalDescription,
+                        "targetAmount", targetAmount.toString(),
+                        "currentBalance", currentBalance.toString(),
+                        "monthlyAllowance", monthlyAllowance.toString());
 
         Prompt prompt = promptTemplate.create(params);
         ChatResponse response = chatModel.call(prompt);
@@ -112,7 +123,8 @@ public class AiSuggestionService {
             return new ArrayList<>();
         }
 
-        String languageInstruction = language.startsWith("en") ? "Respond in English." : "Responda em Português.";
+        String languageInstruction =
+                language.startsWith("en") ? "Respond in English." : "Responda em Português.";
 
         // Build a prompt with all task descriptions
         StringBuilder taskList = new StringBuilder();
@@ -123,8 +135,9 @@ public class AiSuggestionService {
                     .append("\n");
         }
 
-        PromptTemplate promptTemplate = new PromptTemplate(
-                """
+        PromptTemplate promptTemplate =
+                new PromptTemplate(
+                        """
                         {languageInstruction}
                         Transform these household tasks into fun adventure quests for a child!
                         Make them exciting and game-like, but keep them short (max 5 words each).
@@ -139,8 +152,13 @@ public class AiSuggestionService {
                         - "Wash dishes" -> "Defeat the Dirty Dishes Dragon!"
                         """);
 
-        Prompt prompt = promptTemplate
-                .create(Map.of("taskList", taskList.toString(), "languageInstruction", languageInstruction));
+        Prompt prompt =
+                promptTemplate.create(
+                        Map.of(
+                                "taskList",
+                                taskList.toString(),
+                                "languageInstruction",
+                                languageInstruction));
         ChatResponse response = chatModel.call(prompt);
 
         String content = response.getResult().getOutput().getText();

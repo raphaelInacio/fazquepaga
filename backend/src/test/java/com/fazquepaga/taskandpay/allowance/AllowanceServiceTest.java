@@ -21,14 +21,11 @@ import org.mockito.MockitoAnnotations;
 
 class AllowanceServiceTest {
 
-    @Mock
-    private TaskService taskService;
+    @Mock private TaskService taskService;
 
-    @Mock
-    private UserRepository userRepository;
+    @Mock private UserRepository userRepository;
 
-    @Mock
-    private AllowanceCalculator allowanceCalculator;
+    @Mock private AllowanceCalculator allowanceCalculator;
 
     private AllowanceService allowanceService;
 
@@ -44,20 +41,23 @@ class AllowanceServiceTest {
         String childId = "child1";
         User child = User.builder().id(childId).build();
 
-        Task task1 = Task.builder()
-                .status(Task.TaskStatus.APPROVED)
-                .value(new BigDecimal("10.00"))
-                .build();
+        Task task1 =
+                Task.builder()
+                        .status(Task.TaskStatus.APPROVED)
+                        .value(new BigDecimal("10.00"))
+                        .build();
 
-        Task task2 = Task.builder()
-                .status(Task.TaskStatus.PENDING_APPROVAL)
-                .value(new BigDecimal("5.00"))
-                .build();
+        Task task2 =
+                Task.builder()
+                        .status(Task.TaskStatus.PENDING_APPROVAL)
+                        .value(new BigDecimal("5.00"))
+                        .build();
 
-        Task task3 = Task.builder()
-                .status(Task.TaskStatus.PENDING)
-                .value(new BigDecimal("20.00"))
-                .build();
+        Task task3 =
+                Task.builder()
+                        .status(Task.TaskStatus.PENDING)
+                        .value(new BigDecimal("20.00"))
+                        .build();
 
         List<Task> tasks = Arrays.asList(task1, task2, task3);
 
@@ -98,11 +98,12 @@ class AllowanceServiceTest {
         when(userRepository.findByIdSync(childId)).thenReturn(null);
 
         // When & Then
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
-                () -> {
-                    allowanceService.calculatePredictedAllowance(childId);
-                });
+        IllegalArgumentException exception =
+                assertThrows(
+                        IllegalArgumentException.class,
+                        () -> {
+                            allowanceService.calculatePredictedAllowance(childId);
+                        });
         assertEquals("Child not found", exception.getMessage());
     }
 
@@ -118,7 +119,7 @@ class AllowanceServiceTest {
         when(userRepository.findByIdSync(childId)).thenReturn(child);
         when(taskService.getTasksByUserId(childId)).thenReturn(tasks);
         when(allowanceCalculator.calculateTaskValue(
-                task, child.getMonthlyAllowance(), tasks, YearMonth.now()))
+                        task, child.getMonthlyAllowance(), tasks, YearMonth.now()))
                 .thenReturn(new BigDecimal("10.00"));
 
         // When
@@ -136,11 +137,12 @@ class AllowanceServiceTest {
         when(userRepository.findByIdSync(childId)).thenReturn(null);
 
         // When & Then
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
-                () -> {
-                    allowanceService.calculateValueForTask(childId, taskId);
-                });
+        IllegalArgumentException exception =
+                assertThrows(
+                        IllegalArgumentException.class,
+                        () -> {
+                            allowanceService.calculateValueForTask(childId, taskId);
+                        });
         assertEquals("Child not found", exception.getMessage());
     }
 
@@ -155,11 +157,12 @@ class AllowanceServiceTest {
         when(taskService.getTasksByUserId(childId)).thenReturn(Collections.emptyList());
 
         // When & Then
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
-                () -> {
-                    allowanceService.calculateValueForTask(childId, taskId);
-                });
+        IllegalArgumentException exception =
+                assertThrows(
+                        IllegalArgumentException.class,
+                        () -> {
+                            allowanceService.calculateValueForTask(childId, taskId);
+                        });
         assertEquals("Task not found", exception.getMessage());
     }
 
@@ -169,7 +172,8 @@ class AllowanceServiceTest {
         String childId = "child1";
         User child = User.builder().id(childId).monthlyAllowance(new BigDecimal("100.00")).build();
         Task task1 = Task.builder().type(Task.TaskType.DAILY).weight(Task.TaskWeight.LOW).build();
-        Task task2 = Task.builder().type(Task.TaskType.WEEKLY).weight(Task.TaskWeight.MEDIUM).build();
+        Task task2 =
+                Task.builder().type(Task.TaskType.WEEKLY).weight(Task.TaskWeight.MEDIUM).build();
         List<Task> tasks = Arrays.asList(task1, task2);
 
         when(userRepository.findByIdSync(childId)).thenReturn(child);

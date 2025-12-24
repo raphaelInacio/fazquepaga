@@ -1,10 +1,16 @@
 package com.fazquepaga.taskandpay.notification;
 
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fazquepaga.taskandpay.identity.User;
 import com.fazquepaga.taskandpay.tasks.Task;
 import com.google.cloud.spring.pubsub.core.PubSubTemplate;
+import java.math.BigDecimal;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -12,23 +18,13 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import java.math.BigDecimal;
-
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 class NotificationServiceTest {
 
-    @Mock
-    private PubSubTemplate pubSubTemplate;
+    @Mock private PubSubTemplate pubSubTemplate;
 
-    @Mock
-    private ObjectMapper objectMapper;
+    @Mock private ObjectMapper objectMapper;
 
-    @InjectMocks
-    private NotificationService notificationService;
+    @InjectMocks private NotificationService notificationService;
 
     @BeforeEach
     void setUp() {
@@ -43,7 +39,8 @@ class NotificationServiceTest {
         User child = User.builder().name("Child").build();
         User parent = User.builder().name("Parent").phoneNumber("123456789").build();
 
-        when(objectMapper.writeValueAsString(org.mockito.ArgumentMatchers.any(NotificationEvent.class)))
+        when(objectMapper.writeValueAsString(
+                        org.mockito.ArgumentMatchers.any(NotificationEvent.class)))
                 .thenReturn("{\"type\":\"TASK_COMPLETED\"}");
 
         // Act
@@ -59,7 +56,8 @@ class NotificationServiceTest {
         Task task = Task.builder().id("task-1").description("Task 1").value(BigDecimal.TEN).build();
         User child = User.builder().name("Child").phoneNumber("987654321").build();
 
-        when(objectMapper.writeValueAsString(org.mockito.ArgumentMatchers.any(NotificationEvent.class)))
+        when(objectMapper.writeValueAsString(
+                        org.mockito.ArgumentMatchers.any(NotificationEvent.class)))
                 .thenReturn("{\"type\":\"TASK_APPROVED\"}");
 
         // Act

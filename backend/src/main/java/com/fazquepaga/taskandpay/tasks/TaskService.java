@@ -24,7 +24,8 @@ public class TaskService {
 
     private final com.fazquepaga.taskandpay.notification.NotificationService notificationService;
     private final com.fazquepaga.taskandpay.allowance.LedgerService ledgerService;
-    private final Provider<com.fazquepaga.taskandpay.allowance.AllowanceService> allowanceServiceProvider;
+    private final Provider<com.fazquepaga.taskandpay.allowance.AllowanceService>
+            allowanceServiceProvider;
 
     public TaskService(
             TaskRepository taskRepository,
@@ -32,7 +33,8 @@ public class TaskService {
             SubscriptionService subscriptionService,
             com.fazquepaga.taskandpay.notification.NotificationService notificationService,
             com.fazquepaga.taskandpay.allowance.LedgerService ledgerService,
-            Provider<com.fazquepaga.taskandpay.allowance.AllowanceService> allowanceServiceProvider) {
+            Provider<com.fazquepaga.taskandpay.allowance.AllowanceService>
+                    allowanceServiceProvider) {
 
         this.taskRepository = taskRepository;
         this.userRepository = userRepository;
@@ -68,17 +70,18 @@ public class TaskService {
             }
         }
 
-        Task task = Task.builder()
-                .description(request.getDescription())
-                .type(request.getType())
-                .weight(request.getWeight())
-                .value(java.math.BigDecimal.ZERO) // Will be recalculated
-                .requiresProof(request.isRequiresProof())
-                .createdAt(Instant.now())
-                .dayOfWeek(request.getDayOfWeek())
-                .scheduledDate(request.getScheduledDate())
-                .status(Task.TaskStatus.PENDING)
-                .build();
+        Task task =
+                Task.builder()
+                        .description(request.getDescription())
+                        .type(request.getType())
+                        .weight(request.getWeight())
+                        .value(java.math.BigDecimal.ZERO) // Will be recalculated
+                        .requiresProof(request.isRequiresProof())
+                        .createdAt(Instant.now())
+                        .dayOfWeek(request.getDayOfWeek())
+                        .scheduledDate(request.getScheduledDate())
+                        .status(Task.TaskStatus.PENDING)
+                        .build();
 
         taskRepository.save(userId, task).get();
 
@@ -100,8 +103,10 @@ public class TaskService {
                 .collect(Collectors.toList());
     }
 
-    private List<Task> getAllTasksRaw(String userId) throws ExecutionException, InterruptedException {
-        List<QueryDocumentSnapshot> documents = taskRepository.findTasksByUserId(userId).get().getDocuments();
+    private List<Task> getAllTasksRaw(String userId)
+            throws ExecutionException, InterruptedException {
+        List<QueryDocumentSnapshot> documents =
+                taskRepository.findTasksByUserId(userId).get().getDocuments();
         return documents.stream().map(doc -> doc.toObject(Task.class)).collect(Collectors.toList());
     }
 
@@ -124,17 +129,19 @@ public class TaskService {
         }
 
         List<Task> tasks = getAllTasksRaw(childId);
-        Task task = tasks.stream()
-                .filter(t -> t.getId().equals(taskId))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("Task not found"));
+        Task task =
+                tasks.stream()
+                        .filter(t -> t.getId().equals(taskId))
+                        .findFirst()
+                        .orElseThrow(() -> new IllegalArgumentException("Task not found"));
 
         if (task.getStatus() == Task.TaskStatus.APPROVED) {
             throw new IllegalStateException("Task is already approved");
         }
 
         // Calculate value
-        java.math.BigDecimal value = allowanceServiceProvider.get().calculateValueForTask(childId, taskId);
+        java.math.BigDecimal value =
+                allowanceServiceProvider.get().calculateValueForTask(childId, taskId);
 
         // Update task status
         task.setStatus(Task.TaskStatus.APPROVED);
@@ -169,10 +176,11 @@ public class TaskService {
 
         // Find task
         List<Task> tasks = getAllTasksRaw(childId);
-        Task task = tasks.stream()
-                .filter(t -> t.getId().equals(taskId))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("Task not found"));
+        Task task =
+                tasks.stream()
+                        .filter(t -> t.getId().equals(taskId))
+                        .findFirst()
+                        .orElseThrow(() -> new IllegalArgumentException("Task not found"));
 
         // Check if task is already completed or approved
         if (task.getStatus() == Task.TaskStatus.COMPLETED
@@ -190,7 +198,8 @@ public class TaskService {
             task.setAcknowledged(false);
 
             // Calculate value and add transaction
-            java.math.BigDecimal value = allowanceServiceProvider.get().calculateValueForTask(childId, taskId);
+            java.math.BigDecimal value =
+                    allowanceServiceProvider.get().calculateValueForTask(childId, taskId);
             ledgerService.addTransaction(
                     childId,
                     value,
@@ -223,10 +232,11 @@ public class TaskService {
         }
 
         List<Task> tasks = getAllTasksRaw(childId);
-        Task task = tasks.stream()
-                .filter(t -> t.getId().equals(taskId))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("Task not found"));
+        Task task =
+                tasks.stream()
+                        .filter(t -> t.getId().equals(taskId))
+                        .findFirst()
+                        .orElseThrow(() -> new IllegalArgumentException("Task not found"));
 
         task.setAcknowledged(true);
         taskRepository.save(childId, task).get();
@@ -241,10 +251,11 @@ public class TaskService {
         }
 
         List<Task> tasks = getAllTasksRaw(childId);
-        Task task = tasks.stream()
-                .filter(t -> t.getId().equals(taskId))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("Task not found"));
+        Task task =
+                tasks.stream()
+                        .filter(t -> t.getId().equals(taskId))
+                        .findFirst()
+                        .orElseThrow(() -> new IllegalArgumentException("Task not found"));
 
         // Only allow rejecting APPROVED tasks (that were auto-approved or manually
         // approved)
@@ -253,7 +264,8 @@ public class TaskService {
         }
 
         // Calculate value to reverse
-        java.math.BigDecimal value = allowanceServiceProvider.get().calculateValueForTask(childId, taskId);
+        java.math.BigDecimal value =
+                allowanceServiceProvider.get().calculateValueForTask(childId, taskId);
 
         // Reverse transaction (Debit)
         ledgerService.addTransaction(
@@ -271,11 +283,13 @@ public class TaskService {
 
     private int countRecurringTasks(String userId) throws ExecutionException, InterruptedException {
         List<Task> tasks = getTasksByUserId(userId);
-        return (int) tasks.stream()
-                .filter(
-                        task -> task.getType() == Task.TaskType.DAILY
-                                || task.getType() == Task.TaskType.WEEKLY)
-                .count();
+        return (int)
+                tasks.stream()
+                        .filter(
+                                task ->
+                                        task.getType() == Task.TaskType.DAILY
+                                                || task.getType() == Task.TaskType.WEEKLY)
+                        .count();
     }
 
     /** Updates the value of a task (used by automatic redistribution). */
@@ -292,10 +306,11 @@ public class TaskService {
         }
 
         List<Task> tasks = getAllTasksRaw(childId);
-        Task task = tasks.stream()
-                .filter(t -> t.getId().equals(taskId))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("Task not found"));
+        Task task =
+                tasks.stream()
+                        .filter(t -> t.getId().equals(taskId))
+                        .findFirst()
+                        .orElseThrow(() -> new IllegalArgumentException("Task not found"));
 
         if (Boolean.TRUE.equals(task.getArchived())) {
             return; // Already deleted

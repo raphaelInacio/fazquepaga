@@ -3,12 +3,9 @@ package com.fazquepaga.taskandpay.tasks;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.messaging.Message;
-import org.springframework.messaging.MessageHandler;
-import org.springframework.messaging.support.GenericMessage;
-
 import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.CollectionReference;
 import com.google.cloud.firestore.DocumentReference;
@@ -23,33 +20,28 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.messaging.Message;
+import org.springframework.messaging.MessageHandler;
+import org.springframework.messaging.support.GenericMessage;
 
 @ExtendWith(MockitoExtension.class)
 class TaskSchedulerServiceTest {
 
-    @Mock
-    private TaskRepository taskRepository;
+    @Mock private TaskRepository taskRepository;
 
-    @Mock
-    private ObjectMapper objectMapper;
+    @Mock private ObjectMapper objectMapper;
 
-    @Mock
-    private ApiFuture<QuerySnapshot> queryFuture;
+    @Mock private ApiFuture<QuerySnapshot> queryFuture;
 
-    @Mock
-    private QuerySnapshot querySnapshot;
+    @Mock private QuerySnapshot querySnapshot;
 
-    @Mock
-    private QueryDocumentSnapshot documentSnapshot;
+    @Mock private QueryDocumentSnapshot documentSnapshot;
 
-    @Mock
-    private DocumentReference docRef;
+    @Mock private DocumentReference docRef;
 
-    @Mock
-    private CollectionReference colRef;
+    @Mock private CollectionReference colRef;
 
-    @Mock
-    private DocumentReference userRef;
+    @Mock private DocumentReference userRef;
 
     private TaskSchedulerService taskSchedulerService;
 
@@ -59,7 +51,8 @@ class TaskSchedulerServiceTest {
     }
 
     @Test
-    void resetRecurringTasks_shouldResetDailyTasks() throws ExecutionException, InterruptedException {
+    void resetRecurringTasks_shouldResetDailyTasks()
+            throws ExecutionException, InterruptedException {
         // Arrange
         Task dailyTask = new Task();
         dailyTask.setId("task1");
@@ -67,12 +60,14 @@ class TaskSchedulerServiceTest {
         dailyTask.setStatus(Task.TaskStatus.COMPLETED);
 
         when(taskRepository.findRecurringTasks("DAILY")).thenReturn(queryFuture);
-        when(taskRepository.findRecurringTasks("WEEKLY")).thenReturn(queryFuture); // Return empty for weekly
+        when(taskRepository.findRecurringTasks("WEEKLY"))
+                .thenReturn(queryFuture); // Return empty for weekly
         when(queryFuture.get()).thenReturn(querySnapshot);
-        when(querySnapshot.getDocuments()).thenReturn(
-                List.of(documentSnapshot), // Returns list for daily
-                Collections.emptyList() // Returns empty for weekly
-        );
+        when(querySnapshot.getDocuments())
+                .thenReturn(
+                        List.of(documentSnapshot), // Returns list for daily
+                        Collections.emptyList() // Returns empty for weekly
+                        );
 
         when(documentSnapshot.toObject(Task.class)).thenReturn(dailyTask);
 
@@ -90,7 +85,8 @@ class TaskSchedulerServiceTest {
     }
 
     @Test
-    void resetRecurringTasks_shouldResetWeeklyTasks_whenDayMatches() throws ExecutionException, InterruptedException {
+    void resetRecurringTasks_shouldResetWeeklyTasks_whenDayMatches()
+            throws ExecutionException, InterruptedException {
         // Arrange
         int today = LocalDate.now().getDayOfWeek().getValue();
 
@@ -123,8 +119,13 @@ class TaskSchedulerServiceTest {
         taskSchedulerService.resetRecurringTasks();
 
         // Assert
-        verify(taskRepository).save(eq("user-456"), argThat(task -> task.getStatus() == Task.TaskStatus.PENDING &&
-                !task.getAcknowledged()));
+        verify(taskRepository)
+                .save(
+                        eq("user-456"),
+                        argThat(
+                                task ->
+                                        task.getStatus() == Task.TaskStatus.PENDING
+                                                && !task.getAcknowledged()));
     }
 
     @Test

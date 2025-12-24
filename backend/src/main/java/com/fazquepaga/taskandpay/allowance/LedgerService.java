@@ -31,11 +31,15 @@ public class LedgerService {
     public Transaction addTransaction(
             String childId, BigDecimal amount, String description, Transaction.TransactionType type)
             throws ExecutionException, InterruptedException {
-        return addTransaction(childId, amount, description, type, Transaction.TransactionStatus.COMPLETED);
+        return addTransaction(
+                childId, amount, description, type, Transaction.TransactionStatus.COMPLETED);
     }
 
     public Transaction addTransaction(
-            String childId, BigDecimal amount, String description, Transaction.TransactionType type,
+            String childId,
+            BigDecimal amount,
+            String description,
+            Transaction.TransactionType type,
             Transaction.TransactionStatus status)
             throws ExecutionException, InterruptedException {
         User child = userRepository.findByIdSync(childId);
@@ -43,22 +47,25 @@ public class LedgerService {
             throw new IllegalArgumentException("Child not found");
         }
 
-        Transaction transaction = Transaction.builder()
-                .id(UUID.randomUUID().toString())
-                .childId(childId)
-                .amount(amount)
-                .description(description)
-                .date(Instant.now())
-                .type(type)
-                .status(status)
-                .build();
+        Transaction transaction =
+                Transaction.builder()
+                        .id(UUID.randomUUID().toString())
+                        .childId(childId)
+                        .amount(amount)
+                        .description(description)
+                        .date(Instant.now())
+                        .type(type)
+                        .status(status)
+                        .build();
 
         transactionRepository.save(transaction);
 
         // Update balance
-        BigDecimal currentBalance = child.getBalance() != null ? child.getBalance() : BigDecimal.ZERO;
+        BigDecimal currentBalance =
+                child.getBalance() != null ? child.getBalance() : BigDecimal.ZERO;
         BigDecimal newBalance;
-        if (type == Transaction.TransactionType.CREDIT || type == Transaction.TransactionType.TASK_EARNING) {
+        if (type == Transaction.TransactionType.CREDIT
+                || type == Transaction.TransactionType.TASK_EARNING) {
             newBalance = currentBalance.add(amount);
         } else {
             newBalance = currentBalance.subtract(amount);
@@ -78,10 +85,12 @@ public class LedgerService {
             throw new IllegalArgumentException("Child does not belong to this parent");
         }
 
-        List<QueryDocumentSnapshot> documents = transactionRepository.findByChildId(childId).getDocuments();
-        List<Transaction> transactions = documents.stream()
-                .map(doc -> doc.toObject(Transaction.class))
-                .collect(Collectors.toList());
+        List<QueryDocumentSnapshot> documents =
+                transactionRepository.findByChildId(childId).getDocuments();
+        List<Transaction> transactions =
+                documents.stream()
+                        .map(doc -> doc.toObject(Transaction.class))
+                        .collect(Collectors.toList());
 
         return LedgerResponse.builder()
                 .transactions(transactions)

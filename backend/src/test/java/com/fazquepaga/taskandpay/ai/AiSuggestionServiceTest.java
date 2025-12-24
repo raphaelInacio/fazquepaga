@@ -7,8 +7,8 @@ import static org.mockito.Mockito.when;
 
 import com.fazquepaga.taskandpay.identity.User;
 import com.fazquepaga.taskandpay.identity.UserRepository;
-import java.util.concurrent.ExecutionException;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -24,14 +24,11 @@ import org.springframework.ai.chat.prompt.Prompt;
 @ExtendWith(MockitoExtension.class)
 class AiSuggestionServiceTest {
 
-    @Mock
-    private ChatModel chatModel;
+    @Mock private ChatModel chatModel;
 
-    @Mock
-    private UserRepository userRepository;
+    @Mock private UserRepository userRepository;
 
-    @InjectMocks
-    private AiSuggestionService aiSuggestionService;
+    @InjectMocks private AiSuggestionService aiSuggestionService;
 
     @Test
     void shouldIncludeChildContextInPrompt() throws ExecutionException, InterruptedException {
@@ -44,8 +41,12 @@ class AiSuggestionServiceTest {
         User child = User.builder().id(childId).aiContext(aiContext).build();
         when(userRepository.findByIdSync(childId)).thenReturn(child);
 
-        ChatResponse mockResponse = new ChatResponse(
-                List.of(new Generation(new AssistantMessage("Task 1, Task 2, Task 3, Task 4, Task 5"))));
+        ChatResponse mockResponse =
+                new ChatResponse(
+                        List.of(
+                                new Generation(
+                                        new AssistantMessage(
+                                                "Task 1, Task 2, Task 3, Task 4, Task 5"))));
         when(chatModel.call(any(Prompt.class))).thenReturn(mockResponse);
 
         // When
@@ -69,8 +70,12 @@ class AiSuggestionServiceTest {
         User child = User.builder().id(childId).aiContext(null).build();
         when(userRepository.findByIdSync(childId)).thenReturn(child);
 
-        ChatResponse mockResponse = new ChatResponse(
-                List.of(new Generation(new AssistantMessage("Task 1, Task 2, Task 3, Task 4, Task 5"))));
+        ChatResponse mockResponse =
+                new ChatResponse(
+                        List.of(
+                                new Generation(
+                                        new AssistantMessage(
+                                                "Task 1, Task 2, Task 3, Task 4, Task 5"))));
         when(chatModel.call(any(Prompt.class))).thenReturn(mockResponse);
 
         // When

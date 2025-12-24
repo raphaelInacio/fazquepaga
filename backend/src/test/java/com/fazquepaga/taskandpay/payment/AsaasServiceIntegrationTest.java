@@ -1,5 +1,9 @@
 package com.fazquepaga.taskandpay.payment;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+
 import com.fazquepaga.taskandpay.identity.User;
 import com.fazquepaga.taskandpay.identity.UserRepository;
 import com.fazquepaga.taskandpay.payment.dto.AsaasCustomerRequest;
@@ -11,20 +15,13 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.web.client.RestTemplate;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
-
 class AsaasServiceIntegrationTest {
 
-    @Mock
-    private RestTemplate restTemplate;
+    @Mock private RestTemplate restTemplate;
 
-    @Mock
-    private UserRepository userRepository;
+    @Mock private UserRepository userRepository;
 
-    @InjectMocks
-    private AsaasService asaasService;
+    @InjectMocks private AsaasService asaasService;
 
     @BeforeEach
     void setUp() {
@@ -34,20 +31,23 @@ class AsaasServiceIntegrationTest {
     @Test
     void createCustomer_ShouldCreateAndReturnId_WhenSuccessful() {
         // Arrange
-        User user = User.builder()
-                .id("123")
-                .name("John Doe")
-                .email("john@example.com")
-                .phoneNumber("11999999999")
-                .document("12345678900")
-                .build();
+        User user =
+                User.builder()
+                        .id("123")
+                        .name("John Doe")
+                        .email("john@example.com")
+                        .phoneNumber("11999999999")
+                        .document("12345678900")
+                        .build();
 
         AsaasCustomerResponse mockResponse = new AsaasCustomerResponse();
         mockResponse.setId("cus_0001");
         mockResponse.setName("John Doe");
 
-        when(restTemplate.postForObject(eq("/customers"), any(AsaasCustomerRequest.class),
-                eq(AsaasCustomerResponse.class)))
+        when(restTemplate.postForObject(
+                        eq("/customers"),
+                        any(AsaasCustomerRequest.class),
+                        eq(AsaasCustomerResponse.class)))
                 .thenReturn(mockResponse);
 
         // Act
@@ -62,7 +62,8 @@ class AsaasServiceIntegrationTest {
     @Test
     void createCustomer_ShouldReturnExistingId_IfUserAlreadyHasOne() {
         // Arrange
-        User user = User.builder().email("john@example.com").asaasCustomerId("cus_EXISTING").build();
+        User user =
+                User.builder().email("john@example.com").asaasCustomerId("cus_EXISTING").build();
 
         // Act
         String customerId = asaasService.createCustomer(user);

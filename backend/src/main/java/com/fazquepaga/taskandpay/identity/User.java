@@ -5,7 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
 import org.springframework.security.core.userdetails.UserDetails;
 
 @Data
@@ -14,8 +13,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 @AllArgsConstructor
 public class User implements UserDetails {
 
-    @DocumentId
-    private String id;
+    @DocumentId private String id;
 
     private String name;
     private String email; // Used for parents
@@ -53,9 +51,11 @@ public class User implements UserDetails {
     // UserDetails Implementation
 
     @Override
-    public java.util.Collection<? extends org.springframework.security.core.GrantedAuthority> getAuthorities() {
+    public java.util.Collection<? extends org.springframework.security.core.GrantedAuthority>
+            getAuthorities() {
         return java.util.Collections.singletonList(
-                new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_" + role.name()));
+                new org.springframework.security.core.authority.SimpleGrantedAuthority(
+                        "ROLE_" + role.name()));
     }
 
     @Override

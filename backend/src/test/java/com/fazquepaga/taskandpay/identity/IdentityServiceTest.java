@@ -16,14 +16,11 @@ import org.mockito.MockitoAnnotations;
 
 class IdentityServiceTest {
 
-    @Mock
-    private UserRepository userRepository;
+    @Mock private UserRepository userRepository;
 
-    @Mock
-    private org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
+    @Mock private org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
 
-    @InjectMocks
-    private IdentityService identityService;
+    @InjectMocks private IdentityService identityService;
 
     @BeforeEach
     void setUp() {
@@ -137,11 +134,12 @@ class IdentityServiceTest {
 
         // When & Then
 
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
-                () -> {
-                    identityService.createChild(request);
-                });
+        IllegalArgumentException exception =
+                assertThrows(
+                        IllegalArgumentException.class,
+                        () -> {
+                            identityService.createChild(request);
+                        });
 
         assertEquals("Parent with ID " + parentId + " not found.", exception.getMessage());
     }
@@ -151,7 +149,11 @@ class IdentityServiceTest {
         // Given
         String childId = "child-123";
         String accessCode = "ABC123";
-        User child = User.builder().id(childId).accessCode(accessCode).build(); // Mock child with access code
+        User child =
+                User.builder()
+                        .id(childId)
+                        .accessCode(accessCode)
+                        .build(); // Mock child with access code
 
         when(userRepository.findByIdSync(childId)).thenReturn(child);
 
@@ -170,7 +172,13 @@ class IdentityServiceTest {
         String accessCode = "ABC123";
         String phoneNumber = "+1234567890";
 
-        User child = User.builder().id(childId).name("Test Child").role(User.Role.CHILD).accessCode(accessCode).build();
+        User child =
+                User.builder()
+                        .id(childId)
+                        .name("Test Child")
+                        .role(User.Role.CHILD)
+                        .accessCode(accessCode)
+                        .build();
 
         // Mock findByAccessCode instead of map lookup
         when(userRepository.findByAccessCode(accessCode)).thenReturn(java.util.Optional.of(child));
@@ -186,7 +194,8 @@ class IdentityServiceTest {
     }
 
     @Test
-    void shouldThrowExceptionForInvalidOnboardingCode() throws ExecutionException, InterruptedException {
+    void shouldThrowExceptionForInvalidOnboardingCode()
+            throws ExecutionException, InterruptedException {
         // Given
         String invalidCode = "INVALID";
         String phoneNumber = "+1234567890";
@@ -194,9 +203,10 @@ class IdentityServiceTest {
         when(userRepository.findByAccessCode(invalidCode)).thenReturn(java.util.Optional.empty());
 
         // When & Then
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
-                () -> identityService.completeOnboarding(invalidCode, phoneNumber));
+        IllegalArgumentException exception =
+                assertThrows(
+                        IllegalArgumentException.class,
+                        () -> identityService.completeOnboarding(invalidCode, phoneNumber));
 
         assertEquals("Invalid onboarding code.", exception.getMessage());
     }
@@ -209,8 +219,9 @@ class IdentityServiceTest {
         request.setParentId(null);
 
         // When & Then
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class, () -> identityService.createChild(request));
+        IllegalArgumentException exception =
+                assertThrows(
+                        IllegalArgumentException.class, () -> identityService.createChild(request));
 
         assertEquals("Parent ID is required to create a child.", exception.getMessage());
     }
@@ -223,8 +234,9 @@ class IdentityServiceTest {
         request.setParentId("");
 
         // When & Then
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class, () -> identityService.createChild(request));
+        IllegalArgumentException exception =
+                assertThrows(
+                        IllegalArgumentException.class, () -> identityService.createChild(request));
 
         assertEquals("Parent ID is required to create a child.", exception.getMessage());
     }
@@ -234,10 +246,11 @@ class IdentityServiceTest {
             throws ExecutionException, InterruptedException {
         // Given
         String parentId = "parent-id";
-        User notAParent = User.builder()
-                .id(parentId)
-                .role(User.Role.CHILD) // Wrong role
-                .build();
+        User notAParent =
+                User.builder()
+                        .id(parentId)
+                        .role(User.Role.CHILD) // Wrong role
+                        .build();
 
         CreateChildRequest request = new CreateChildRequest();
         request.setName("Test Child");
@@ -246,8 +259,9 @@ class IdentityServiceTest {
         when(userRepository.findByIdSync(parentId)).thenReturn(notAParent);
 
         // When & Then
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class, () -> identityService.createChild(request));
+        IllegalArgumentException exception =
+                assertThrows(
+                        IllegalArgumentException.class, () -> identityService.createChild(request));
 
         assertEquals("Parent with ID " + parentId + " not found.", exception.getMessage());
     }
@@ -275,16 +289,18 @@ class IdentityServiceTest {
         // Given
         String childId = "child-id";
         String parentId = "parent-id";
-        User child = User.builder()
-                .id(childId)
-                .parentId(parentId)
-                .name("Old Name")
-                .age(8)
-                .phoneNumber("111111111")
-                .role(User.Role.CHILD)
-                .build();
+        User child =
+                User.builder()
+                        .id(childId)
+                        .parentId(parentId)
+                        .name("Old Name")
+                        .age(8)
+                        .phoneNumber("111111111")
+                        .role(User.Role.CHILD)
+                        .build();
 
-        com.fazquepaga.taskandpay.identity.dto.UpdateChildRequest request = new com.fazquepaga.taskandpay.identity.dto.UpdateChildRequest();
+        com.fazquepaga.taskandpay.identity.dto.UpdateChildRequest request =
+                new com.fazquepaga.taskandpay.identity.dto.UpdateChildRequest();
         request.setName("New Name");
         request.setAge(9);
         request.setPhoneNumber("222222222");
@@ -307,16 +323,18 @@ class IdentityServiceTest {
         // Given
         String childId = "child-id";
         String parentId = "parent-id";
-        User child = User.builder()
-                .id(childId)
-                .parentId(parentId)
-                .name("Old Name")
-                .age(8)
-                .phoneNumber("111111111")
-                .role(User.Role.CHILD)
-                .build();
+        User child =
+                User.builder()
+                        .id(childId)
+                        .parentId(parentId)
+                        .name("Old Name")
+                        .age(8)
+                        .phoneNumber("111111111")
+                        .role(User.Role.CHILD)
+                        .build();
 
-        com.fazquepaga.taskandpay.identity.dto.UpdateChildRequest request = new com.fazquepaga.taskandpay.identity.dto.UpdateChildRequest();
+        com.fazquepaga.taskandpay.identity.dto.UpdateChildRequest request =
+                new com.fazquepaga.taskandpay.identity.dto.UpdateChildRequest();
         request.setName("New Name"); // Only update name
 
         when(userRepository.findByIdSync(childId)).thenReturn(child);
@@ -333,26 +351,30 @@ class IdentityServiceTest {
     }
 
     @Test
-    void shouldThrowExceptionWhenUpdatingChildOfDifferentParent() throws ExecutionException, InterruptedException {
+    void shouldThrowExceptionWhenUpdatingChildOfDifferentParent()
+            throws ExecutionException, InterruptedException {
         // Given
         String childId = "child-id";
         String parentId = "parent-id";
         String wrongParentId = "wrong-parent-id";
-        User child = User.builder()
-                .id(childId)
-                .parentId(wrongParentId) // Different parent
-                .role(User.Role.CHILD)
-                .build();
+        User child =
+                User.builder()
+                        .id(childId)
+                        .parentId(wrongParentId) // Different parent
+                        .role(User.Role.CHILD)
+                        .build();
 
-        com.fazquepaga.taskandpay.identity.dto.UpdateChildRequest request = new com.fazquepaga.taskandpay.identity.dto.UpdateChildRequest();
+        com.fazquepaga.taskandpay.identity.dto.UpdateChildRequest request =
+                new com.fazquepaga.taskandpay.identity.dto.UpdateChildRequest();
         request.setName("New Name");
 
         when(userRepository.findByIdSync(childId)).thenReturn(child);
 
         // When & Then
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
-                () -> identityService.updateChild(childId, request, parentId));
+        IllegalArgumentException exception =
+                assertThrows(
+                        IllegalArgumentException.class,
+                        () -> identityService.updateChild(childId, request, parentId));
 
         assertEquals("Child does not belong to this parent", exception.getMessage());
     }
@@ -362,11 +384,7 @@ class IdentityServiceTest {
         // Given
         String childId = "child-id";
         String parentId = "parent-id";
-        User child = User.builder()
-                .id(childId)
-                .parentId(parentId)
-                .role(User.Role.CHILD)
-                .build();
+        User child = User.builder().id(childId).parentId(parentId).role(User.Role.CHILD).build();
 
         when(userRepository.findByIdSync(childId)).thenReturn(child);
         when(userRepository.delete(childId)).thenReturn(ApiFutures.immediateFuture(null));
@@ -376,29 +394,33 @@ class IdentityServiceTest {
     }
 
     @Test
-    void shouldThrowExceptionWhenDeletingChildOfDifferentParent() throws ExecutionException, InterruptedException {
+    void shouldThrowExceptionWhenDeletingChildOfDifferentParent()
+            throws ExecutionException, InterruptedException {
         // Given
         String childId = "child-id";
         String parentId = "parent-id";
         String wrongParentId = "wrong-parent-id";
-        User child = User.builder()
-                .id(childId)
-                .parentId(wrongParentId) // Different parent
-                .role(User.Role.CHILD)
-                .build();
+        User child =
+                User.builder()
+                        .id(childId)
+                        .parentId(wrongParentId) // Different parent
+                        .role(User.Role.CHILD)
+                        .build();
 
         when(userRepository.findByIdSync(childId)).thenReturn(child);
 
         // When & Then
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
-                () -> identityService.deleteChild(childId, parentId));
+        IllegalArgumentException exception =
+                assertThrows(
+                        IllegalArgumentException.class,
+                        () -> identityService.deleteChild(childId, parentId));
 
         assertEquals("Child does not belong to this parent", exception.getMessage());
     }
 
     @Test
-    void shouldThrowExceptionWhenDeletingNonExistentChild() throws ExecutionException, InterruptedException {
+    void shouldThrowExceptionWhenDeletingNonExistentChild()
+            throws ExecutionException, InterruptedException {
         // Given
         String childId = "non-existent-child";
         String parentId = "parent-id";
@@ -406,9 +428,10 @@ class IdentityServiceTest {
         when(userRepository.findByIdSync(childId)).thenReturn(null);
 
         // When & Then
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
-                () -> identityService.deleteChild(childId, parentId));
+        IllegalArgumentException exception =
+                assertThrows(
+                        IllegalArgumentException.class,
+                        () -> identityService.deleteChild(childId, parentId));
 
         assertEquals("Child not found", exception.getMessage());
     }
@@ -419,11 +442,7 @@ class IdentityServiceTest {
         String childId = "child-id";
         String parentId = "parent-id";
         String context = "Loves dinosaurs and space.";
-        User child = User.builder()
-                .id(childId)
-                .parentId(parentId)
-                .role(User.Role.CHILD)
-                .build();
+        User child = User.builder().id(childId).parentId(parentId).role(User.Role.CHILD).build();
 
         when(userRepository.findByIdSync(childId)).thenReturn(child);
         when(userRepository.save(any(User.class))).thenReturn(ApiFutures.immediateFuture(null));

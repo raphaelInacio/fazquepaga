@@ -1,5 +1,8 @@
 package com.fazquepaga.taskandpay.payment;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
 import com.fazquepaga.taskandpay.payment.dto.AsaasWebhookEvent;
 import com.fazquepaga.taskandpay.subscription.SubscriptionService;
 import org.junit.jupiter.api.BeforeEach;
@@ -9,16 +12,11 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.http.ResponseEntity;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
-
 class AsaasWebhookControllerTest {
 
-    @Mock
-    private SubscriptionService subscriptionService;
+    @Mock private SubscriptionService subscriptionService;
 
-    @InjectMocks
-    private AsaasWebhookController webhookController;
+    @InjectMocks private AsaasWebhookController webhookController;
 
     @BeforeEach
     void setUp() {

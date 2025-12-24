@@ -3,10 +3,9 @@ package com.fazquepaga.taskandpay.allowance;
 import com.fazquepaga.taskandpay.identity.User;
 import com.fazquepaga.taskandpay.identity.UserRepository;
 import com.fazquepaga.taskandpay.notification.NotificationService;
-import org.springframework.stereotype.Service;
-
 import java.math.BigDecimal;
 import java.util.concurrent.ExecutionException;
+import org.springframework.stereotype.Service;
 
 @Service
 public class WithdrawalService {
@@ -34,18 +33,20 @@ public class WithdrawalService {
             throw new IllegalArgumentException("Child not found");
         }
 
-        BigDecimal currentBalance = child.getBalance() != null ? child.getBalance() : BigDecimal.ZERO;
+        BigDecimal currentBalance =
+                child.getBalance() != null ? child.getBalance() : BigDecimal.ZERO;
         if (currentBalance.compareTo(amount) < 0) {
             throw new IllegalArgumentException("Insufficient balance");
         }
 
         // Create transaction - Deduct immediately (Status: PENDING)
-        Transaction transaction = ledgerService.addTransaction(
-                childId,
-                amount,
-                "Withdrawal Request",
-                Transaction.TransactionType.WITHDRAWAL,
-                Transaction.TransactionStatus.PENDING);
+        Transaction transaction =
+                ledgerService.addTransaction(
+                        childId,
+                        amount,
+                        "Withdrawal Request",
+                        Transaction.TransactionType.WITHDRAWAL,
+                        Transaction.TransactionStatus.PENDING);
 
         // Notify Parent
         try {

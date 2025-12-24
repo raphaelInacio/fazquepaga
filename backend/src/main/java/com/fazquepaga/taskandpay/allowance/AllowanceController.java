@@ -18,7 +18,9 @@ public class AllowanceController {
     private final LedgerService ledgerService;
     private final WithdrawalService withdrawalService;
 
-    public AllowanceController(AllowanceService allowanceService, LedgerService ledgerService,
+    public AllowanceController(
+            AllowanceService allowanceService,
+            LedgerService ledgerService,
             WithdrawalService withdrawalService) {
         this.allowanceService = allowanceService;
         this.ledgerService = ledgerService;

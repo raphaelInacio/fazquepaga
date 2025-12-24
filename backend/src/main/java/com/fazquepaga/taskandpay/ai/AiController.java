@@ -38,11 +38,12 @@ public class AiController {
             @RequestBody GoalCoachRequest request,
             @RequestHeader(value = "Accept-Language", defaultValue = "pt") String language)
             throws ExecutionException, InterruptedException {
-        String plan = suggestionService.generateGoalPlan(
-                request.getChildId(),
-                request.getGoalDescription(),
-                request.getTargetAmount(),
-                language);
+        String plan =
+                suggestionService.generateGoalPlan(
+                        request.getChildId(),
+                        request.getGoalDescription(),
+                        request.getTargetAmount(),
+                        language);
 
         return GoalCoachResponse.builder()
                 .plan(plan)
@@ -54,7 +55,8 @@ public class AiController {
     public AdventureModeResponse getAdventureTasks(
             @RequestBody AdventureModeRequest request,
             @RequestHeader(value = "Accept-Language", defaultValue = "pt") String language) {
-        List<AdventureTask> adventureTasks = suggestionService.generateAdventureTasks(request.getTasks(), language);
+        List<AdventureTask> adventureTasks =
+                suggestionService.generateAdventureTasks(request.getTasks(), language);
 
         return AdventureModeResponse.builder().tasks(adventureTasks).build();
     }

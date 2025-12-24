@@ -3,11 +3,10 @@ package com.fazquepaga.taskandpay.subscription;
 import com.fazquepaga.taskandpay.identity.User;
 import com.fazquepaga.taskandpay.identity.UserRepository;
 import com.fazquepaga.taskandpay.payment.AsaasService;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -20,8 +19,8 @@ public class SubscriptionService {
     public String generateSubscribeUrl(String userId) {
         User user = getUser(userId);
 
-        if (user.getSubscriptionTier() == User.SubscriptionTier.PREMIUM &&
-                user.getSubscriptionStatus() == User.SubscriptionStatus.ACTIVE) {
+        if (user.getSubscriptionTier() == User.SubscriptionTier.PREMIUM
+                && user.getSubscriptionStatus() == User.SubscriptionStatus.ACTIVE) {
             throw new IllegalStateException("User is already PREMIUM");
         }
 
@@ -55,7 +54,8 @@ public class SubscriptionService {
 
     public void activateSubscription(String externalReference, String subscriptionId) {
         try {
-            Optional<User> userOpt = Optional.ofNullable(userRepository.findByIdSync(externalReference));
+            Optional<User> userOpt =
+                    Optional.ofNullable(userRepository.findByIdSync(externalReference));
             if (userOpt.isPresent()) {
                 User user = userOpt.get();
                 user.setSubscriptionStatus(User.SubscriptionStatus.ACTIVE);
@@ -75,8 +75,7 @@ public class SubscriptionService {
     // Permission Checks
 
     public boolean canCreateTask(User user, int currentTasks) {
-        if (isPremium(user))
-            return true;
+        if (isPremium(user)) return true;
         return currentTasks < 50; // Free limit example
     }
 
@@ -89,20 +88,18 @@ public class SubscriptionService {
     }
 
     public boolean canAddChild(User user, int currentChildren) {
-        if (isPremium(user))
-            return true;
+        if (isPremium(user)) return true;
         return currentChildren < 2; // Free limit
     }
 
     public int getMaxRecurringTasks(User user) {
-        if (isPremium(user))
-            return 100;
+        if (isPremium(user)) return 100;
         return 3;
     }
 
     private boolean isPremium(User user) {
-        return user != null &&
-                user.getSubscriptionTier() == User.SubscriptionTier.PREMIUM &&
-                user.getSubscriptionStatus() == User.SubscriptionStatus.ACTIVE;
+        return user != null
+                && user.getSubscriptionTier() == User.SubscriptionTier.PREMIUM
+                && user.getSubscriptionStatus() == User.SubscriptionStatus.ACTIVE;
     }
 }

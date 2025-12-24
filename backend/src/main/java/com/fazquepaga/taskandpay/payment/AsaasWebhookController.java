@@ -19,7 +19,8 @@ public class AsaasWebhookController {
     public ResponseEntity<Void> handleWebhook(@RequestBody AsaasWebhookEvent event) {
         log.info("Received Asaas Webhook: {}", event.getEvent());
 
-        if ("PAYMENT_RECEIVED".equals(event.getEvent()) || "SUBSCRIPTION_CREATED".equals(event.getEvent())) {
+        if ("PAYMENT_RECEIVED".equals(event.getEvent())
+                || "SUBSCRIPTION_CREATED".equals(event.getEvent())) {
             // "SUBSCRIPTION_CREATED" might be too early if payment not confirmed,
             // but PAYMENT_RECEIVED is definitive for activation.
             // Let's stick to PAYMENT_RECEIVED for activation logic to be safe.

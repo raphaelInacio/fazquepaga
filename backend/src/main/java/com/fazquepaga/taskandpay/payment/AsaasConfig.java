@@ -17,8 +17,7 @@ public class AsaasConfig {
 
     @Bean("asaasRestTemplate")
     public RestTemplate asaasRestTemplate(RestTemplateBuilder builder) {
-        return builder
-                .rootUri(baseUrl)
+        return builder.rootUri(baseUrl)
                 .defaultHeader("access_token", apiKey)
                 .defaultHeader("Content-Type", "application/json")
                 .defaultHeader("User-Agent", "TaskAndPay-System")
