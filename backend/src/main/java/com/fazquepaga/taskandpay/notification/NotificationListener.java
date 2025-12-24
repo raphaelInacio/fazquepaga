@@ -37,9 +37,9 @@ public class NotificationListener {
                     originalMessage.ack();
                 }
             } catch (Exception e) {
-                log.error("Error processing notification message. Acknowledging to prevent loop.", e);
+                log.error("Error processing notification message", e);
                 if (originalMessage != null) {
-                    originalMessage.ack();
+                    originalMessage.nack();
                 }
             }
         };

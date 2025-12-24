@@ -6,7 +6,7 @@ import com.fazquepaga.taskandpay.tasks.TaskRepository;
 import com.fazquepaga.taskandpay.whatsapp.events.ProofSubmittedEvent;
 import com.google.cloud.spring.pubsub.support.BasicAcknowledgeablePubsubMessage;
 import com.google.cloud.spring.pubsub.support.GcpPubSubHeaders;
-
+import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,7 +40,7 @@ public class TaskProofListener {
             try {
                 ProofSubmittedEvent event = objectMapper.readValue(payload, ProofSubmittedEvent.class);
                 handleEvent(event);
-            } catch (Exception e) {
+            } catch (IOException | ExecutionException | InterruptedException e) {
                 logger.error("Error processing message: " + payload, e);
             }
             BasicAcknowledgeablePubsubMessage originalMessage = message.getHeaders()

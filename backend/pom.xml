@@ -191,8 +191,6 @@
 							<style>AOSP</style>
 							<reflowLongStrings>true</reflowLongStrings>
 						</googleJavaFormat>
-						<removeUnusedImports />
-						<importOrder />
 					</java>
 				</configuration>
 			</plugin>
