@@ -16,10 +16,15 @@ public class AllowanceController {
 
     private final AllowanceService allowanceService;
     private final LedgerService ledgerService;
+    private final WithdrawalService withdrawalService;
 
-    public AllowanceController(AllowanceService allowanceService, LedgerService ledgerService) {
+    public AllowanceController(
+            AllowanceService allowanceService,
+            LedgerService ledgerService,
+            WithdrawalService withdrawalService) {
         this.allowanceService = allowanceService;
         this.ledgerService = ledgerService;
+        this.withdrawalService = withdrawalService;
     }
 
     @GetMapping("/predicted")
@@ -48,5 +53,37 @@ public class AllowanceController {
         ledgerService.getTransactions(childId, parentId); // This will throw if unauthorized
         String insights = ledgerService.getInsights(childId);
         return ResponseEntity.ok(Map.of("insight", insights));
+    }
+
+    @org.springframework.web.bind.annotation.PostMapping("/children/{childId}/withdraw")
+    public ResponseEntity<Transaction> requestWithdrawal(
+            @PathVariable String childId,
+            @org.springframework.web.bind.annotation.RequestBody Map<String, BigDecimal> body)
+            throws ExecutionException, InterruptedException {
+        BigDecimal amount = body.get("amount");
+        Transaction transaction = withdrawalService.requestWithdrawal(childId, amount);
+        return ResponseEntity.ok(transaction);
+    }
+
+    @org.springframework.web.bind.annotation.PostMapping("/withdrawals/{id}/approve")
+    public ResponseEntity<Transaction> approveWithdrawal(
+            @PathVariable String id,
+            @RequestParam("parent_id") String parentId,
+            @org.springframework.web.bind.annotation.RequestBody Map<String, String> body)
+            throws ExecutionException, InterruptedException {
+        String proof = body.get("proof");
+        Transaction transaction = withdrawalService.approveWithdrawal(parentId, id, proof);
+        return ResponseEntity.ok(transaction);
+    }
+
+    @org.springframework.web.bind.annotation.PostMapping("/withdrawals/{id}/reject")
+    public ResponseEntity<Transaction> rejectWithdrawal(
+            @PathVariable String id,
+            @RequestParam("parent_id") String parentId,
+            @org.springframework.web.bind.annotation.RequestBody Map<String, String> body)
+            throws ExecutionException, InterruptedException {
+        String reason = body.get("reason");
+        Transaction transaction = withdrawalService.rejectWithdrawal(parentId, id, reason);
+        return ResponseEntity.ok(transaction);
     }
 }

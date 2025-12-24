@@ -28,8 +28,19 @@ public class LedgerService {
         this.aiInsightService = aiInsightService;
     }
 
-    public void addTransaction(
+    public Transaction addTransaction(
             String childId, BigDecimal amount, String description, Transaction.TransactionType type)
+            throws ExecutionException, InterruptedException {
+        return addTransaction(
+                childId, amount, description, type, Transaction.TransactionStatus.COMPLETED);
+    }
+
+    public Transaction addTransaction(
+            String childId,
+            BigDecimal amount,
+            String description,
+            Transaction.TransactionType type,
+            Transaction.TransactionStatus status)
             throws ExecutionException, InterruptedException {
         User child = userRepository.findByIdSync(childId);
         if (child == null) {
@@ -44,6 +55,7 @@ public class LedgerService {
                         .description(description)
                         .date(Instant.now())
                         .type(type)
+                        .status(status)
                         .build();
 
         transactionRepository.save(transaction);
@@ -52,13 +64,15 @@ public class LedgerService {
         BigDecimal currentBalance =
                 child.getBalance() != null ? child.getBalance() : BigDecimal.ZERO;
         BigDecimal newBalance;
-        if (type == Transaction.TransactionType.CREDIT) {
+        if (type == Transaction.TransactionType.CREDIT
+                || type == Transaction.TransactionType.TASK_EARNING) {
             newBalance = currentBalance.add(amount);
         } else {
             newBalance = currentBalance.subtract(amount);
         }
         child.setBalance(newBalance);
         userRepository.save(child).get();
+        return transaction;
     }
 
     public LedgerResponse getTransactions(String childId, String parentId)

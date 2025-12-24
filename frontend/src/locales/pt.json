@@ -62,12 +62,18 @@
             "buttonLoading": "Adicionando...",
             "success": "Criança adicionada com sucesso!",
             "error": "Falha ao adicionar criança. Por favor, tente novamente.",
-            "errorParentNotFound": "ID do responsável não encontrado. Por favor, faça login novamente."
+            "errorParentNotFound": "ID do responsável não encontrado. Por favor, faça login novamente.",
+            "aiContext": "Bio / Interesses (IA)",
+            "aiContextPlaceholder": "Ex: Gosta de dinossauros, tem medo de escuro. Isso ajuda a IA a sugerir tarefas melhores."
         }
     },
     "dashboard": {
         "title": "Painel",
         "welcome": "Bem-vindo, {{name}}!",
+        "subscription": {
+            "success": "Assinatura realizada com sucesso!",
+            "cancel": "Processo de assinatura cancelado."
+        },
         "addChild": "Adicionar Criança",
         "children": "Crianças",
         "noChildren": "Nenhuma criança adicionada ainda",
@@ -181,8 +187,6 @@
             "title": "Revisar Tarefa",
             "aiValidatedMessage": "✅ Nossa IA pré-validou esta tarefa e acredita que foi concluída.",
             "proof": "Comprovante:",
-            "aiValidatedMessage": "✅ Nossa IA pré-validou esta tarefa e acredita que foi concluída.",
-            "proof": "Comprovante:",
             "noProof": "Nenhuma imagem de comprovante enviada ainda",
             "taskDismissed": "Tarefa dispensada",
             "taskDismissError": "Falha ao dispensar tarefa",
@@ -253,7 +257,18 @@
         "planError": "Erro ao criar plano",
         "taskCompleted": "Parabéns! Tarefa concluída! 🎉",
         "taskCompletionError": "Erro ao completar tarefa",
-        "loadError": "Erro ao carregar tarefas"
+        "loadError": "Erro ao carregar tarefas",
+        "withdraw": {
+            "title": "Sacar meu dinheirinho",
+            "amount": "Quanto você quer sacar?",
+            "available": "Disponível",
+            "confirm": "Pedir Saque",
+            "button": "Sacar",
+            "invalidAmount": "Por favor insira um valor válido",
+            "insufficientFunds": "Saldo insuficiente",
+            "success": "Pedido de saque enviado!",
+            "error": "Erro ao solicitar saque"
+        }
     },
     "notFound": {
         "title": "404 - Página Não Encontrada",

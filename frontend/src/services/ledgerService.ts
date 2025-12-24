@@ -6,7 +6,8 @@ export interface Transaction {
     amount: number;
     description: string;
     date: string;
-    type: 'CREDIT' | 'DEBIT';
+    type: 'CREDIT' | 'DEBIT' | 'TASK_EARNING' | 'WITHDRAWAL';
+    status?: 'COMPLETED' | 'PENDING_APPROVAL' | 'PAID' | 'REJECTED';
 }
 
 export interface LedgerResponse {
@@ -22,4 +23,9 @@ export const getLedger = async (childId: string, parentId: string): Promise<Ledg
 export const getLedgerInsights = async (childId: string, parentId: string): Promise<string> => {
     const response = await api.get<{ insight: string }>(`/api/v1/children/${childId}/ledger/insights?parent_id=${parentId}`);
     return response.data.insight;
+};
+
+export const approveWithdrawal = async (withdrawalId: string, parentId: string) => {
+    const response = await api.post(`/api/v1/allowance/withdrawals/${withdrawalId}/approve?parent_id=${parentId}`);
+    return response.data;
 };

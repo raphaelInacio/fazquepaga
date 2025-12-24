@@ -19,10 +19,8 @@ import org.springframework.ai.chat.prompt.Prompt;
 
 class AiServicesTest {
 
-    @Mock
-    private ChatModel chatModel;
-    @Mock
-    private UserRepository userRepository;
+    @Mock private ChatModel chatModel;
+    @Mock private UserRepository userRepository;
 
     private AiSuggestionService suggestionService;
     private AiValidatorImpl aiValidator;
@@ -41,7 +39,7 @@ class AiServicesTest {
         ChatResponse chatResponse = new ChatResponse(List.of(generation));
         when(chatModel.call(any(Prompt.class))).thenReturn(chatResponse);
 
-        List<String> suggestions = suggestionService.getSuggestions(10, "pt");
+        List<String> suggestions = suggestionService.getSuggestions(10, "pt", null);
 
         assertEquals(3, suggestions.size());
         assertEquals(" task 2", suggestions.get(1));
@@ -54,7 +52,7 @@ class AiServicesTest {
         ChatResponse chatResponse = new ChatResponse(List.of(generation));
         when(chatModel.call(any(Prompt.class))).thenReturn(chatResponse);
 
-        List<String> suggestions = suggestionService.getSuggestions(10, "en");
+        List<String> suggestions = suggestionService.getSuggestions(10, "en", null);
 
         assertEquals(3, suggestions.size());
         assertTrue(suggestions.get(0).contains("clean"));
@@ -69,5 +67,33 @@ class AiServicesTest {
         boolean isValid = aiValidator.validateTaskCompletionImage(new byte[0], "a task");
 
         assertTrue(isValid);
+    }
+
+    @Test
+    void shouldIncludeAiContextInPrompt() throws Exception {
+        // Given
+        String childId = "child1";
+        String aiContext = "loves dinosaurs";
+        com.fazquepaga.taskandpay.identity.User child =
+                com.fazquepaga.taskandpay.identity.User.builder()
+                        .id(childId)
+                        .aiContext(aiContext)
+                        .build();
+
+        when(userRepository.findByIdSync(childId)).thenReturn(child);
+
+        String suggestionText = "task 1, task 2, task 3";
+        Generation generation = new Generation(new AssistantMessage(suggestionText));
+        ChatResponse chatResponse = new ChatResponse(List.of(generation));
+        org.mockito.ArgumentCaptor<Prompt> promptCaptor =
+                org.mockito.ArgumentCaptor.forClass(Prompt.class);
+        when(chatModel.call(promptCaptor.capture())).thenReturn(chatResponse);
+
+        // When
+        suggestionService.getSuggestions(10, "en", childId);
+
+        // Then
+        String promptContent = promptCaptor.getValue().getContents();
+        assertTrue(promptContent.contains("Context about the child: " + aiContext));
     }
 }

@@ -74,5 +74,22 @@ test.describe('Child Portal E2E', () => {
 
         await expect(page.locator('h1')).toContainText(`Olá, ${childName}! 👋`);
         console.log('Step 5: Portal Access Verified');
+
+        // --- Withdrawal Test ---
+        console.log('Step 6: Testing Withdrawal UI');
+        // Click Withdraw button (look for the text or icon)
+        await page.getByRole('button', { name: /Sacar/i }).click();
+
+        // Check Dialog
+        await expect(page.getByText('Quanto você quer sacar?')).toBeVisible();
+        await expect(page.getByText('Disponível: R$ 0.00')).toBeVisible();
+
+        // Try to withdraw without balance
+        await page.locator('input[type="number"]').fill('10');
+        await page.getByRole('button', { name: 'Pedir Saque' }).click();
+
+        // Expect validation error (Toast or Alert)
+        // Since toast might be hard to catch with text content depending on library, we look for the message
+        await expect(page.getByText('Saldo insuficiente')).toBeVisible();
     });
 });

@@ -8,4 +8,5 @@ public class CreateChildRequest {
     private String parentId;
     private String phoneNumber;
     private Integer age;
+    private String aiContext;
 }

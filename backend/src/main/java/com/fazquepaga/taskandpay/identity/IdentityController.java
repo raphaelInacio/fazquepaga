@@ -20,7 +20,8 @@ public class IdentityController {
 
     private final com.fazquepaga.taskandpay.security.JwtService jwtService;
 
-    public IdentityController(IdentityService identityService,
+    public IdentityController(
+            IdentityService identityService,
             com.fazquepaga.taskandpay.security.JwtService jwtService) {
         this.identityService = identityService;
         this.jwtService = jwtService;
@@ -41,22 +42,26 @@ public class IdentityController {
             throws ExecutionException, InterruptedException {
         User user = identityService.authenticateParent(request.getEmail(), request.getPassword());
         String token = jwtService.generateToken(user);
-        return ResponseEntity.ok(com.fazquepaga.taskandpay.identity.dto.LoginResponse.builder()
-                .token(token)
-                .user(user)
-                .build());
+        return ResponseEntity.ok(
+                com.fazquepaga.taskandpay.identity.dto.LoginResponse.builder()
+                        .token(token)
+                        .user(user)
+                        .build());
     }
 
     @PostMapping("/children/login")
     public ResponseEntity<ChildLoginResponse> childLogin(@RequestBody ChildLoginRequest request)
             throws ExecutionException, InterruptedException {
         User child = identityService.authenticateChildByCode(request.getCode());
-        String token = jwtService.generateToken(child.getId(), child.getId(), "CHILD"); // Simplified token for child
-        ChildLoginResponse response = ChildLoginResponse.builder()
-                .child(child)
-                .token(token)
-                .message("Login successful")
-                .build();
+        String token =
+                jwtService.generateToken(
+                        child.getId(), child.getId(), "CHILD"); // Simplified token for child
+        ChildLoginResponse response =
+                ChildLoginResponse.builder()
+                        .child(child)
+                        .token(token)
+                        .message("Login successful")
+                        .build();
         return ResponseEntity.ok(response);
     }
 
@@ -128,10 +133,20 @@ public class IdentityController {
 
     @DeleteMapping("/children/{childId}")
     public ResponseEntity<Void> deleteChild(
-            @PathVariable String childId,
-            @RequestParam("parent_id") String parentId)
+            @PathVariable String childId, @RequestParam("parent_id") String parentId)
             throws ExecutionException, InterruptedException {
         identityService.deleteChild(childId, parentId);
         return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/children/{childId}/context")
+    public ResponseEntity<User> updateAiContext(
+            @PathVariable String childId,
+            @RequestBody com.fazquepaga.taskandpay.identity.dto.UpdateAiContextRequest request,
+            @RequestParam("parent_id") String parentId)
+            throws ExecutionException, InterruptedException {
+        User updatedChild =
+                identityService.updateAiContext(childId, request.getContext(), parentId);
+        return ResponseEntity.ok(updatedChild);
     }
 }

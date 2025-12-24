@@ -1,24 +1,57 @@
 package com.fazquepaga.taskandpay.tasks;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.cloud.firestore.QueryDocumentSnapshot;
-import java.time.DayOfWeek;
+import com.google.cloud.spring.pubsub.support.BasicAcknowledgeablePubsubMessage;
+import com.google.cloud.spring.pubsub.support.GcpPubSubHeaders;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
-import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.context.annotation.Bean;
+import org.springframework.integration.annotation.ServiceActivator;
+import org.springframework.messaging.MessageHandler;
 import org.springframework.stereotype.Service;
 
 @Service
 public class TaskSchedulerService {
 
     private final TaskRepository taskRepository;
+    private final ObjectMapper objectMapper;
 
-    public TaskSchedulerService(TaskRepository taskRepository) {
+    public TaskSchedulerService(TaskRepository taskRepository, ObjectMapper objectMapper) {
         this.taskRepository = taskRepository;
+        this.objectMapper = objectMapper;
     }
 
-    // Cron runs at 9:10 AM every day
-    @Scheduled(cron = "0 10 9 * * *")
+    @Bean
+    @ServiceActivator(inputChannel = "taskResetChannel")
+    public MessageHandler taskResetMessageReceiver() {
+        return message -> {
+            String payload = new String((byte[]) message.getPayload());
+            System.out.println("Processing task reset message: " + payload);
+            try {
+                JsonNode json = objectMapper.readTree(payload);
+                if (json.has("action") && "RESET_TASKS".equals(json.get("action").asText())) {
+                    resetRecurringTasks();
+                } else {
+                    System.err.println("Invalid action in task reset message: " + payload);
+                }
+            } catch (Exception e) {
+                System.err.println(
+                        "Error processing task reset message: " + payload + " - " + e.getMessage());
+            }
+
+            BasicAcknowledgeablePubsubMessage originalMessage = message.getHeaders()
+                    .get(
+                            GcpPubSubHeaders.ORIGINAL_MESSAGE,
+                            BasicAcknowledgeablePubsubMessage.class);
+            if (originalMessage != null) {
+                originalMessage.ack();
+            }
+        };
+    }
+
     public void resetRecurringTasks() throws ExecutionException, InterruptedException {
         System.out.println("Starting daily recurring task reset...");
 

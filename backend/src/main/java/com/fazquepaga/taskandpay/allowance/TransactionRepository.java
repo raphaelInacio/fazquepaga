@@ -29,4 +29,13 @@ public class TransactionRepository {
                         .orderBy("date", Query.Direction.DESCENDING);
         return query.get().get();
     }
+
+    public Transaction findById(String id) throws ExecutionException, InterruptedException {
+        return firestore
+                .collection("transactions")
+                .document(id)
+                .get()
+                .get()
+                .toObject(Transaction.class);
+    }
 }

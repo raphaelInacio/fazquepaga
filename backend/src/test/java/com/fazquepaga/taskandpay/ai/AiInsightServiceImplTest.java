@@ -29,117 +29,117 @@ import org.springframework.ai.chat.prompt.Prompt;
 
 class AiInsightServiceImplTest {
 
-        @Mock
-        private TransactionRepository transactionRepository;
-        @Mock
-        private UserRepository userRepository;
-        @Mock
-        private ChatModel chatModel;
-        @Mock
-        private QuerySnapshot querySnapshot;
-        @Mock
-        private QueryDocumentSnapshot queryDocumentSnapshot;
+    @Mock private TransactionRepository transactionRepository;
+    @Mock private UserRepository userRepository;
+    @Mock private ChatModel chatModel;
+    @Mock private QuerySnapshot querySnapshot;
+    @Mock private QueryDocumentSnapshot queryDocumentSnapshot;
 
-        private AiInsightServiceImpl aiInsightService;
+    private AiInsightServiceImpl aiInsightService;
 
-        @BeforeEach
-        void setUp() {
-                MockitoAnnotations.openMocks(this);
-                aiInsightService = new AiInsightServiceImpl(transactionRepository, userRepository, chatModel);
-        }
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
+        aiInsightService =
+                new AiInsightServiceImpl(transactionRepository, userRepository, chatModel);
+    }
 
-        @Test
-        void shouldReturnMotivationalMessageWhenNoTransactions()
-                        throws ExecutionException, InterruptedException {
-                // Arrange
-                String childId = "child123";
-                User child = User.builder().id(childId).name("Maria").balance(BigDecimal.ZERO).build();
+    @Test
+    void shouldReturnMotivationalMessageWhenNoTransactions()
+            throws ExecutionException, InterruptedException {
+        // Arrange
+        String childId = "child123";
+        User child = User.builder().id(childId).name("Maria").balance(BigDecimal.ZERO).build();
 
-                when(userRepository.findByIdSync(childId)).thenReturn(child);
-                when(transactionRepository.findByChildId(childId)).thenReturn(querySnapshot);
-                when(querySnapshot.getDocuments()).thenReturn(new ArrayList<>());
+        when(userRepository.findByIdSync(childId)).thenReturn(child);
+        when(transactionRepository.findByChildId(childId)).thenReturn(querySnapshot);
+        when(querySnapshot.getDocuments()).thenReturn(new ArrayList<>());
 
-                // Act
-                String insight = aiInsightService.getInsights(childId);
+        // Act
+        String insight = aiInsightService.getInsights(childId);
 
-                // Assert
-                assertNotNull(insight);
-                assertEquals(
-                                "Comece a completar tarefas para ganhar sua mesada e acompanhar seu progresso"
-                                                + " financeiro!",
-                                insight);
-        }
+        // Assert
+        assertNotNull(insight);
+        assertEquals(
+                "Comece a completar tarefas para ganhar sua mesada e acompanhar seu progresso"
+                        + " financeiro!",
+                insight);
+    }
 
-        @Test
-        void shouldGenerateAiInsightWithTransactions() throws ExecutionException, InterruptedException {
-                // Arrange
-                String childId = "child123";
-                User child = User.builder().id(childId).name("Maria").balance(new BigDecimal("70.00")).build();
+    @Test
+    void shouldGenerateAiInsightWithTransactions() throws ExecutionException, InterruptedException {
+        // Arrange
+        String childId = "child123";
+        User child =
+                User.builder().id(childId).name("Maria").balance(new BigDecimal("70.00")).build();
 
-                Transaction transaction1 = Transaction.builder()
-                                .id("tx1")
-                                .childId(childId)
-                                .amount(new BigDecimal("50.00"))
-                                .description("Limpou o quarto")
-                                .date(Instant.now())
-                                .type(Transaction.TransactionType.CREDIT)
-                                .build();
+        Transaction transaction1 =
+                Transaction.builder()
+                        .id("tx1")
+                        .childId(childId)
+                        .amount(new BigDecimal("50.00"))
+                        .description("Limpou o quarto")
+                        .date(Instant.now())
+                        .type(Transaction.TransactionType.CREDIT)
+                        .build();
 
-                Transaction transaction2 = Transaction.builder()
-                                .id("tx2")
-                                .childId(childId)
-                                .amount(new BigDecimal("30.00"))
-                                .description("Comprou um brinquedo")
-                                .date(Instant.now())
-                                .type(Transaction.TransactionType.DEBIT)
-                                .build();
+        Transaction transaction2 =
+                Transaction.builder()
+                        .id("tx2")
+                        .childId(childId)
+                        .amount(new BigDecimal("30.00"))
+                        .description("Comprou um brinquedo")
+                        .date(Instant.now())
+                        .type(Transaction.TransactionType.DEBIT)
+                        .build();
 
-                when(userRepository.findByIdSync(childId)).thenReturn(child);
-                when(transactionRepository.findByChildId(childId)).thenReturn(querySnapshot);
-                when(querySnapshot.getDocuments())
-                                .thenReturn(List.of(queryDocumentSnapshot, queryDocumentSnapshot));
-                when(queryDocumentSnapshot.toObject(Transaction.class))
-                                .thenReturn(transaction1)
-                                .thenReturn(transaction2);
+        when(userRepository.findByIdSync(childId)).thenReturn(child);
+        when(transactionRepository.findByChildId(childId)).thenReturn(querySnapshot);
+        when(querySnapshot.getDocuments())
+                .thenReturn(List.of(queryDocumentSnapshot, queryDocumentSnapshot));
+        when(queryDocumentSnapshot.toObject(Transaction.class))
+                .thenReturn(transaction1)
+                .thenReturn(transaction2);
 
-                String aiResponse = "Parabéns Maria! Você economizou 70% do que ganhou. Continue assim! 🎉";
-                Generation generation = new Generation(new AssistantMessage(aiResponse));
-                ChatResponse chatResponse = new ChatResponse(List.of(generation));
-                when(chatModel.call(any(Prompt.class))).thenReturn(chatResponse);
+        String aiResponse = "Parabéns Maria! Você economizou 70% do que ganhou. Continue assim! 🎉";
+        Generation generation = new Generation(new AssistantMessage(aiResponse));
+        ChatResponse chatResponse = new ChatResponse(List.of(generation));
+        when(chatModel.call(any(Prompt.class))).thenReturn(chatResponse);
 
-                // Act
-                String insight = aiInsightService.getInsights(childId);
+        // Act
+        String insight = aiInsightService.getInsights(childId);
 
-                // Assert
-                assertNotNull(insight);
-                assertEquals(aiResponse, insight);
-        }
+        // Assert
+        assertNotNull(insight);
+        assertEquals(aiResponse, insight);
+    }
 
-        @Test
-        void shouldReturnErrorMessageWhenChildNotFound() throws ExecutionException, InterruptedException {
-                // Arrange
-                String childId = "nonexistent";
-                when(userRepository.findByIdSync(anyString())).thenReturn(null);
+    @Test
+    void shouldReturnErrorMessageWhenChildNotFound()
+            throws ExecutionException, InterruptedException {
+        // Arrange
+        String childId = "nonexistent";
+        when(userRepository.findByIdSync(anyString())).thenReturn(null);
 
-                // Act
-                String insight = aiInsightService.getInsights(childId);
+        // Act
+        String insight = aiInsightService.getInsights(childId);
 
-                // Assert
-                assertEquals("Não foi possível gerar insights no momento.", insight);
-        }
+        // Assert
+        assertEquals("Não foi possível gerar insights no momento.", insight);
+    }
 
-        @Test
-        void shouldReturnErrorMessageOnException() throws ExecutionException, InterruptedException {
-                // Arrange
-                String childId = "child123";
-                when(userRepository.findByIdSync(childId))
-                                .thenThrow(new ExecutionException("Firestore error", new RuntimeException()));
+    @Test
+    void shouldReturnErrorMessageOnException() throws ExecutionException, InterruptedException {
+        // Arrange
+        String childId = "child123";
+        when(userRepository.findByIdSync(childId))
+                .thenThrow(new ExecutionException("Firestore error", new RuntimeException()));
 
-                // Act
-                String insight = aiInsightService.getInsights(childId);
+        // Act
+        String insight = aiInsightService.getInsights(childId);
 
-                // Assert
-                assertEquals(
-                                "Não foi possível gerar insights no momento. Tente novamente mais tarde.", insight);
-        }
+        // Assert
+        assertEquals(
+                "Não foi possível gerar insights no momento. Tente novamente mais tarde.", insight);
+    }
 }

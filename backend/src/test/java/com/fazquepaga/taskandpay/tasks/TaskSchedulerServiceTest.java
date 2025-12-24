@@ -4,6 +4,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.CollectionReference;
 import com.google.cloud.firestore.DocumentReference;
@@ -18,40 +20,39 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.messaging.Message;
+import org.springframework.messaging.MessageHandler;
+import org.springframework.messaging.support.GenericMessage;
 
 @ExtendWith(MockitoExtension.class)
 class TaskSchedulerServiceTest {
 
-    @Mock
-    private TaskRepository taskRepository;
+    @Mock private TaskRepository taskRepository;
 
-    @Mock
-    private ApiFuture<QuerySnapshot> queryFuture;
+    @Mock private ObjectMapper objectMapper;
 
-    @Mock
-    private QuerySnapshot querySnapshot;
+    @Mock private ApiFuture<QuerySnapshot> queryFuture;
 
-    @Mock
-    private QueryDocumentSnapshot documentSnapshot;
+    @Mock private QuerySnapshot querySnapshot;
 
-    @Mock
-    private DocumentReference docRef;
+    @Mock private QueryDocumentSnapshot documentSnapshot;
 
-    @Mock
-    private CollectionReference colRef;
+    @Mock private DocumentReference docRef;
 
-    @Mock
-    private DocumentReference userRef;
+    @Mock private CollectionReference colRef;
+
+    @Mock private DocumentReference userRef;
 
     private TaskSchedulerService taskSchedulerService;
 
     @BeforeEach
     void setUp() {
-        taskSchedulerService = new TaskSchedulerService(taskRepository);
+        taskSchedulerService = new TaskSchedulerService(taskRepository, objectMapper);
     }
 
     @Test
-    void resetRecurringTasks_shouldResetDailyTasks() throws ExecutionException, InterruptedException {
+    void resetRecurringTasks_shouldResetDailyTasks()
+            throws ExecutionException, InterruptedException {
         // Arrange
         Task dailyTask = new Task();
         dailyTask.setId("task1");
@@ -59,12 +60,14 @@ class TaskSchedulerServiceTest {
         dailyTask.setStatus(Task.TaskStatus.COMPLETED);
 
         when(taskRepository.findRecurringTasks("DAILY")).thenReturn(queryFuture);
-        when(taskRepository.findRecurringTasks("WEEKLY")).thenReturn(queryFuture); // Return empty for weekly
+        when(taskRepository.findRecurringTasks("WEEKLY"))
+                .thenReturn(queryFuture); // Return empty for weekly
         when(queryFuture.get()).thenReturn(querySnapshot);
-        when(querySnapshot.getDocuments()).thenReturn(
-                List.of(documentSnapshot), // Returns list for daily
-                Collections.emptyList() // Returns empty for weekly
-        );
+        when(querySnapshot.getDocuments())
+                .thenReturn(
+                        List.of(documentSnapshot), // Returns list for daily
+                        Collections.emptyList() // Returns empty for weekly
+                        );
 
         when(documentSnapshot.toObject(Task.class)).thenReturn(dailyTask);
 
@@ -82,7 +85,8 @@ class TaskSchedulerServiceTest {
     }
 
     @Test
-    void resetRecurringTasks_shouldResetWeeklyTasks_whenDayMatches() throws ExecutionException, InterruptedException {
+    void resetRecurringTasks_shouldResetWeeklyTasks_whenDayMatches()
+            throws ExecutionException, InterruptedException {
         // Arrange
         int today = LocalDate.now().getDayOfWeek().getValue();
 
@@ -115,7 +119,46 @@ class TaskSchedulerServiceTest {
         taskSchedulerService.resetRecurringTasks();
 
         // Assert
-        verify(taskRepository).save(eq("user-456"), argThat(task -> task.getStatus() == Task.TaskStatus.PENDING &&
-                !task.getAcknowledged()));
+        verify(taskRepository)
+                .save(
+                        eq("user-456"),
+                        argThat(
+                                task ->
+                                        task.getStatus() == Task.TaskStatus.PENDING
+                                                && !task.getAcknowledged()));
+    }
+
+    @Test
+    void messageReceiver_shouldCallResetRecurringTasks_whenActionIsResetTasks() throws Exception {
+        // Arrange
+        String payload = "{\"action\": \"RESET_TASKS\"}";
+        Message<byte[]> message = new GenericMessage<>(payload.getBytes());
+
+        JsonNode jsonNode = mock(JsonNode.class);
+        when(objectMapper.readTree(payload)).thenReturn(jsonNode);
+        when(jsonNode.has("action")).thenReturn(true);
+        when(jsonNode.get("action")).thenReturn(jsonNode);
+        when(jsonNode.asText()).thenReturn("RESET_TASKS");
+
+        // Mock internal reset call by mocking what resetRecurringTasks does,
+        // OR we just assume resetRecurringTasks logic runs.
+        // Since we are testing the service itself (not a spy), calling the handler will
+        // execute resetRecurringTasks.
+        // We can verify taskRepository interaction which happens inside
+        // resetRecurringTasks.
+
+        // Mock empty return for daily tasks to avoid NPE/complex setup for this
+        // specific test
+        when(taskRepository.findRecurringTasks("DAILY")).thenReturn(queryFuture);
+        when(queryFuture.get()).thenReturn(querySnapshot);
+        when(querySnapshot.getDocuments()).thenReturn(Collections.emptyList());
+        when(taskRepository.findRecurringTasks("WEEKLY")).thenReturn(queryFuture);
+
+        // Act
+        MessageHandler handler = taskSchedulerService.taskResetMessageReceiver();
+        handler.handleMessage(message);
+
+        // Assert
+        verify(taskRepository, times(1)).findRecurringTasks("DAILY");
     }
 }

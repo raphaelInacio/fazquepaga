@@ -10,8 +10,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { Sparkles, Trophy, LogOut, Rocket, Gamepad2, Target, Sword, CheckCircle2, Coins } from "lucide-react";
+import { Sparkles, Trophy, LogOut, Rocket, Gamepad2, Target, Sword, CheckCircle2, Coins, PiggyBank } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import confetti from "canvas-confetti";
 import { Mascot } from "@/components/Mascot";
@@ -31,6 +32,10 @@ export default function ChildPortal() {
     const [goalPlan, setGoalPlan] = useState("");
     const [isLoadingGoal, setIsLoadingGoal] = useState(false);
     const [isCreatingPlan, setIsCreatingPlan] = useState(false);
+    // Withdrawal state
+    const [isWithdrawOpen, setIsWithdrawOpen] = useState(false);
+    const [withdrawAmount, setWithdrawAmount] = useState("");
+    const [isWithdrawing, setIsWithdrawing] = useState(false);
 
     useEffect(() => {
         const currentChild = childAuthService.getCurrentChild();
@@ -150,6 +155,44 @@ export default function ChildPortal() {
         }
     }
 
+    async function handleWithdraw() {
+        if (!child || !withdrawAmount) return;
+        const amount = parseFloat(withdrawAmount);
+
+        if (isNaN(amount) || amount <= 0) {
+            toast.error(t("childPortal.withdraw.invalidAmount") || "Por favor insira um valor válido");
+            return;
+        }
+
+        if (amount > (child.balance || 0)) {
+            toast.error(t("childPortal.withdraw.insufficientFunds") || "Saldo insuficiente");
+            return;
+        }
+
+        setIsWithdrawing(true);
+        try {
+            await childService.requestWithdrawal(child.id, amount);
+            toast.success(t("childPortal.withdraw.success") || "Pedido de saque enviado!");
+            setWithdrawAmount("");
+            setIsWithdrawOpen(false);
+
+            // Celebration
+            confetti({
+                particleCount: 80,
+                spread: 70,
+                origin: { y: 0.6 },
+                colors: ['#32CD32', '#00FF00']
+            });
+
+            refreshChildData();
+        } catch (error) {
+            toast.error(t("childPortal.withdraw.error") || "Erro ao solicitar saque");
+            console.error(error);
+        } finally {
+            setIsWithdrawing(false);
+        }
+    }
+
     function handleLogout() {
         childAuthService.logout();
         navigate("/child-login");
@@ -204,6 +247,61 @@ export default function ChildPortal() {
                                             <Coins className="w-4 h-4" />
                                             {t("childPortal.balance", { balance: child?.balance?.toFixed(2) || "0.00" })}
                                         </div>
+                                        <Dialog open={isWithdrawOpen} onOpenChange={setIsWithdrawOpen}>
+                                            <DialogTrigger asChild>
+                                                <Button variant="outline" size="sm" className="h-7 rounded-full border-green-200 text-green-700 hover:bg-green-50 dark:border-green-800 dark:text-green-400 dark:hover:bg-green-900/30 font-bold px-3">
+                                                    <PiggyBank className="w-3.5 h-3.5 mr-1.5" />
+                                                    {t("childPortal.withdraw.button") || "Sacar"}
+                                                </Button>
+                                            </DialogTrigger>
+                                            <DialogContent className="sm:max-w-md">
+                                                <DialogHeader>
+                                                    <DialogTitle className="text-center text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-green-600 to-emerald-500">
+                                                        {t("childPortal.withdraw.title") || "Sacar meu dinheirinho"}
+                                                    </DialogTitle>
+                                                </DialogHeader>
+                                                <div className="flex flex-col items-center justify-center py-6 space-y-6">
+                                                    <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-full animate-bounce">
+                                                        <PiggyBank className="w-12 h-12 text-green-500" />
+                                                    </div>
+
+                                                    <div className="space-y-4 w-full px-4">
+                                                        <div className="space-y-2 text-center">
+                                                            <Label className="text-lg font-bold text-muted-foreground uppercase tracking-wider">
+                                                                {t("childPortal.withdraw.amount") || "Quanto você quer sacar?"}
+                                                            </Label>
+                                                            <div className="relative max-w-[200px] mx-auto">
+                                                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground font-bold text-xl">R$</span>
+                                                                <Input
+                                                                    type="number"
+                                                                    value={withdrawAmount}
+                                                                    onChange={(e) => setWithdrawAmount(e.target.value)}
+                                                                    className="pl-12 text-2xl font-bold text-center h-14 rounded-2xl bg-background/50 border-2 focus:border-green-500 transition-all"
+                                                                    placeholder="0.00"
+                                                                />
+                                                            </div>
+                                                            <p className="text-sm font-medium text-muted-foreground">
+                                                                {t("childPortal.withdraw.available") || "Disponível"}: <span className="text-green-600 dark:text-green-400 font-bold">R$ {child?.balance?.toFixed(2)}</span>
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <DialogFooter className="sm:justify-center">
+                                                    <Button
+                                                        onClick={handleWithdraw}
+                                                        disabled={isWithdrawing}
+                                                        className="w-full sm:w-auto min-w-[200px] h-12 text-lg font-bold bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 shadow-lg shadow-green-500/20 rounded-xl"
+                                                    >
+                                                        {isWithdrawing ? (
+                                                            <>
+                                                                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
+                                                                Enviando...
+                                                            </>
+                                                        ) : (t("childPortal.withdraw.confirm") || "Pedir Saque")}
+                                                    </Button>
+                                                </DialogFooter>
+                                            </DialogContent>
+                                        </Dialog>
                                     </div>
                                 </div>
                             </div>

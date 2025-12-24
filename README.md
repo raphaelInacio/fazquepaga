@@ -39,6 +39,7 @@ The application is divided into focused domain modules:
 *   **Framework**: Spring Boot
 *   **Database**: Google Cloud Firestore (NoSQL)
 *   **Messaging**: Google Cloud Pub/Sub
+    *   **Task Reset**: Daily recurring tasks are reset via a Pub/Sub message with payload `{"action": "RESET_TASKS"}` sent to the `task-reset` topic.
 *   **AI**: Spring AI with Google Vertex AI (Gemini)
 *   **Integration**: Twilio (WhatsApp)
 *   **Build**: Maven

@@ -62,7 +62,9 @@
             "buttonLoading": "Adding...",
             "success": "Child added successfully!",
             "error": "Failed to add child. Please try again.",
-            "errorParentNotFound": "Parent ID not found. Please login again."
+            "errorParentNotFound": "Parent ID not found. Please login again.",
+            "aiContext": "Bio / Interests (AI)",
+            "aiContextPlaceholder": "Ex: Likes dinosaurs, scared of the dark. This helps AI suggest better tasks."
         }
     },
     "dashboard": {
@@ -182,8 +184,6 @@
             "title": "Review Task",
             "aiValidatedMessage": "✅ Our AI has pre-validated this task and believes it has been completed.",
             "proof": "Proof:",
-            "aiValidatedMessage": "✅ Our AI has pre-validated this task and believes it has been completed.",
-            "proof": "Proof:",
             "noProof": "No proof image submitted yet",
             "taskDismissed": "Task dismissed",
             "taskDismissError": "Failed to dismiss task",
@@ -254,7 +254,18 @@
         "planError": "Error creating plan",
         "taskCompleted": "Congratulations! Task completed! 🎉",
         "taskCompletionError": "Error completing task",
-        "loadError": "Error loading tasks"
+        "loadError": "Error loading tasks",
+        "withdraw": {
+            "title": "Withdraw my money",
+            "amount": "How much do you want to withdraw?",
+            "available": "Available",
+            "confirm": "Request Withdrawal",
+            "button": "Withdraw",
+            "invalidAmount": "Please enter a valid amount",
+            "insufficientFunds": "Insufficient funds",
+            "success": "Withdrawal requested!",
+            "error": "Error requesting withdrawal"
+        }
     },
     "notFound": {
         "title": "404 - Page Not Found",

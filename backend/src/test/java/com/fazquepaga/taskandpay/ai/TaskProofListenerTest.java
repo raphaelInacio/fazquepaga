@@ -45,7 +45,7 @@ class TaskProofListenerTest {
     void setUp() {
         MockitoAnnotations.openMocks(this);
         taskProofListener = new TaskProofListener(objectMapper, aiValidator, taskRepository);
-        messageHandler = taskProofListener.messageReceiver();
+        messageHandler = taskProofListener.proofMessageReceiver();
     }
 
     @Test

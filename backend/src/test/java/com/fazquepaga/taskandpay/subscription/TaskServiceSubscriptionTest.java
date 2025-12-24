@@ -52,6 +52,10 @@ class TaskServiceSubscriptionTest {
                         taskRepository,
                         userRepository,
                         subscriptionService,
+                        Mockito.mock(
+                                com.fazquepaga.taskandpay.notification.NotificationService
+                                        .class), // NotificationService
+                        // mock
                         ledgerService,
                         allowanceServiceProvider);
     }

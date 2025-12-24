@@ -1,12 +1,9 @@
 package com.fazquepaga.taskandpay.identity;
 
-import com.fazquepaga.taskandpay.identity.dto.ChildLoginRequest;
 import com.fazquepaga.taskandpay.identity.dto.CreateChildRequest;
 import com.fazquepaga.taskandpay.identity.dto.CreateParentRequest;
 import com.fazquepaga.taskandpay.identity.dto.UpdateChildRequest;
-import com.google.api.core.ApiFuture;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
@@ -21,13 +18,15 @@ public class IdentityService {
     // In-memory storage for onboarding codes: code -> childId
     private final ConcurrentHashMap<String, String> onboardingCodes = new ConcurrentHashMap<>();
 
-    public IdentityService(UserRepository userRepository,
+    public IdentityService(
+            UserRepository userRepository,
             org.springframework.security.crypto.password.PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
-    public String generateOnboardingCode(String childId) throws ExecutionException, InterruptedException {
+    public String generateOnboardingCode(String childId)
+            throws ExecutionException, InterruptedException {
         User child = userRepository.findByIdSync(childId);
         if (child == null) {
             throw new IllegalArgumentException("Child not found");
@@ -98,19 +97,23 @@ public class IdentityService {
         if (userRepository.findByEmail(request.getEmail()) != null) {
             throw new IllegalArgumentException("Email already in use.");
         }
-        if (request.getPhoneNumber() != null && userRepository.findByPhoneNumber(request.getPhoneNumber()) != null) {
+        if (request.getPhoneNumber() != null
+                && userRepository.findByPhoneNumber(request.getPhoneNumber()) != null) {
             throw new IllegalArgumentException("Phone number already in use.");
         }
 
-        User parent = User.builder()
-                .name(request.getName())
-                .email(request.getEmail())
-                .phoneNumber(request.getPhoneNumber()) // Save phone
-                .password(passwordEncoder.encode(request.getPassword())) // Save hashed password
-                .role(User.Role.PARENT)
-                .subscriptionTier(User.SubscriptionTier.FREE)
-                .subscriptionStatus(User.SubscriptionStatus.ACTIVE)
-                .build();
+        User parent =
+                User.builder()
+                        .name(request.getName())
+                        .email(request.getEmail())
+                        .phoneNumber(request.getPhoneNumber()) // Save phone
+                        .password(
+                                passwordEncoder.encode(
+                                        request.getPassword())) // Save hashed password
+                        .role(User.Role.PARENT)
+                        .subscriptionTier(User.SubscriptionTier.FREE)
+                        .subscriptionStatus(User.SubscriptionStatus.ACTIVE)
+                        .build();
 
         userRepository.save(parent).get();
 
@@ -138,14 +141,16 @@ public class IdentityService {
             accessCode = UUID.randomUUID().toString().substring(0, 6).toUpperCase();
         } while (userRepository.findByAccessCode(accessCode).isPresent()); // Ensure uniqueness
 
-        User child = User.builder()
-                .name(request.getName())
-                .phoneNumber(request.getPhoneNumber())
-                .age(request.getAge())
-                .role(User.Role.CHILD)
-                .parentId(parentId)
-                .accessCode(accessCode) // Save access code
-                .build();
+        User child =
+                User.builder()
+                        .name(request.getName())
+                        .phoneNumber(request.getPhoneNumber())
+                        .age(request.getAge())
+                        .role(User.Role.CHILD)
+                        .parentId(parentId)
+                        .accessCode(accessCode) // Save access code
+                        .aiContext(request.getAiContext())
+                        .build();
 
         userRepository.save(child).get();
 
@@ -165,8 +170,8 @@ public class IdentityService {
     }
 
     public List<User> getChildren(String parentId) throws ExecutionException, InterruptedException {
-        List<com.google.cloud.firestore.QueryDocumentSnapshot> documents = userRepository.findByParentId(parentId).get()
-                .getDocuments();
+        List<com.google.cloud.firestore.QueryDocumentSnapshot> documents =
+                userRepository.findByParentId(parentId).get().getDocuments();
         return documents.stream().map(doc -> doc.toObject(User.class)).collect(Collectors.toList());
     }
 
@@ -213,7 +218,8 @@ public class IdentityService {
         return child;
     }
 
-    public User authenticateParent(String email, String password) throws ExecutionException, InterruptedException {
+    public User authenticateParent(String email, String password)
+            throws ExecutionException, InterruptedException {
         User user = userRepository.findByEmail(email);
         if (user == null || user.getRole() != User.Role.PARENT) {
             throw new IllegalArgumentException("Invalid credentials.");
@@ -224,6 +230,14 @@ public class IdentityService {
         }
 
         return user;
+    }
+
+    public User updateAiContext(String childId, String context, String parentId)
+            throws ExecutionException, InterruptedException {
+        User child = getChild(childId, parentId); // Validates existence and ownership
+        child.setAiContext(context);
+        userRepository.save(child).get();
+        return child;
     }
 
     public void deleteChild(String childId, String parentId)

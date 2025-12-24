@@ -85,12 +85,17 @@ export default function Login() {
                         </Button>
                     </form>
                 </CardContent>
-                <CardFooter className="flex flex-col space-y-2">
+                <CardFooter className="flex flex-col space-y-4">
                     <div className="text-center text-sm text-gray-500">
                         Don't have an account?{" "}
                         <Link to="/register" className="font-medium text-primary hover:underline">
                             Sign up
                         </Link>
+                    </div>
+                    <div className="text-center">
+                        <Button variant="link" onClick={() => navigate("/")} className="text-muted-foreground hover:text-primary">
+                            Back to Home
+                        </Button>
                     </div>
                 </CardFooter>
             </Card>

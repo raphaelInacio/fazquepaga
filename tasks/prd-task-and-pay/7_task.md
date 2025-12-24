@@ -1,50 +1,42 @@
 ---
-status: pending
+status: completed
 ---
 
-# Tarefa 7.0: Integração com Frontend (Web App dos Pais)
+# Task 7.0: Frontend: Allowance Withdrawal
 
-## Visão Geral
+## Overview
 
-Esta tarefa representa o ponto de conexão entre o backend e a interface do usuário (frontend). Embora o desenvolvimento do frontend em si esteja fora do escopo deste conjunto de tarefas, é crucial garantir que a API do backend seja consumível, bem documentada e atenda às necessidades da aplicação web dos pais.
+Implement individual interfaces for Child (Request Withdrawal) and Parent (Approve Withdrawal/Mark as Paid).
 
-**LEITURA OBRIGATÓRIA**: Antes de iniciar, revise as regras do projeto em `docs/ai_guidance/rules/`.
+**MUST READ**: Before starting, review the relevant project rules in `docs/ai_guidance/rules/`.
 
-## Requisitos
+## Requirements
 
--   Validar que todos os endpoints da API necessários para a interface do usuário dos pais estão implementados e funcionais.
--   Garantir que a API tenha uma documentação clara para facilitar o consumo pelo time de frontend.
--   Configurar o CORS (Cross-Origin Resource Sharing) na API do backend para permitir requisições do domínio do frontend.
--   Realizar testes de ponta a ponta (manuais ou automatizados) para validar os principais fluxos de usuário.
+### Child Portal
+- **Withdrawal Request**: UI to input amount and request withdrawal.
+- **Validation**: Cannot request more than current balance.
+- **History**: View status of past requests (Pending, Paid).
 
-## Subtarefas
+### Parent Dashboard
+- **Notification/List**: View pending withdrawal requests from children.
+- **Action**: Button to "Mark as Paid" (Manual off-platform payment confirmation).
+- **Integration**: Call `POST /api/v1/children/{childId}/withdraw` and `POST /api/v1/withdrawals/{id}/approve`.
 
-- [ ] 7.1 Gerar documentação da API usando uma ferramenta como o SpringDoc (que gera uma especificação OpenAPI/Swagger).
-- [ ] 7.2 Configurar o CORS na aplicação Spring Boot, permitindo o acesso do domínio onde o frontend será hospedado.
-- [ ] 7.3 Realizar uma sessão de "dogfooding" ou teste manual completo dos fluxos da API usando uma ferramenta como o Postman ou Insomnia.
-- [ ] 7.4 Simular o fluxo completo:
-    -   Registrar um pai.
-    -   Adicionar um filho.
-    -   Criar uma tarefa para o filho.
-    -   Obter sugestões de tarefas da IA.
-    -   Simular o envio de comprovação via WhatsApp.
-    -   Verificar a atualização da tarefa após a validação da IA.
-    -   Aprovar a tarefa.
-- [ ] 7.5 Criar uma coleção Postman com exemplos de requisições para todos os endpoints e compartilhá-la com a equipe de frontend.
+## Subtasks
 
-## Detalhes da Implementação
+- [ ] 7.1 **Child**: Add "Withdraw" button/modal in the Balance section.
+- [ ] 7.2 **Child**: Connect to `POST /withdraw` API.
+- [ ] 7.3 **Parent**: Add "Withdrawal Requests" section in the Ledger/Financial view.
+- [ ] 7.4 **Parent**: Connect to `POST /approve` API.
+- [ ] 7.5 **Tests**: Add Unit/Integration tests for the Withdrawal Form checks (balance validation).
 
-A configuração do CORS é uma anotação simples ou uma configuração global no Spring Security/WebMVC. A geração de documentação OpenAPI pode ser feita adicionando a dependência `springdoc-openapi-ui` e configurando-a conforme necessário.
+## Implementation Details
 
-### Arquivos Relevantes
+- Reuse existing Ledger components if possible.
+- Ensure clear feedback (Toasts/Alerts) when actions succeed.
 
--   `WebConfig.java` ou `SecurityConfig.java` (para configuração de CORS)
--   `pom.xml` ou `build.gradle` (para adicionar dependência do SpringDoc)
+## Success Criteria
 
-## Critérios de Sucesso
-
--   A documentação da API está acessível em um endpoint (ex: `/swagger-ui.html`) e descreve todos os endpoints corretamente.
--   As requisições feitas de um cliente web (simulado) para a API não são bloqueadas por erros de CORS.
--   Uma coleção Postman é criada e valida que todos os endpoints funcionam conforme o esperado.
--   O time de frontend confirma que a API atende às suas necessidades.
--   O código é revisado e aprovado.
+- Child can successfully request a valid amount.
+- Parent sees the request immediately.
+- Parent can mark it as paid, updating the status in the UI.

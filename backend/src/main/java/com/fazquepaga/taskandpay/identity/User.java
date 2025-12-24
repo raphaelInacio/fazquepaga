@@ -5,7 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
 import org.springframework.security.core.userdetails.UserDetails;
 
 @Data
@@ -14,8 +13,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 @AllArgsConstructor
 public class User implements UserDetails {
 
-    @DocumentId
-    private String id;
+    @DocumentId private String id;
 
     private String name;
     private String email; // Used for parents
@@ -27,8 +25,12 @@ public class User implements UserDetails {
     private java.math.BigDecimal monthlyAllowance;
     private java.math.BigDecimal balance; // Current balance for the child
     private Integer age; // Used for children
+    private String aiContext; // Free text context about the child for AI prompts
     private SubscriptionTier subscriptionTier; // Subscription tier (only for PARENT role)
     private SubscriptionStatus subscriptionStatus; // Subscription status (only for PARENT role)
+    private String asaasCustomerId; // Asaas Customer ID (only for PARENT role)
+    private String subscriptionId; // Asaas Subscription ID (only for PARENT role)
+    private String document; // CPF/CNPJ for payment registration
 
     public enum Role {
         PARENT,
@@ -49,9 +51,11 @@ public class User implements UserDetails {
     // UserDetails Implementation
 
     @Override
-    public java.util.Collection<? extends org.springframework.security.core.GrantedAuthority> getAuthorities() {
+    public java.util.Collection<? extends org.springframework.security.core.GrantedAuthority>
+            getAuthorities() {
         return java.util.Collections.singletonList(
-                new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_" + role.name()));
+                new org.springframework.security.core.authority.SimpleGrantedAuthority(
+                        "ROLE_" + role.name()));
     }
 
     @Override

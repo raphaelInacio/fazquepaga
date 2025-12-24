@@ -23,7 +23,7 @@ import { CreateParentRequest } from "@/types";
 export default function RegisterParent() {
     const { t } = useTranslation();
     const navigate = useNavigate();
-    const { setUser } = useSubscription();
+    // const { setUser } = useSubscription(); // Unused and causes type error
     const [isLoading, setIsLoading] = useState(false);
 
     const formSchema = z.object({
@@ -192,6 +192,26 @@ export default function RegisterParent() {
                             >
                                 {isLoading ? t("auth.register.buttonLoading") : t("auth.register.button")}
                             </Button>
+
+                            <div className="text-center space-y-2 mt-4">
+                                <div className="text-sm text-muted-foreground">
+                                    Already have an account?{" "}
+                                    <span
+                                        onClick={() => navigate("/login")}
+                                        className="font-bold text-primary cursor-pointer hover:underline"
+                                    >
+                                        Login
+                                    </span>
+                                </div>
+                                <Button
+                                    variant="link"
+                                    type="button"
+                                    onClick={() => navigate("/")}
+                                    className="text-muted-foreground hover:text-primary"
+                                >
+                                    Back to Home
+                                </Button>
+                            </div>
                         </form>
                     </Form>
                 </CardContent>

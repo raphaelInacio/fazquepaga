@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
+@org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(name = "twilio.enabled", havingValue = "true")
 public class TwilioWhatsAppClient implements WhatsAppClient {
 
     private final String accountSid;
@@ -26,9 +27,9 @@ public class TwilioWhatsAppClient implements WhatsAppClient {
     @Override
     public void sendMessage(String to, String message) {
         Message.creator(
-                        new PhoneNumber("whatsapp:" + to),
-                        new PhoneNumber("whatsapp:" + fromPhoneNumber),
-                        message)
+                new PhoneNumber("whatsapp:" + to),
+                new PhoneNumber("whatsapp:" + fromPhoneNumber),
+                message)
                 .create();
     }
 }

@@ -1,51 +1,42 @@
 ---
-status: pending
+status: completed
 ---
 
-# Tarefa 2.0: Implementação dos Módulos `identity` e `tasks`
+# Task 2.0: Subscription Flow & Webhooks
 
-## Visão Geral
+## Overview
 
-Esta tarefa foca na implementação das funcionalidades centrais de gerenciamento de usuários (pais e filhos) e de tarefas. Isso inclui a criação dos modelos de dados no Firestore, os repositórios para acesso aos dados e os endpoints da API REST para as operações CRUD básicas.
+Implement the Premium subscription flow using Asaas Checkout Session. This covers the API to generate the checkout link and the Webhook listener to activate the subscription upon payment.
 
-**LEITURA OBRIGATÓRIA**: Antes de iniciar, revise as regras do projeto em `docs/ai_guidance/rules/`.
+**MUST READ**: Before starting, review the relevant project rules in `docs/ai_guidance/rules/`.
+ - Use `resources/asaas_integration_guide.md` for Asaas integration details.
+ - Use asaas mcp para tirar duvidas sobre a plataforma
+## Requirements
 
-## Requisitos
+- Endpoint `POST /api/v1/subscription/subscribe`: Generate Checkout URL.
+- Endpoint `POST /api/v1/webhooks/asaas`: Receive payment notifications.
+- Security: Verify webhook requests (if possible) or ensure idempotency.
+- Business Logic: Update `User.subscriptionStatus` and `subscriptionTier`.
 
--   Implementar os modelos de dados para `User` e `Task` conforme a especificação técnica.
--   Criar repositórios para interagir com a coleção `users` e a subcoleção `tasks` no Firestore.
--   Expor endpoints da API para registrar pais, adicionar filhos e criar/visualizar tarefas.
--   Garantir que a relação pai-filho seja corretamente estabelecida no Firestore.
+## Subtasks
 
-## Subtarefas
+- [ ] 2.1 Implement `AsaasService.createCheckoutSession`.
+- [ ] 2.2 Create `SubscriptionController` (`subscribe`, `status`).
+- [ ] 2.3 Create `AsaasWebhookController` and handle `PAYMENT_RECEIVED`.
+- [ ] 2.4 Implement `SubscriptionService` logic to upgrade user tier.
+- [ ] 2.5 Unit Tests for Webhook processing (mocking payloads).
 
-- [ ] 2.1 Implementar as entidades de dados (POJOs) para `User` e `Task`.
-- [ ] 2.2 Implementar o `UserRepository` para operações CRUD na coleção `users`.
-- [ ] 2.3 Implementar o `TaskRepository` para operações CRUD na subcoleção `tasks` de um usuário.
-- [ ] 2.4 Criar o `IdentityController` com os endpoints `POST /api/v1/auth/register` e `POST /api/v1/children`.
-- [ ] 2.5 Criar o `TaskController` com os endpoints `POST /api/v1/tasks` e `GET /api/v1/tasks`.
-- [ ] 2.6 Implementar a lógica de serviço para conectar os controllers aos repositórios.
-- [ ] 2.7 Implementar testes de integração da API para todos os endpoints criados, usando os emuladores.
+## Implementation Details
 
-## Detalhes da Implementação
+Use "Zero Data" approach - Redirect user to `checkoutUrl`.
+Webhook payload examples in `docs/asaas_integration_guide.md`.
 
-A estrutura de dados deve seguir o "Modelo de Dados (Firestore)" da especificação técnica. As interfaces do repositório devem usar `ApiFuture` para lidar com a natureza assíncrona do Firestore.
+### Relevant Files
 
-### Arquivos Relevantes
+- `src/main/java/.../payment/AsaasWebhookController.java`
+- `src/main/java/.../subscription/SubscriptionService.java`
 
--   `identity/User.java`
--   `identity/UserRepository.java`
--   `identity/IdentityController.java`
--   `tasks/Task.java`
--   `tasks/TaskRepository.java`
--   `tasks/TaskController.java`
+## Success Criteria
 
-## Critérios de Sucesso
-
--   É possível registrar um novo pai através da API.
--   É possível adicionar um filho a um pai existente.
--   É possível criar e listar tarefas para um filho específico.
--   Os dados são persistidos corretamente no emulador do Firestore com a estrutura definida.
--   A cobertura de testes para os novos endpoints atinge o mínimo de 80%.
--   O código é revisado e aprovado.
--   Todos os testes passam.
+- Calling subscribe API returns a valid Asaas URL.
+- Sending a mock `PAYMENT_RECEIVED` webhook updates the user to `PREMIUM`.
