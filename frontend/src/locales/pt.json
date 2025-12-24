@@ -70,6 +70,10 @@
     "dashboard": {
         "title": "Painel",
         "welcome": "Bem-vindo, {{name}}!",
+        "subscription": {
+            "success": "Assinatura realizada com sucesso!",
+            "cancel": "Processo de assinatura cancelado."
+        },
         "addChild": "Adicionar Criança",
         "children": "Crianças",
         "noChildren": "Nenhuma criança adicionada ainda",

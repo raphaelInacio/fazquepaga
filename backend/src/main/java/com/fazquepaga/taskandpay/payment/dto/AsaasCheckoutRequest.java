@@ -29,6 +29,7 @@ public class AsaasCheckoutRequest {
     public static class SubscriptionInfo {
         private String cycle; // MONTHLY
         private String description;
+        private String nextDueDate;
     }
 
     @Data

@@ -12,6 +12,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+
 @Service
 @Slf4j
 public class AsaasService {
@@ -88,6 +91,7 @@ public class AsaasService {
 
     public String createCheckoutSession(User user) {
         log.info("Creating Checkout Session for user: {}", user.getEmail());
+        log.debug("Using Callback URLs - Success: {}, Cancel: {}", successUrl, cancelUrl);
 
         AsaasCheckoutRequest request = AsaasCheckoutRequest.builder()
                 .chargeTypes(java.util.List.of("RECURRENT"))
@@ -100,6 +104,7 @@ public class AsaasService {
                 .subscription(AsaasCheckoutRequest.SubscriptionInfo.builder()
                         .cycle(subscriptionCycle)
                         .description("Assinatura Mensal TaskAndPay")
+                        .nextDueDate(LocalDate.now().format(DateTimeFormatter.ISO_DATE))
                         .build())
                 .callback(AsaasCheckoutRequest.CallbackInfo.builder()
                         .successUrl(successUrl)
@@ -112,15 +117,15 @@ public class AsaasService {
         try {
             AsaasCheckoutResponse response = restTemplate.postForObject("/checkouts", request,
                     AsaasCheckoutResponse.class);
-            if (response != null && response.getCheckoutUrl() != null) {
+            if (response != null && response.getLink() != null) {
                 log.info("Checkout Session created: {}", response.getId());
-                return response.getCheckoutUrl();
+                return response.getLink();
             } else {
-                throw new RuntimeException("Failed to create Checkout Session: Empty response");
+                throw new RuntimeException("Failed to create Checkout Session: Empty response or missing link");
             }
         } catch (Exception e) {
             log.error("Error creating Checkout Session", e);
-            throw new RuntimeException("Error communicating with Asaas for Checkout", e);
+            throw new RuntimeException("Failed to create Checkout Session: Empty response or missing link");
         }
     }
 }

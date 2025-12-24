@@ -7,5 +7,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class AsaasCheckoutResponse {
     private String id;
-    private String checkoutUrl;
+    private String link;
 }

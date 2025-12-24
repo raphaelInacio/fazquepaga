@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.integration.annotation.ServiceActivator;
 import org.springframework.messaging.MessageHandler;
 
-@Configuration
+//@Configuration
 @RequiredArgsConstructor
 @Slf4j
 public class NotificationListener {

@@ -94,6 +94,24 @@ export default function Dashboard() {
         fetchChildren();
     }, [navigate]);
 
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        if (params.get("payment_success") === "true") {
+            toast.success(t("dashboard.subscription.success") || "Assinatura realizada com sucesso!");
+            confetti({
+                particleCount: 150,
+                spread: 70,
+                origin: { y: 0.6 }
+            });
+            // Clear the query param
+            window.history.replaceState({}, document.title, window.location.pathname);
+        } else if (params.get("payment_cancel") === "true") {
+            toast.error(t("dashboard.subscription.cancel") || "Processo de assinatura cancelado.");
+            // Clear the query param
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+    }, [t]);
+
     const handleSetAllowance = async () => {
         if (!selectedChildId || !allowanceAmount) return;
 
