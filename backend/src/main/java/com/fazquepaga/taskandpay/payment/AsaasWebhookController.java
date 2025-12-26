@@ -15,9 +15,19 @@ public class AsaasWebhookController {
 
     private final SubscriptionService subscriptionService;
 
+    @org.springframework.beans.factory.annotation.Value("${asaas.webhook.accessToken}")
+    private String webhookAccessToken;
+
     @PostMapping
-    public ResponseEntity<Void> handleWebhook(@RequestBody AsaasWebhookEvent event) {
+    public ResponseEntity<Void> handleWebhook(
+            @RequestBody AsaasWebhookEvent event,
+            @RequestHeader(value = "asaas-access-token", required = false) String accessToken) {
         log.info("Received Asaas Webhook: {}", event.getEvent());
+
+        if (accessToken == null || !accessToken.equals(webhookAccessToken)) {
+            log.warn("Webhook received with invalid or missing token. Header: {}", accessToken);
+            return ResponseEntity.status(403).build();
+        }
 
         if ("PAYMENT_RECEIVED".equals(event.getEvent())
                 || "SUBSCRIPTION_CREATED".equals(event.getEvent())) {

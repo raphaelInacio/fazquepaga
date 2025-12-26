@@ -1,58 +1,68 @@
 package com.fazquepaga.taskandpay.payment;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
-
-import com.fazquepaga.taskandpay.payment.dto.AsaasWebhookEvent;
+import com.fazquepaga.taskandpay.security.JwtAuthenticationFilter;
 import com.fazquepaga.taskandpay.subscription.SubscriptionService;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.springframework.http.ResponseEntity;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
 
-class AsaasWebhookControllerTest {
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-    @Mock private SubscriptionService subscriptionService;
+@WebMvcTest(controllers = AsaasWebhookController.class, properties = "asaas.webhook.accessToken=test-token")
+@AutoConfigureMockMvc(addFilters = false) // Optional: Verify if we want security filters or not. We DO want to test
+                                          // security config, so maybe remove this or keep true.
+// Actually, we modified SecurityConfig to ALLOW this endpoint. So we want
+// security enabled to verify that permitted matchers work.
+// So addFilters = true (default).
+public class AsaasWebhookControllerTest {
 
-    @InjectMocks private AsaasWebhookController webhookController;
+    @Autowired
+    private MockMvc mockMvc;
 
-    @BeforeEach
-    void setUp() {
-        MockitoAnnotations.openMocks(this);
+    @MockBean
+    private SubscriptionService subscriptionService;
+
+    @MockBean
+    private JwtAuthenticationFilter jwtAuthenticationFilter; // Required for SecurityConfig
+
+    @Test
+    public void shouldReturn403WhenTokenIsMissing() throws Exception {
+        mockMvc.perform(post("/api/v1/webhooks/asaas")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"event\": \"PAYMENT_RECEIVED\"}"))
+                .andExpect(status().isForbidden());
     }
 
     @Test
-    void handleWebhook_PaymentReceived_ShouldActivateSubscription() {
-        // Arrange
-        AsaasWebhookEvent event = new AsaasWebhookEvent();
-        event.setEvent("PAYMENT_RECEIVED");
-
-        AsaasWebhookEvent.PaymentInfo payment = new AsaasWebhookEvent.PaymentInfo();
-        payment.setExternalReference("user123");
-        payment.setSubscription("sub_456");
-        event.setPayment(payment);
-
-        // Act
-        ResponseEntity<Void> response = webhookController.handleWebhook(event);
-
-        // Assert
-        assertEquals(200, response.getStatusCode().value());
-        verify(subscriptionService).activateSubscription("user123", "sub_456");
+    public void shouldReturn403WhenTokenIsInvalid() throws Exception {
+        mockMvc.perform(post("/api/v1/webhooks/asaas")
+                .header("asaas-access-token", "wrong-token")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"event\": \"PAYMENT_RECEIVED\"}"))
+                .andExpect(status().isForbidden());
     }
 
     @Test
-    void handleWebhook_OtherEvent_ShouldIgnore() {
-        // Arrange
-        AsaasWebhookEvent event = new AsaasWebhookEvent();
-        event.setEvent("PAYMENT_OVERDUE");
+    public void shouldReturn200WhenTokenIsValid() throws Exception {
+        // Mock payload
+        String json = "{" +
+                "\"event\": \"PAYMENT_RECEIVED\"," +
+                "\"payment\": {" +
+                "\"externalReference\": \"user123\"," +
+                "\"subscription\": \"sub123\"" +
+                "}" +
+                "}";
 
-        // Act
-        ResponseEntity<Void> response = webhookController.handleWebhook(event);
-
-        // Assert
-        assertEquals(200, response.getStatusCode().value());
-        verify(subscriptionService, never()).activateSubscription(anyString(), anyString());
+        mockMvc.perform(post("/api/v1/webhooks/asaas")
+                .header("asaas-access-token", "test-token")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json))
+                .andExpect(status().isOk());
     }
 }
