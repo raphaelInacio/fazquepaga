@@ -1,6 +1,7 @@
 package com.fazquepaga.taskandpay.payment;
 
 import com.fazquepaga.taskandpay.payment.dto.AsaasWebhookEvent;
+import com.fazquepaga.taskandpay.payment.dto.AsaasWebhookEventType;
 import com.fazquepaga.taskandpay.subscription.SubscriptionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,23 +30,45 @@ public class AsaasWebhookController {
             return ResponseEntity.status(403).build();
         }
 
-        if ("PAYMENT_RECEIVED".equals(event.getEvent())
-                || "SUBSCRIPTION_CREATED".equals(event.getEvent())) {
-            // "SUBSCRIPTION_CREATED" might be too early if payment not confirmed,
-            // but PAYMENT_RECEIVED is definitive for activation.
-            // Let's stick to PAYMENT_RECEIVED for activation logic to be safe.
-            // Or maybe handle both if we want to store subscriptionId early.
+        AsaasWebhookEventType eventType = AsaasWebhookEventType.fromString(event.getEvent());
+        
+        // If event is irrelevant or unknown, just log debug and 200 OK
+        if (eventType == AsaasWebhookEventType.UNKNOWN) {
+             log.debug("Ignored or Unknown Asaas Webhook event: {}", event.getEvent());
+             return ResponseEntity.ok().build();
+        }
 
-            if ("PAYMENT_RECEIVED".equals(event.getEvent())) {
-                String userId = event.getPayment().getExternalReference();
-                String subscriptionId = event.getPayment().getSubscription();
+        String userId = null;
+        String subscriptionId = null;
+            // 
 
-                if (userId != null) {
-                    subscriptionService.activateSubscription(userId, subscriptionId);
-                } else {
-                    log.warn("Webhook received without externalReference: {}", event);
-                }
-            }
+            // 
+        if (event.getPayment() != null) {
+            userId = event.getPayment().getExternalReference();
+            subscriptionId = event.getPayment().getSubscription();
+        }
+
+        if (userId == null) {
+            log.warn("Webhook event {} received without valid externalReference/userId", eventType);
+            return ResponseEntity.ok().build();
+        }
+
+        switch (eventType) {
+            case PAYMENT_CONFIRMED:
+            case PAYMENT_RECEIVED:
+                subscriptionService.activateSubscription(userId, subscriptionId);
+                break;
+            case PAYMENT_OVERDUE:
+                subscriptionService.deactivateSubscription(
+                        userId, com.fazquepaga.taskandpay.identity.User.SubscriptionStatus.PAST_DUE);
+                break;
+            case PAYMENT_REFUNDED:
+            case CHARGEBACK_REQUESTED:
+                subscriptionService.deactivateSubscription(
+                        userId, com.fazquepaga.taskandpay.identity.User.SubscriptionStatus.CANCELED);
+                break;
+            default:
+                log.debug("Ignored Asaas Webhook event type: {}", eventType);
         }
 
         return ResponseEntity.ok().build();

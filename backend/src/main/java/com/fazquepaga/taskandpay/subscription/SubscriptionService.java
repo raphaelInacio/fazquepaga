@@ -54,8 +54,7 @@ public class SubscriptionService {
 
     public void activateSubscription(String externalReference, String subscriptionId) {
         try {
-            Optional<User> userOpt =
-                    Optional.ofNullable(userRepository.findByIdSync(externalReference));
+            Optional<User> userOpt = Optional.ofNullable(userRepository.findByIdSync(externalReference));
             if (userOpt.isPresent()) {
                 User user = userOpt.get();
                 user.setSubscriptionStatus(User.SubscriptionStatus.ACTIVE);
@@ -72,10 +71,29 @@ public class SubscriptionService {
         }
     }
 
+    public void deactivateSubscription(String userId, User.SubscriptionStatus status) {
+        try {
+            Optional<User> userOpt = Optional.ofNullable(userRepository.findByIdSync(userId));
+            if (userOpt.isPresent()) {
+                User user = userOpt.get();
+                user.setSubscriptionStatus(status);
+                user.setSubscriptionTier(User.SubscriptionTier.FREE);
+                userRepository.save(user);
+                log.info("Subscription deactivated for user: {}. Status: {}", userId, status);
+            } else {
+                log.error("User not found for subscription deactivation: {}", userId);
+            }
+        } catch (Exception e) {
+            log.error("Error deactivating subscription", e);
+            throw new RuntimeException(e);
+        }
+    }
+
     // Permission Checks
 
     public boolean canCreateTask(User user, int currentTasks) {
-        if (isPremium(user)) return true;
+        if (isPremium(user))
+            return true;
         return currentTasks < 50; // Free limit example
     }
 
@@ -88,12 +106,14 @@ public class SubscriptionService {
     }
 
     public boolean canAddChild(User user, int currentChildren) {
-        if (isPremium(user)) return true;
+        if (isPremium(user))
+            return true;
         return currentChildren < 2; // Free limit
     }
 
     public int getMaxRecurringTasks(User user) {
-        if (isPremium(user)) return 100;
+        if (isPremium(user))
+            return 100;
         return 3;
     }
 

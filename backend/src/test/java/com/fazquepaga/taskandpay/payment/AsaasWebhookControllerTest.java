@@ -49,10 +49,9 @@ public class AsaasWebhookControllerTest {
     }
 
     @Test
-    public void shouldReturn200WhenTokenIsValid() throws Exception {
-        // Mock payload
+    public void shouldActivateSubscriptionOnPaymentConfirmed() throws Exception {
         String json = "{" +
-                "\"event\": \"PAYMENT_RECEIVED\"," +
+                "\"event\": \"PAYMENT_CONFIRMED\"," +
                 "\"payment\": {" +
                 "\"externalReference\": \"user123\"," +
                 "\"subscription\": \"sub123\"" +
@@ -64,5 +63,47 @@ public class AsaasWebhookControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(json))
                 .andExpect(status().isOk());
+
+        verify(subscriptionService).activateSubscription("user123", "sub123");
+    }
+
+    @Test
+    public void shouldDeactivateSubscriptionOnPaymentRefunded() throws Exception {
+        String json = "{" +
+                "\"event\": \"PAYMENT_REFUNDED\"," +
+                "\"payment\": {" +
+                "\"externalReference\": \"user123\"," +
+                "\"subscription\": \"sub123\"" +
+                "}" +
+                "}";
+
+        mockMvc.perform(post("/api/v1/webhooks/asaas")
+                .header("asaas-access-token", "test-token")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json))
+                .andExpect(status().isOk());
+
+        verify(subscriptionService).deactivateSubscription("user123",
+                com.fazquepaga.taskandpay.identity.User.SubscriptionStatus.CANCELED);
+    }
+
+    @Test
+    public void shouldDeactivateSubscriptionOnPaymentOverdue() throws Exception {
+        String json = "{" +
+                "\"event\": \"PAYMENT_OVERDUE\"," +
+                "\"payment\": {" +
+                "\"externalReference\": \"user123\"," +
+                "\"subscription\": \"sub123\"" +
+                "}" +
+                "}";
+
+        mockMvc.perform(post("/api/v1/webhooks/asaas")
+                .header("asaas-access-token", "test-token")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json))
+                .andExpect(status().isOk());
+
+        verify(subscriptionService).deactivateSubscription("user123",
+                com.fazquepaga.taskandpay.identity.User.SubscriptionStatus.PAST_DUE);
     }
 }

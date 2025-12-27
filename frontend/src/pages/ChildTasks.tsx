@@ -302,7 +302,7 @@ export default function ChildTasks() {
                                     <Badge variant="outline" className="text-muted-foreground border-primary/20">
                                         {t("childTasks.age", { age: child.age || "N/A" })}
                                     </Badge>
-                                    <Badge variant="secondary" className="bg-secondary/10 text-secondary-foreground hover:bg-secondary/20">
+                                    <Badge variant="secondary" className="bg-blue-100 text-blue-700 hover:bg-blue-200 border-blue-200">
                                         Level {Math.floor((child.age || 0) / 2) + 1} Explorer
                                     </Badge>
                                 </div>
@@ -460,7 +460,7 @@ export default function ChildTasks() {
                                                 <div className="flex flex-col gap-2 text-sm text-muted-foreground">
                                                     <div className="flex items-center gap-2">
                                                         <Calendar className="w-4 h-4 text-primary/70" />
-                                                        <span className="font-medium bg-secondary/10 px-2 py-0.5 rounded text-xs text-secondary-foreground">{task.type}</span>
+                                                        <span className="font-medium bg-blue-100 px-2 py-0.5 rounded text-xs text-blue-700 border border-blue-200/50">{task.type}</span>
                                                     </div>
 
                                                     {task.requiresProof && (
