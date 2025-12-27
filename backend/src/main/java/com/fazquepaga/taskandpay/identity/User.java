@@ -13,7 +13,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 @AllArgsConstructor
 public class User implements UserDetails {
 
-    @DocumentId private String id;
+    @DocumentId
+    private String id;
 
     private String name;
     private String email; // Used for parents
@@ -31,6 +32,7 @@ public class User implements UserDetails {
     private String asaasCustomerId; // Asaas Customer ID (only for PARENT role)
     private String subscriptionId; // Asaas Subscription ID (only for PARENT role)
     private String document; // CPF/CNPJ for payment registration
+    private String lastCheckoutSessionId; // ID of the last created checkout session for correlation
 
     public enum Role {
         PARENT,
@@ -51,8 +53,7 @@ public class User implements UserDetails {
     // UserDetails Implementation
 
     @Override
-    public java.util.Collection<? extends org.springframework.security.core.GrantedAuthority>
-            getAuthorities() {
+    public java.util.Collection<? extends org.springframework.security.core.GrantedAuthority> getAuthorities() {
         return java.util.Collections.singletonList(
                 new org.springframework.security.core.authority.SimpleGrantedAuthority(
                         "ROLE_" + role.name()));

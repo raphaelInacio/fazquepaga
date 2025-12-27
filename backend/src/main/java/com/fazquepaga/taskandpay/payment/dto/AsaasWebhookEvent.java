@@ -17,5 +17,6 @@ public class AsaasWebhookEvent {
         private String subscription;
         private String externalReference;
         private String status;
+        private String checkoutSession;
     }
 }

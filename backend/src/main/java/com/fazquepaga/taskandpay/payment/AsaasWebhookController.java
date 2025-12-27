@@ -40,31 +40,34 @@ public class AsaasWebhookController {
 
         String asaasCustomerId = null;
         String subscriptionId = null;
+        String checkoutSessionId = null;
 
         if (event.getPayment() != null) {
             asaasCustomerId = event.getPayment().getCustomer();
             subscriptionId = event.getPayment().getSubscription();
+            checkoutSessionId = event.getPayment().getCheckoutSession();
         }
 
         if (asaasCustomerId == null) {
             log.warn("Webhook event {} received without Customer ID.", eventType);
             return ResponseEntity.ok().build();
         }
-                    
 
         switch (eventType) {
             case PAYMENT_CONFIRMED:
             case PAYMENT_RECEIVED:
-                subscriptionService.activateSubscription(asaasCustomerId, subscriptionId);
+                subscriptionService.activateSubscription(asaasCustomerId, subscriptionId, checkoutSessionId);
                 break;
             case PAYMENT_OVERDUE:
                 subscriptionService.deactivateSubscription(
-                        asaasCustomerId, com.fazquepaga.taskandpay.identity.User.SubscriptionStatus.PAST_DUE);
+                        asaasCustomerId, com.fazquepaga.taskandpay.identity.User.SubscriptionStatus.PAST_DUE,
+                        checkoutSessionId);
                 break;
             case PAYMENT_REFUNDED:
             case CHARGEBACK_REQUESTED:
                 subscriptionService.deactivateSubscription(
-                        asaasCustomerId, com.fazquepaga.taskandpay.identity.User.SubscriptionStatus.CANCELED);
+                        asaasCustomerId, com.fazquepaga.taskandpay.identity.User.SubscriptionStatus.CANCELED,
+                        checkoutSessionId);
                 break;
             default:
                 log.debug("Ignored Asaas Webhook event type: {}", eventType);

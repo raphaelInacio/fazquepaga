@@ -24,13 +24,13 @@ public class SubscriptionService {
         }
 
         // Ensure Asaas Customer exists
-        if (user.getAsaasCustomerId() == null) {
-            String customerId = asaasService.createCustomer(user);
-            user.setAsaasCustomerId(customerId);
-            // Save updated user with customer ID if needed immediately,
-            // though createCustomer inside AsaasService might have saved it.
-            // Let's rely on AsaasService returning the ID and ensure consistency.
-        }
+        // Ensure Asaas Customer exists
+        // Refactored: We rely on Checkout Session to create the customer and link via
+        // session ID
+        // if (user.getAsaasCustomerId() == null) {
+        // String customerId = asaasService.createCustomer(user);
+        // user.setAsaasCustomerId(customerId);
+        // }
 
         return asaasService.createCheckoutSession(user);
     }
@@ -51,11 +51,24 @@ public class SubscriptionService {
         }
     }
 
-    public void activateSubscription(String asaasCustomerId, String subscriptionId) {
+    public void activateSubscription(String asaasCustomerId, String subscriptionId, String checkoutSessionId) {
         try {
             User user = null;
             if (asaasCustomerId != null) {
                 user = userRepository.findByAsaasCustomerId(asaasCustomerId);
+            }
+
+            // Fallback: lookup by checkoutSessionId
+            if (user == null && checkoutSessionId != null) {
+                user = userRepository.findByLastCheckoutSessionId(checkoutSessionId);
+                // Sync: If found by session, update the customerId to match the new one from
+                // webhook
+                if (user != null && asaasCustomerId != null
+                        && !asaasCustomerId.equals(user.getAsaasCustomerId())) {
+                    log.info("Updating User {} AsaasCustomerId from {} to {}", user.getId(),
+                            user.getAsaasCustomerId(), asaasCustomerId);
+                    user.setAsaasCustomerId(asaasCustomerId);
+                }
             }
 
             if (user != null) {
@@ -65,7 +78,8 @@ public class SubscriptionService {
                 userRepository.save(user);
                 log.info("Subscription activated for user: {}. CustomerID: {}", user.getId(), asaasCustomerId);
             } else {
-                log.error("User not found for subscription activation. CustomerID: {}", asaasCustomerId);
+                log.error("User not found for subscription activation. CustomerID: {}, Session: {}",
+                        asaasCustomerId, checkoutSessionId);
             }
         } catch (Exception e) {
             log.error("Error activating subscription", e);
@@ -73,11 +87,26 @@ public class SubscriptionService {
         }
     }
 
-    public void deactivateSubscription(String asaasCustomerId, User.SubscriptionStatus status) {
+    public void deactivateSubscription(String asaasCustomerId, User.SubscriptionStatus status,
+            String checkoutSessionId) {
         try {
             User user = null;
             if (asaasCustomerId != null) {
                 user = userRepository.findByAsaasCustomerId(asaasCustomerId);
+            }
+
+            // Fallback: lookup by checkoutSessionId
+            if (user == null && checkoutSessionId != null) {
+                user = userRepository.findByLastCheckoutSessionId(checkoutSessionId);
+                // Sync logic mirrors activation, though less critical for deactivation it keeps
+                // data
+                // consistent
+                if (user != null && asaasCustomerId != null
+                        && !asaasCustomerId.equals(user.getAsaasCustomerId())) {
+                    log.info("Updating User {} AsaasCustomerId from {} to {}", user.getId(),
+                            user.getAsaasCustomerId(), asaasCustomerId);
+                    user.setAsaasCustomerId(asaasCustomerId);
+                }
             }
 
             if (user != null) {
@@ -86,7 +115,8 @@ public class SubscriptionService {
                 userRepository.save(user);
                 log.info("Subscription deactivated for user: {}. Status: {}", user.getId(), status);
             } else {
-                log.error("User not found for subscription deactivation. CustomerID: {}", asaasCustomerId);
+                log.error("User not found for subscription deactivation. CustomerID: {}, Session: {}",
+                        asaasCustomerId, checkoutSessionId);
             }
         } catch (Exception e) {
             log.error("Error deactivating subscription", e);

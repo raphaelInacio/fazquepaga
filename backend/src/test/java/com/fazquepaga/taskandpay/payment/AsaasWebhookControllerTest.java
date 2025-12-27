@@ -22,91 +22,94 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 // So addFilters = true (default).
 public class AsaasWebhookControllerTest {
 
-    @Autowired
-    private MockMvc mockMvc;
+        @Autowired
+        private MockMvc mockMvc;
 
-    @MockBean
-    private SubscriptionService subscriptionService;
+        @MockBean
+        private SubscriptionService subscriptionService;
 
-    @MockBean
-    private JwtAuthenticationFilter jwtAuthenticationFilter; // Required for SecurityConfig
+        @MockBean
+        private JwtAuthenticationFilter jwtAuthenticationFilter; // Required for SecurityConfig
 
-    @Test
-    public void shouldReturn403WhenTokenIsMissing() throws Exception {
-        mockMvc.perform(post("/api/v1/webhooks/asaas")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"event\": \"PAYMENT_RECEIVED\"}"))
-                .andExpect(status().isForbidden());
-    }
+        @Test
+        public void shouldReturn403WhenTokenIsMissing() throws Exception {
+                mockMvc.perform(post("/api/v1/webhooks/asaas")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("{\"event\": \"PAYMENT_RECEIVED\"}"))
+                                .andExpect(status().isForbidden());
+        }
 
-    @Test
-    public void shouldReturn403WhenTokenIsInvalid() throws Exception {
-        mockMvc.perform(post("/api/v1/webhooks/asaas")
-                .header("asaas-access-token", "wrong-token")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"event\": \"PAYMENT_RECEIVED\"}"))
-                .andExpect(status().isForbidden());
-    }
+        @Test
+        public void shouldReturn403WhenTokenIsInvalid() throws Exception {
+                mockMvc.perform(post("/api/v1/webhooks/asaas")
+                                .header("asaas-access-token", "wrong-token")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("{\"event\": \"PAYMENT_RECEIVED\"}"))
+                                .andExpect(status().isForbidden());
+        }
 
-    @Test
-    public void shouldActivateSubscriptionOnPaymentConfirmed() throws Exception {
-        String json = "{" +
-                "\"event\": \"PAYMENT_CONFIRMED\"," +
-                "\"payment\": {" +
-                "\"externalReference\": \"user123\"," +
-                "\"subscription\": \"sub123\"," +
-                "\"customer\": \"cus_000007342312\"" +
-                "}" +
-                "}";
+        @Test
+        public void shouldActivateSubscriptionOnPaymentConfirmed() throws Exception {
+                String json = "{" +
+                                "\"event\": \"PAYMENT_CONFIRMED\"," +
+                                "\"payment\": {" +
+                                "\"externalReference\": \"user123\"," +
+                                "\"subscription\": \"sub123\"," +
+                                "\"customer\": \"cus_000007342312\"," +
+                                "\"checkoutSession\": \"sess_12345\"" +
+                                "}" +
+                                "}";
 
-        mockMvc.perform(post("/api/v1/webhooks/asaas")
-                .header("asaas-access-token", "test-token")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(json))
-                .andExpect(status().isOk());
+                mockMvc.perform(post("/api/v1/webhooks/asaas")
+                                .header("asaas-access-token", "test-token")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(json))
+                                .andExpect(status().isOk());
 
-        verify(subscriptionService).activateSubscription("cus_000007342312", "sub123");
-    }
+                verify(subscriptionService).activateSubscription("cus_000007342312", "sub123", "sess_12345");
+        }
 
-    @Test
-    public void shouldDeactivateSubscriptionOnPaymentRefunded() throws Exception {
-        String json = "{" +
-                "\"event\": \"PAYMENT_REFUNDED\"," +
-                "\"payment\": {" +
-                "\"externalReference\": \"user123\"," +
-                "\"subscription\": \"sub123\"," +
-                "\"customer\": \"cus_000007342312\"" +
-                "}" +
-                "}";
+        @Test
+        public void shouldDeactivateSubscriptionOnPaymentRefunded() throws Exception {
+                String json = "{" +
+                                "\"event\": \"PAYMENT_REFUNDED\"," +
+                                "\"payment\": {" +
+                                "\"externalReference\": \"user123\"," +
+                                "\"subscription\": \"sub123\"," +
+                                "\"customer\": \"cus_000007342312\"," +
+                                "\"checkoutSession\": \"sess_12345\"" +
+                                "}" +
+                                "}";
 
-        mockMvc.perform(post("/api/v1/webhooks/asaas")
-                .header("asaas-access-token", "test-token")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(json))
-                .andExpect(status().isOk());
+                mockMvc.perform(post("/api/v1/webhooks/asaas")
+                                .header("asaas-access-token", "test-token")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(json))
+                                .andExpect(status().isOk());
 
-        verify(subscriptionService).deactivateSubscription("cus_000007342312",
-                com.fazquepaga.taskandpay.identity.User.SubscriptionStatus.CANCELED);
-    }
+                verify(subscriptionService).deactivateSubscription("cus_000007342312",
+                                com.fazquepaga.taskandpay.identity.User.SubscriptionStatus.CANCELED, "sess_12345");
+        }
 
-    @Test
-    public void shouldDeactivateSubscriptionOnPaymentOverdue() throws Exception {
-        String json = "{" +
-                "\"event\": \"PAYMENT_OVERDUE\"," +
-                "\"payment\": {" +
-                "\"externalReference\": \"user123\"," +
-                "\"subscription\": \"sub123\"," +
-                "\"customer\": \"cus_000007342312\"" +
-                "}" +
-                "}";
+        @Test
+        public void shouldDeactivateSubscriptionOnPaymentOverdue() throws Exception {
+                String json = "{" +
+                                "\"event\": \"PAYMENT_OVERDUE\"," +
+                                "\"payment\": {" +
+                                "\"externalReference\": \"user123\"," +
+                                "\"subscription\": \"sub123\"," +
+                                "\"customer\": \"cus_000007342312\"," +
+                                "\"checkoutSession\": \"sess_12345\"" +
+                                "}" +
+                                "}";
 
-        mockMvc.perform(post("/api/v1/webhooks/asaas")
-                .header("asaas-access-token", "test-token")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(json))
-                .andExpect(status().isOk());
+                mockMvc.perform(post("/api/v1/webhooks/asaas")
+                                .header("asaas-access-token", "test-token")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(json))
+                                .andExpect(status().isOk());
 
-        verify(subscriptionService).deactivateSubscription("cus_000007342312",
-                com.fazquepaga.taskandpay.identity.User.SubscriptionStatus.PAST_DUE);
-    }
+                verify(subscriptionService).deactivateSubscription("cus_000007342312",
+                                com.fazquepaga.taskandpay.identity.User.SubscriptionStatus.PAST_DUE, "sess_12345");
+        }
 }

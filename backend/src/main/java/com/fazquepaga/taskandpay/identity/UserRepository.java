@@ -110,4 +110,15 @@ public class UserRepository {
         }
         return null;
     }
+
+    public User findByLastCheckoutSessionId(String checkoutSessionId)
+            throws ExecutionException, InterruptedException {
+        ApiFuture<com.google.cloud.firestore.QuerySnapshot> future = usersCollection
+                .whereEqualTo("lastCheckoutSessionId", checkoutSessionId).limit(1).get();
+        List<com.google.cloud.firestore.QueryDocumentSnapshot> documents = future.get().getDocuments();
+        if (!documents.isEmpty()) {
+            return documents.get(0).toObject(User.class);
+        }
+        return null;
+    }
 }
