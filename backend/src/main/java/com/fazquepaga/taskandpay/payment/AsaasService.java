@@ -52,15 +52,14 @@ public class AsaasService {
 
         log.info("Creating Asaas Customer for user: {}", user.getEmail());
 
-        AsaasCustomerRequest request =
-                AsaasCustomerRequest.builder()
-                        .name(user.getName())
-                        .email(user.getEmail())
-                        .cpfCnpj(user.getDocument())
-                        .mobilePhone(user.getPhoneNumber())
-                        .externalReference(user.getId())
-                        .notificationDisabled(false)
-                        .build();
+        AsaasCustomerRequest request = AsaasCustomerRequest.builder()
+                .name(user.getName())
+                .email(user.getEmail())
+                .cpfCnpj(user.getDocument())
+                .mobilePhone(user.getPhoneNumber())
+                .externalReference(user.getId())
+                .notificationDisabled(false)
+                .build();
 
         // Assuming sandbox environment which might be lenient on CPF, or User doesn't
         // have it yet.
@@ -75,8 +74,8 @@ public class AsaasService {
         // but for now this is the implementation.
 
         try {
-            AsaasCustomerResponse response =
-                    restTemplate.postForObject("/customers", request, AsaasCustomerResponse.class);
+            AsaasCustomerResponse response = restTemplate.postForObject("/customers", request,
+                    AsaasCustomerResponse.class);
 
             if (response != null && response.getId() != null) {
                 user.setAsaasCustomerId(response.getId());
@@ -96,36 +95,36 @@ public class AsaasService {
         log.info("Creating Checkout Session for user: {}", user.getEmail());
         log.debug("Using Callback URLs - Success: {}, Cancel: {}", successUrl, cancelUrl);
 
-        AsaasCheckoutRequest request =
-                AsaasCheckoutRequest.builder()
-                        .chargeTypes(java.util.List.of("RECURRENT"))
-                        .billingTypes(java.util.List.of("CREDIT_CARD"))
-                        .items(
-                                java.util.List.of(
-                                        AsaasCheckoutRequest.Item.builder()
-                                                .name(subscriptionName)
-                                                .value(new java.math.BigDecimal(subscriptionPrice))
-                                                .quantity(1)
-                                                .build()))
-                        .subscription(
-                                AsaasCheckoutRequest.SubscriptionInfo.builder()
-                                        .cycle(subscriptionCycle)
-                                        .description("Assinatura Mensal TaskAndPay")
-                                        .nextDueDate(
-                                                LocalDate.now().format(DateTimeFormatter.ISO_DATE))
-                                        .build())
-                        .callback(
-                                AsaasCheckoutRequest.CallbackInfo.builder()
-                                        .successUrl(successUrl)
-                                        .cancelUrl(cancelUrl)
-                                        .build())
-                        .externalReference(user.getId())
-                        .notificationEnabled(true)
-                        .build();
+        AsaasCheckoutRequest request = AsaasCheckoutRequest.builder()
+                .chargeTypes(java.util.List.of("RECURRENT"))
+                .billingTypes(java.util.List.of("CREDIT_CARD"))
+                .items(
+                        java.util.List.of(
+                                AsaasCheckoutRequest.Item.builder()
+                                        .name(subscriptionName)
+                                        .value(new java.math.BigDecimal(subscriptionPrice))
+                                        .quantity(1)
+                                        .build()))
+                .subscription(
+                        AsaasCheckoutRequest.SubscriptionInfo.builder()
+                                .cycle(subscriptionCycle)
+                                .description("Assinatura Mensal TaskAndPay")
+                                .nextDueDate(
+                                        LocalDate.now().format(DateTimeFormatter.ISO_DATE))
+                                .build())
+                .callback(
+                        AsaasCheckoutRequest.CallbackInfo.builder()
+                                .successUrl(successUrl)
+                                .cancelUrl(cancelUrl)
+                                .build())
+                .externalReference(user.getId())
+                .notificationEnabled(true)
+                .customer(user.getAsaasCustomerId())
+                .build();
 
         try {
-            AsaasCheckoutResponse response =
-                    restTemplate.postForObject("/checkouts", request, AsaasCheckoutResponse.class);
+            AsaasCheckoutResponse response = restTemplate.postForObject("/checkouts", request,
+                    AsaasCheckoutResponse.class);
             if (response != null && response.getLink() != null) {
                 log.info("Checkout Session created: {}", response.getId());
                 return response.getLink();

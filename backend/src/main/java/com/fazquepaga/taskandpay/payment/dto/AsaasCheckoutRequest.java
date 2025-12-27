@@ -15,6 +15,7 @@ public class AsaasCheckoutRequest {
     private CallbackInfo callback;
     private String externalReference;
     private boolean notificationEnabled;
+    private String customer;
 
     @Data
     @Builder
