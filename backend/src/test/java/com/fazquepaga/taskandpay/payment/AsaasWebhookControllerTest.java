@@ -54,7 +54,8 @@ public class AsaasWebhookControllerTest {
                 "\"event\": \"PAYMENT_CONFIRMED\"," +
                 "\"payment\": {" +
                 "\"externalReference\": \"user123\"," +
-                "\"subscription\": \"sub123\"" +
+                "\"subscription\": \"sub123\"," +
+                "\"customer\": \"cus_000007342312\"" +
                 "}" +
                 "}";
 
@@ -64,7 +65,7 @@ public class AsaasWebhookControllerTest {
                 .content(json))
                 .andExpect(status().isOk());
 
-        verify(subscriptionService).activateSubscription("user123", "sub123");
+        verify(subscriptionService).activateSubscription("cus_000007342312", "sub123");
     }
 
     @Test
@@ -73,7 +74,8 @@ public class AsaasWebhookControllerTest {
                 "\"event\": \"PAYMENT_REFUNDED\"," +
                 "\"payment\": {" +
                 "\"externalReference\": \"user123\"," +
-                "\"subscription\": \"sub123\"" +
+                "\"subscription\": \"sub123\"," +
+                "\"customer\": \"cus_000007342312\"" +
                 "}" +
                 "}";
 
@@ -83,7 +85,7 @@ public class AsaasWebhookControllerTest {
                 .content(json))
                 .andExpect(status().isOk());
 
-        verify(subscriptionService).deactivateSubscription("user123",
+        verify(subscriptionService).deactivateSubscription("cus_000007342312",
                 com.fazquepaga.taskandpay.identity.User.SubscriptionStatus.CANCELED);
     }
 
@@ -93,7 +95,8 @@ public class AsaasWebhookControllerTest {
                 "\"event\": \"PAYMENT_OVERDUE\"," +
                 "\"payment\": {" +
                 "\"externalReference\": \"user123\"," +
-                "\"subscription\": \"sub123\"" +
+                "\"subscription\": \"sub123\"," +
+                "\"customer\": \"cus_000007342312\"" +
                 "}" +
                 "}";
 
@@ -103,7 +106,7 @@ public class AsaasWebhookControllerTest {
                 .content(json))
                 .andExpect(status().isOk());
 
-        verify(subscriptionService).deactivateSubscription("user123",
+        verify(subscriptionService).deactivateSubscription("cus_000007342312",
                 com.fazquepaga.taskandpay.identity.User.SubscriptionStatus.PAST_DUE);
     }
 }

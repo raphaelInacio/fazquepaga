@@ -3,7 +3,6 @@ package com.fazquepaga.taskandpay.subscription;
 import com.fazquepaga.taskandpay.identity.User;
 import com.fazquepaga.taskandpay.identity.UserRepository;
 import com.fazquepaga.taskandpay.payment.AsaasService;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -52,18 +51,21 @@ public class SubscriptionService {
         }
     }
 
-    public void activateSubscription(String externalReference, String subscriptionId) {
+    public void activateSubscription(String asaasCustomerId, String subscriptionId) {
         try {
-            Optional<User> userOpt = Optional.ofNullable(userRepository.findByIdSync(externalReference));
-            if (userOpt.isPresent()) {
-                User user = userOpt.get();
+            User user = null;
+            if (asaasCustomerId != null) {
+                user = userRepository.findByAsaasCustomerId(asaasCustomerId);
+            }
+
+            if (user != null) {
                 user.setSubscriptionStatus(User.SubscriptionStatus.ACTIVE);
                 user.setSubscriptionTier(User.SubscriptionTier.PREMIUM);
                 user.setSubscriptionId(subscriptionId);
                 userRepository.save(user);
-                log.info("Subscription activated for user: {}", externalReference);
+                log.info("Subscription activated for user: {}. CustomerID: {}", user.getId(), asaasCustomerId);
             } else {
-                log.error("User not found for subscription activation: {}", externalReference);
+                log.error("User not found for subscription activation. CustomerID: {}", asaasCustomerId);
             }
         } catch (Exception e) {
             log.error("Error activating subscription", e);
@@ -71,17 +73,20 @@ public class SubscriptionService {
         }
     }
 
-    public void deactivateSubscription(String userId, User.SubscriptionStatus status) {
+    public void deactivateSubscription(String asaasCustomerId, User.SubscriptionStatus status) {
         try {
-            Optional<User> userOpt = Optional.ofNullable(userRepository.findByIdSync(userId));
-            if (userOpt.isPresent()) {
-                User user = userOpt.get();
+            User user = null;
+            if (asaasCustomerId != null) {
+                user = userRepository.findByAsaasCustomerId(asaasCustomerId);
+            }
+
+            if (user != null) {
                 user.setSubscriptionStatus(status);
                 user.setSubscriptionTier(User.SubscriptionTier.FREE);
                 userRepository.save(user);
-                log.info("Subscription deactivated for user: {}. Status: {}", userId, status);
+                log.info("Subscription deactivated for user: {}. Status: {}", user.getId(), status);
             } else {
-                log.error("User not found for subscription deactivation: {}", userId);
+                log.error("User not found for subscription deactivation. CustomerID: {}", asaasCustomerId);
             }
         } catch (Exception e) {
             log.error("Error deactivating subscription", e);

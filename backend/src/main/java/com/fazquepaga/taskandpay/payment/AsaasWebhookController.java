@@ -31,41 +31,40 @@ public class AsaasWebhookController {
         }
 
         AsaasWebhookEventType eventType = AsaasWebhookEventType.fromString(event.getEvent());
-        
+
         // If event is irrelevant or unknown, just log debug and 200 OK
         if (eventType == AsaasWebhookEventType.UNKNOWN) {
-             log.debug("Ignored or Unknown Asaas Webhook event: {}", event.getEvent());
-             return ResponseEntity.ok().build();
+            log.debug("Ignored or Unknown Asaas Webhook event: {}", event.getEvent());
+            return ResponseEntity.ok().build();
         }
 
-        String userId = null;
+        String asaasCustomerId = null;
         String subscriptionId = null;
-            // 
 
-            // 
         if (event.getPayment() != null) {
-            userId = event.getPayment().getExternalReference();
+            asaasCustomerId = event.getPayment().getCustomer();
             subscriptionId = event.getPayment().getSubscription();
         }
 
-        if (userId == null) {
-            log.warn("Webhook event {} received without valid externalReference/userId", eventType);
+        if (asaasCustomerId == null) {
+            log.warn("Webhook event {} received without Customer ID.", eventType);
             return ResponseEntity.ok().build();
         }
+                    
 
         switch (eventType) {
             case PAYMENT_CONFIRMED:
             case PAYMENT_RECEIVED:
-                subscriptionService.activateSubscription(userId, subscriptionId);
+                subscriptionService.activateSubscription(asaasCustomerId, subscriptionId);
                 break;
             case PAYMENT_OVERDUE:
                 subscriptionService.deactivateSubscription(
-                        userId, com.fazquepaga.taskandpay.identity.User.SubscriptionStatus.PAST_DUE);
+                        asaasCustomerId, com.fazquepaga.taskandpay.identity.User.SubscriptionStatus.PAST_DUE);
                 break;
             case PAYMENT_REFUNDED:
             case CHARGEBACK_REQUESTED:
                 subscriptionService.deactivateSubscription(
-                        userId, com.fazquepaga.taskandpay.identity.User.SubscriptionStatus.CANCELED);
+                        asaasCustomerId, com.fazquepaga.taskandpay.identity.User.SubscriptionStatus.CANCELED);
                 break;
             default:
                 log.debug("Ignored Asaas Webhook event type: {}", eventType);
