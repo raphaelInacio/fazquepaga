@@ -1,8 +1,8 @@
-/# Especificação Técnica: TaskAndPay (Baseline Novembro 2025)
+# Especificação Técnica: TaskAndPay (Baseline Dezembro 2025)
 
 ## Resumo Executivo
 
-Este documento descreve o design técnico e o estado de implementação atual da funcionalidade TaskAndPay. O sistema é um **monólito modular** em Java/Spring Boot, implantado no **Google Cloud Run**, que se comunica com um frontend em React. A arquitetura está alinhada com o design original, utilizando **Google Cloud Firestore** para persistência e **Google Cloud Pub/Sub** para eventos assíncronos, como a validação de imagens por IA via **Google Vertex AI (Gemini)**.
+Este documento descreve o design técnico e o estado de implementação atual da funcionalidade TaskAndPay. O sistema é um **monólito modular** em **Java 17/Spring Boot 3.5.7**, implantado no **Google Cloud Run**, que se comunica com um frontend em React. A arquitetura está alinhada com o design original, utilizando **Google Cloud Firestore** para persistência e **Google Cloud Pub/Sub** (via Spring Cloud GCP 4.10.0) para eventos assíncronos, como a validação de imagens por IA via **Spring AI 1.1.0 (Google GenAI/Gemini)**.
 
 Esta especificação foi atualizada para refletir a arquitetura "as-built", incluindo novos módulos, endpoints de API reais e desvios notáveis do plano original, servindo como uma baseline técnica precisa do projeto.
 

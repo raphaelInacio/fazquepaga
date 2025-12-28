@@ -80,6 +80,8 @@ The project is a monorepo with two main parts:
 │   │   ├── controller/   # REST Controllers
 │   │   ├── giftcard/     # Gift Card Store logic
 │   │   ├── identity/     # User management (Parent/Child)
+│   │   ├── notification/ # Notification Hub (Pub/Sub events)
+│   │   ├── payment/      # Asaas integration (subscriptions)
 │   │   ├── security/     # Spring Security setup
 │   │   ├── shared/       # Shared utilities & exceptions
 │   │   ├── subscription/ # Plan limits & logic
@@ -89,9 +91,15 @@ The project is a monorepo with two main parts:
 │   └── docker-compose.yml
 └── frontend/     # React web application
     ├── src/
-    │   ├── components/
-    │   ├── pages/
-    │   └── services/
+    │   ├── components/   # Reusable UI components
+    │   ├── context/      # AuthContext
+    │   ├── contexts/     # SubscriptionContext
+    │   ├── hooks/        # Custom React hooks
+    │   ├── lib/          # Utilities (API client, utils)
+    │   ├── locales/      # i18n translations (pt/en)
+    │   ├── pages/        # Application pages/routes
+    │   ├── services/     # API service layers
+    │   └── types/        # TypeScript definitions
     └── package.json
 ```
 
@@ -108,7 +116,7 @@ The project is a monorepo with two main parts:
 - Formatting is verified in CI.
 
 ### Coverage Requirements
-- JaCoCo report must show **minimum 80% overall coverage**.
+- JaCoCo report must show **minimum 60% overall coverage**.
 - CI fails if coverage drops below the threshold.
 
 ### Frontend UI Tests
@@ -124,22 +132,25 @@ To ensure high quality and consistency, ALL agents must follow the established p
 
 The following rule files define our standards. **Always consult these before generating code.**
 
--   **[Use Java Spring Boot](docs/ai_guidance/rules/use-java-spring-boot.mdc)**: Backend technology choices and rationale.
--   **[React Frontend](docs/ai_guidance/rules/react.mdc)**: Frontend integration and architecture.
--   **[Code Standards](docs/ai_guidance/rules/code-standards.mdc)**: Naming conventions, clean code principles, and formatting (Java & TS).
--   **[API REST HTTP](docs/ai_guidance/rules/api-rest-http.mdc)**: API design contracts and JSON standards.
--   **[Tests](docs/ai_guidance/rules/tests.mdc)**: Testing strategies and library usage.
--   **[Folder Structure](docs/ai_guidance/rules/folder-structure.mdc)**: Where files should live.
--   **[Firestore NoSQL](docs/ai_guidance/rules/firestore-nosql.mdc)**: NoSQL data modeling and best practices (replaces SQL).
--   **[AI Integration](docs/ai_guidance/rules/ai-integration.mdc)**: Guidelines for using Gemini and Spring AI.
--   **[E2E Testing](docs/ai_guidance/rules/e2e-testing.mdc)**: Frontend validation via MCP and Playwright test updates.
--   **[Internationalization](docs/ai_guidance/rules/internationalization.mdc)**: Handling translations (en/pt).
+-   **[Use Java Spring Boot](.agent/rules/use-java-spring-boot.md)**: Backend technology choices and rationale.
+-   **[React Frontend](.agent/rules/react.md)**: Frontend integration and architecture.
+-   **[Code Standards](.agent/rules/code-standards.md)**: Naming conventions, clean code principles, and formatting (Java & TS).
+-   **[API REST HTTP](.agent/rules/api-rest-http.md)**: API design contracts and JSON standards.
+-   **[Tests](.agent/rules/tests.md)**: Testing strategies and library usage.
+-   **[Folder Structure](.agent/rules/folder-structure.md)**: Where files should live.
+-   **[Firestore NoSQL](.agent/rules/firestore-nosql.md)**: NoSQL data modeling and best practices.
+-   **[AI Integration](.agent/rules/ai-integration.md)**: Guidelines for using Gemini and Spring AI.
+-   **[E2E Testing](.agent/rules/e2e-testing.md)**: Frontend validation via MCP and Playwright test updates.
+-   **[Internationalization](.agent/rules/internationalization.md)**: Handling translations (en/pt).
+-   **[Asaas Integration](.agent/rules/asaas-integration.md)**: Payment gateway integration patterns.
+-   **[Logging](.agent/rules/logging.md)**: Structured logging and observability.
+-   **[Frontend Testing](.agent/rules/frontend-testing.md)**: Unit and component testing strategies.
 
 ### How to Apply Rules
 
-1.  **Context Loading**: When starting a task, load the relevant `.mdc` file to understanding specific constraints (e.g., `react.mdc` for frontend work).
-2.  **Code Validations**: Before submitting changes, cross-reference with `code-standards.mdc`.
-3.  **Architecture Checks**: Ensure new modules align with `folder-structure.mdc`.
+1.  **Context Loading**: When starting a task, load the relevant `.md` file to understanding specific constraints (e.g., `react.md` for frontend work).
+2.  **Code Validations**: Before submitting changes, cross-reference with `code-standards.md`.
+3.  **Architecture Checks**: Ensure new modules align with `folder-structure.md`.
 
 
 

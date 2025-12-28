@@ -35,22 +35,24 @@ The application is divided into focused domain modules:
 ## 🛠️ Tech Stack
 
 ### Backend
-*   **Language**: Java 17
-*   **Framework**: Spring Boot
+*   **Language**: Java 17 (OpenJDK)
+*   **Framework**: Spring Boot 3.5.7
 *   **Database**: Google Cloud Firestore (NoSQL)
-*   **Messaging**: Google Cloud Pub/Sub
+*   **Messaging**: Google Cloud Pub/Sub (Spring Cloud GCP 4.10.0)
     *   **Task Reset**: Daily recurring tasks are reset via a Pub/Sub message with payload `{"action": "RESET_TASKS"}` sent to the `task-reset` topic.
-*   **AI**: Spring AI with Google Vertex AI (Gemini)
+*   **AI**: Spring AI 1.1.0 with Google GenAI (Gemini)
+*   **Payments**: Asaas (checkout redirect, webhooks)
 *   **Integration**: Twilio (WhatsApp)
 *   **Build**: Maven
 *   **Containerization**: Docker & Docker Compose
 
 ### Frontend
-*   **Framework**: React
+*   **Framework**: React 18
 *   **Build Tool**: Vite
 *   **Language**: TypeScript
 *   **Styling**: Tailwind CSS
 *   **UI Components**: shadcn-ui
+*   **i18n**: react-i18next (pt/en)
 
 ## 🏃‍♂️ Getting Started
 
@@ -96,6 +98,7 @@ The application is divided into focused domain modules:
 | Route | Description |
 | :--- | :--- |
 | `/` | Landing Page |
+| `/login` | Parent Login |
 | `/register` | Parent Registration |
 | `/add-child` | Add Child Form |
 | `/dashboard` | Parent Dashboard (Main Hub) |
@@ -103,6 +106,7 @@ The application is divided into focused domain modules:
 | `/gift-cards` | Gift Card Store (Redemption) |
 | `/child-login` | Child Login (via Code) |
 | `/child-portal` | Child Portal (Task Completion & Gamification) |
+| `/subscription` | Pricing & Subscription Management |
 
 ## 📂 Project Structure
 
@@ -118,6 +122,8 @@ The project is a monorepo with two main parts:
 │   │   ├── controller/   # REST Controllers
 │   │   ├── giftcard/     # Gift Card Store logic
 │   │   ├── identity/     # User management (Parent/Child)
+│   │   ├── notification/ # Notification Hub (Pub/Sub events)
+│   │   ├── payment/      # Asaas integration (subscriptions)
 │   │   ├── security/     # Spring Security setup
 │   │   ├── shared/       # Shared utilities & exceptions
 │   │   ├── subscription/ # Plan limits & logic
@@ -128,7 +134,11 @@ The project is a monorepo with two main parts:
 └── frontend/     # React web application
     ├── src/
     │   ├── components/   # Reusable UI components
+    │   ├── context/      # AuthContext
+    │   ├── contexts/     # SubscriptionContext
+    │   ├── hooks/        # Custom React hooks
     │   ├── lib/          # Utilities (API client, utils)
+    │   ├── locales/      # i18n translations (pt/en)
     │   ├── pages/        # Application pages/routes
     │   ├── services/     # API service layers
     │   └── types/        # TypeScript definitions
