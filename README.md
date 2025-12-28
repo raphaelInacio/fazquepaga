@@ -28,9 +28,9 @@ The application is divided into focused domain modules:
     *   **Ledger**: Detailed transaction history (credits and debits).
     *   **AI Financial Insights**: Smart analysis of spending and saving habits.
     *   **Gift Card Store**: (Premium) Redeem balance for real-world rewards.
-*   **Plans and Monetization (Freemium)**:
-    *   **Free Plan**: Limited to 5 recurring tasks, 1 child.
-    *   **Premium Plan**: Unlimited tasks, AI features, Gift Card Store.
+*   **Plans and Monetization (Free Trial)**:
+    *   **Free Trial**: 3-day full access to all features for new users.
+    *   **Premium Plan**: Paid subscription after trial with unlimited tasks, AI features, Gift Card Store.
 
 ## 🛠️ Tech Stack
 

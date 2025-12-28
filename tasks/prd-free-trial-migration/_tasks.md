@@ -7,4 +7,4 @@
 - [x] 3.0 Frontend: Context e Estado de Trial
 - [x] 4.0 Frontend: Componentes de UI (Badge e Modal)
 - [x] 5.0 Testes E2E do Fluxo de Trial
-- [ ] 6.0 Atualização da Documentação do Projeto
+- [x] 6.0 Atualização da Documentação do Projeto
