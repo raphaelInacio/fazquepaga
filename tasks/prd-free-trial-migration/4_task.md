@@ -1,5 +1,5 @@
 ---
-status: pending
+status: completed
 ---
 
 # Task 4.0: Frontend - Componentes de UI (Badge e Modal)

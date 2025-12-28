@@ -2,6 +2,18 @@
     "app": {
         "title": "TaskAndPay"
     },
+    "trial": {
+        "badge": "Trial: {{days}} dias restantes",
+        "expired": {
+            "title": "Seu período de teste terminou",
+            "message": "Continue aproveitando o TaskAndPay com todas as funcionalidades:",
+            "benefit1": "Tarefas ilimitadas",
+            "benefit2": "Sugestões de IA",
+            "benefit3": "Loja de Gift Cards",
+            "benefit4": "Relatórios financeiros",
+            "cta": "Assinar Agora"
+        }
+    },
     "common": {
         "loading": "Carregando...",
         "submit": "Enviar",

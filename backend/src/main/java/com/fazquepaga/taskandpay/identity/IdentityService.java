@@ -102,18 +102,18 @@ public class IdentityService {
             throw new IllegalArgumentException("Phone number already in use.");
         }
 
-        User parent =
-                User.builder()
-                        .name(request.getName())
-                        .email(request.getEmail())
-                        .phoneNumber(request.getPhoneNumber()) // Save phone
-                        .password(
-                                passwordEncoder.encode(
-                                        request.getPassword())) // Save hashed password
-                        .role(User.Role.PARENT)
-                        .subscriptionTier(User.SubscriptionTier.FREE)
-                        .subscriptionStatus(User.SubscriptionStatus.ACTIVE)
-                        .build();
+        User parent = User.builder()
+                .name(request.getName())
+                .email(request.getEmail())
+                .phoneNumber(request.getPhoneNumber()) // Save phone
+                .password(
+                        passwordEncoder.encode(
+                                request.getPassword())) // Save hashed password
+                .role(User.Role.PARENT)
+                .subscriptionTier(User.SubscriptionTier.FREE)
+                .subscriptionStatus(User.SubscriptionStatus.ACTIVE)
+                .trialStartDate(java.time.Instant.now()) // Start 3-day free trial
+                .build();
 
         userRepository.save(parent).get();
 
@@ -141,16 +141,15 @@ public class IdentityService {
             accessCode = UUID.randomUUID().toString().substring(0, 6).toUpperCase();
         } while (userRepository.findByAccessCode(accessCode).isPresent()); // Ensure uniqueness
 
-        User child =
-                User.builder()
-                        .name(request.getName())
-                        .phoneNumber(request.getPhoneNumber())
-                        .age(request.getAge())
-                        .role(User.Role.CHILD)
-                        .parentId(parentId)
-                        .accessCode(accessCode) // Save access code
-                        .aiContext(request.getAiContext())
-                        .build();
+        User child = User.builder()
+                .name(request.getName())
+                .phoneNumber(request.getPhoneNumber())
+                .age(request.getAge())
+                .role(User.Role.CHILD)
+                .parentId(parentId)
+                .accessCode(accessCode) // Save access code
+                .aiContext(request.getAiContext())
+                .build();
 
         userRepository.save(child).get();
 
@@ -170,8 +169,8 @@ public class IdentityService {
     }
 
     public List<User> getChildren(String parentId) throws ExecutionException, InterruptedException {
-        List<com.google.cloud.firestore.QueryDocumentSnapshot> documents =
-                userRepository.findByParentId(parentId).get().getDocuments();
+        List<com.google.cloud.firestore.QueryDocumentSnapshot> documents = userRepository.findByParentId(parentId).get()
+                .getDocuments();
         return documents.stream().map(doc -> doc.toObject(User.class)).collect(Collectors.toList());
     }
 

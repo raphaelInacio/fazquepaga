@@ -157,4 +157,48 @@ public class SubscriptionService {
                 && user.getSubscriptionTier() == User.SubscriptionTier.PREMIUM
                 && user.getSubscriptionStatus() == User.SubscriptionStatus.ACTIVE;
     }
+
+    // Trial Methods
+
+    /**
+     * Checks if the user's trial has expired.
+     * Premium users are never considered expired.
+     * Users without trialStartDate are treated as expired.
+     *
+     * @param user the user to check
+     * @return true if trial expired, false otherwise
+     */
+    public boolean isTrialExpired(User user) {
+        if (isPremium(user)) {
+            return false;
+        }
+        if (user == null || user.getTrialStartDate() == null) {
+            return true;
+        }
+
+        java.time.Instant trialEnd = user.getTrialStartDate().plus(3, java.time.temporal.ChronoUnit.DAYS);
+        return java.time.Instant.now().isAfter(trialEnd);
+    }
+
+    /**
+     * Returns the number of days remaining in the trial.
+     *
+     * @param user the user to check
+     * @return null for Premium users, 0 if expired, or days remaining (1-3)
+     */
+    public Integer getTrialDaysRemaining(User user) {
+        if (isPremium(user)) {
+            return null;
+        }
+        if (user == null || user.getTrialStartDate() == null) {
+            return 0;
+        }
+
+        java.time.Instant trialEnd = user.getTrialStartDate().plus(3, java.time.temporal.ChronoUnit.DAYS);
+        long hours = java.time.temporal.ChronoUnit.HOURS.between(java.time.Instant.now(), trialEnd);
+        if (hours <= 0) {
+            return 0;
+        }
+        return (int) Math.ceil(hours / 24.0);
+    }
 }

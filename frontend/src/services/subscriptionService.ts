@@ -4,6 +4,10 @@ import api from "../lib/api";
 export interface SubscriptionStatus {
     tier: "FREE" | "PREMIUM";
     status: "ACTIVE" | "CANCELED" | "PAST_DUE" | "NONE";
+    subscriptionId?: string;
+    // Trial fields
+    isTrialActive: boolean;
+    trialDaysRemaining: number | null;
 }
 
 export interface SubscribeResponse {

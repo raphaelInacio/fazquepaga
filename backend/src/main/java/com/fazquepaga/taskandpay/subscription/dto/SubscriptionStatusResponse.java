@@ -10,4 +10,7 @@ public class SubscriptionStatusResponse {
     private User.SubscriptionTier tier;
     private User.SubscriptionStatus status;
     private String subscriptionId;
+    // Trial fields
+    private boolean isTrialActive;
+    private Integer trialDaysRemaining;
 }

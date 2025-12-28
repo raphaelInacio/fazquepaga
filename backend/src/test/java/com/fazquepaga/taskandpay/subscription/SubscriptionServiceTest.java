@@ -13,10 +13,13 @@ import org.mockito.MockitoAnnotations;
 
 class SubscriptionServiceTest {
 
-    @Mock private UserRepository userRepository;
-    @Mock private AsaasService asaasService;
+    @Mock
+    private UserRepository userRepository;
+    @Mock
+    private AsaasService asaasService;
 
-    @InjectMocks private SubscriptionService subscriptionService;
+    @InjectMocks
+    private SubscriptionService subscriptionService;
 
     @BeforeEach
     void setUp() {
@@ -25,11 +28,10 @@ class SubscriptionServiceTest {
 
     @Test
     void testCanCreateTask_PremiumUser_ShouldAllowUnlimitedTasks() {
-        User premiumUser =
-                User.builder()
-                        .subscriptionTier(User.SubscriptionTier.PREMIUM)
-                        .subscriptionStatus(User.SubscriptionStatus.ACTIVE)
-                        .build();
+        User premiumUser = User.builder()
+                .subscriptionTier(User.SubscriptionTier.PREMIUM)
+                .subscriptionStatus(User.SubscriptionStatus.ACTIVE)
+                .build();
 
         assertTrue(subscriptionService.canCreateTask(premiumUser, 100));
         assertTrue(subscriptionService.canCreateTask(premiumUser, 1000));
@@ -37,11 +39,10 @@ class SubscriptionServiceTest {
 
     @Test
     void testCanCreateTask_FreeUser_ShouldEnforceLimit() {
-        User freeUser =
-                User.builder()
-                        .subscriptionTier(User.SubscriptionTier.FREE)
-                        .subscriptionStatus(User.SubscriptionStatus.ACTIVE)
-                        .build();
+        User freeUser = User.builder()
+                .subscriptionTier(User.SubscriptionTier.FREE)
+                .subscriptionStatus(User.SubscriptionStatus.ACTIVE)
+                .build();
 
         // Limit is 50 in code
         assertTrue(subscriptionService.canCreateTask(freeUser, 0));
@@ -57,11 +58,10 @@ class SubscriptionServiceTest {
 
     @Test
     void testCanUseAI_PremiumUser_ShouldReturnTrue() {
-        User premiumUser =
-                User.builder()
-                        .subscriptionTier(User.SubscriptionTier.PREMIUM)
-                        .subscriptionStatus(User.SubscriptionStatus.ACTIVE)
-                        .build();
+        User premiumUser = User.builder()
+                .subscriptionTier(User.SubscriptionTier.PREMIUM)
+                .subscriptionStatus(User.SubscriptionStatus.ACTIVE)
+                .build();
         assertTrue(subscriptionService.canUseAI(premiumUser));
     }
 
@@ -73,11 +73,10 @@ class SubscriptionServiceTest {
 
     @Test
     void testCanAccessGiftCardStore_PremiumUser_ShouldReturnTrue() {
-        User premiumUser =
-                User.builder()
-                        .subscriptionTier(User.SubscriptionTier.PREMIUM)
-                        .subscriptionStatus(User.SubscriptionStatus.ACTIVE)
-                        .build();
+        User premiumUser = User.builder()
+                .subscriptionTier(User.SubscriptionTier.PREMIUM)
+                .subscriptionStatus(User.SubscriptionStatus.ACTIVE)
+                .build();
         assertTrue(subscriptionService.canAccessGiftCardStore(premiumUser));
     }
 
@@ -100,21 +99,19 @@ class SubscriptionServiceTest {
 
     @Test
     void testCanAddChild_PremiumUser_ShouldAllowUnlimited() {
-        User premiumUser =
-                User.builder()
-                        .subscriptionTier(User.SubscriptionTier.PREMIUM)
-                        .subscriptionStatus(User.SubscriptionStatus.ACTIVE)
-                        .build();
+        User premiumUser = User.builder()
+                .subscriptionTier(User.SubscriptionTier.PREMIUM)
+                .subscriptionStatus(User.SubscriptionStatus.ACTIVE)
+                .build();
         assertTrue(subscriptionService.canAddChild(premiumUser, 10));
     }
 
     @Test
     void testGetMaxRecurringTasks_PremiumUser_ShouldReturnUnlimited() {
-        User premiumUser =
-                User.builder()
-                        .subscriptionTier(User.SubscriptionTier.PREMIUM)
-                        .subscriptionStatus(User.SubscriptionStatus.ACTIVE)
-                        .build();
+        User premiumUser = User.builder()
+                .subscriptionTier(User.SubscriptionTier.PREMIUM)
+                .subscriptionStatus(User.SubscriptionStatus.ACTIVE)
+                .build();
         assertEquals(100, subscriptionService.getMaxRecurringTasks(premiumUser));
     }
 
@@ -122,5 +119,82 @@ class SubscriptionServiceTest {
     void testGetMaxRecurringTasks_FreeUser_ShouldReturnLimit() {
         User freeUser = User.builder().subscriptionTier(User.SubscriptionTier.FREE).build();
         assertEquals(3, subscriptionService.getMaxRecurringTasks(freeUser));
+    }
+
+    // Trial Expiration Tests
+
+    @Test
+    void testIsTrialExpired_WithinTrial_ShouldReturnFalse() {
+        User user = User.builder()
+                .subscriptionTier(User.SubscriptionTier.FREE)
+                .trialStartDate(java.time.Instant.now().minus(1, java.time.temporal.ChronoUnit.DAYS))
+                .build();
+        assertFalse(subscriptionService.isTrialExpired(user));
+    }
+
+    @Test
+    void testIsTrialExpired_AfterThreeDays_ShouldReturnTrue() {
+        User user = User.builder()
+                .subscriptionTier(User.SubscriptionTier.FREE)
+                .trialStartDate(java.time.Instant.now().minus(4, java.time.temporal.ChronoUnit.DAYS))
+                .build();
+        assertTrue(subscriptionService.isTrialExpired(user));
+    }
+
+    @Test
+    void testIsTrialExpired_PremiumUser_ShouldReturnFalse() {
+        User premiumUser = User.builder()
+                .subscriptionTier(User.SubscriptionTier.PREMIUM)
+                .subscriptionStatus(User.SubscriptionStatus.ACTIVE)
+                .trialStartDate(java.time.Instant.now().minus(10, java.time.temporal.ChronoUnit.DAYS))
+                .build();
+        assertFalse(subscriptionService.isTrialExpired(premiumUser));
+    }
+
+    @Test
+    void testIsTrialExpired_NoTrialStartDate_ShouldReturnTrue() {
+        User user = User.builder()
+                .subscriptionTier(User.SubscriptionTier.FREE)
+                .trialStartDate(null)
+                .build();
+        assertTrue(subscriptionService.isTrialExpired(user));
+    }
+
+    @Test
+    void testGetTrialDaysRemaining_WithinTrial_ShouldReturnCorrectDays() {
+        User user = User.builder()
+                .subscriptionTier(User.SubscriptionTier.FREE)
+                .trialStartDate(java.time.Instant.now().minus(1, java.time.temporal.ChronoUnit.DAYS))
+                .build();
+        Integer daysRemaining = subscriptionService.getTrialDaysRemaining(user);
+        assertNotNull(daysRemaining);
+        assertTrue(daysRemaining >= 1 && daysRemaining <= 2);
+    }
+
+    @Test
+    void testGetTrialDaysRemaining_Expired_ShouldReturnZero() {
+        User user = User.builder()
+                .subscriptionTier(User.SubscriptionTier.FREE)
+                .trialStartDate(java.time.Instant.now().minus(5, java.time.temporal.ChronoUnit.DAYS))
+                .build();
+        assertEquals(0, subscriptionService.getTrialDaysRemaining(user));
+    }
+
+    @Test
+    void testGetTrialDaysRemaining_PremiumUser_ShouldReturnNull() {
+        User premiumUser = User.builder()
+                .subscriptionTier(User.SubscriptionTier.PREMIUM)
+                .subscriptionStatus(User.SubscriptionStatus.ACTIVE)
+                .build();
+        assertNull(subscriptionService.getTrialDaysRemaining(premiumUser));
+    }
+
+    @Test
+    void testGetTrialDaysRemaining_NoTrialStartDate_ShouldReturnZero() {
+        User user = User.builder()
+                .subscriptionTier(User.SubscriptionTier.FREE)
+                .trialStartDate(null)
+                .build();
+        assertEquals(0, subscriptionService.getTrialDaysRemaining(user));
     }
 }

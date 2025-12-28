@@ -1,5 +1,5 @@
 ---
-status: pending
+status: completed
 ---
 
 # Task 5.0: Testes E2E do Fluxo de Trial

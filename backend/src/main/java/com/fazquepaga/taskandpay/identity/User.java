@@ -33,6 +33,7 @@ public class User implements UserDetails {
     private String subscriptionId; // Asaas Subscription ID (only for PARENT role)
     private String document; // CPF/CNPJ for payment registration
     private String lastCheckoutSessionId; // ID of the last created checkout session for correlation
+    private java.time.Instant trialStartDate; // Trial start date (UTC) for 3-day free trial
 
     public enum Role {
         PARENT,
