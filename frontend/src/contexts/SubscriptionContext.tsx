@@ -27,6 +27,7 @@ export const SubscriptionProvider: React.FC<{ children: ReactNode }> = ({ childr
     // Trial state
     const [trialDaysRemaining, setTrialDaysRemaining] = useState<number | null>(null);
     const [trialActive, setTrialActive] = useState<boolean>(false);
+    const [trialLoaded, setTrialLoaded] = useState<boolean>(false);
 
     const isPremium = (): boolean => {
         return user?.subscriptionTier === 'PREMIUM';
@@ -34,7 +35,11 @@ export const SubscriptionProvider: React.FC<{ children: ReactNode }> = ({ childr
 
     const isTrialActive = (): boolean => trialActive;
 
-    const isTrialExpired = (): boolean => !isPremium() && !trialActive;
+    // Only show expired if trial state has been loaded from API
+    const isTrialExpired = (): boolean => {
+        if (!trialLoaded) return false; // Don't show expired until we know the actual state
+        return !isPremium() && !trialActive;
+    };
 
     const canCreateTask = (currentRecurringTaskCount: number): boolean => {
         if (!user || !user.subscriptionTier) return false;
@@ -67,8 +72,9 @@ export const SubscriptionProvider: React.FC<{ children: ReactNode }> = ({ childr
         try {
             const status = await subscriptionService.getStatus();
             // Update trial state
-            setTrialActive(status.isTrialActive);
+            setTrialActive(status.trialActive);
             setTrialDaysRemaining(status.trialDaysRemaining);
+            setTrialLoaded(true); // Mark as loaded
             // Update user subscription info
             updateUser({
                 ...user,
@@ -77,6 +83,7 @@ export const SubscriptionProvider: React.FC<{ children: ReactNode }> = ({ childr
             });
         } catch (error) {
             console.error("Failed to reload subscription status:", error);
+            setTrialLoaded(true); // Still mark as loaded to prevent infinite loading
         }
     };
 
@@ -114,3 +121,4 @@ export const useSubscription = (): SubscriptionContextType => {
     }
     return context;
 };
+

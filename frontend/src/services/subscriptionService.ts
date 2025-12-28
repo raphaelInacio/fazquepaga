@@ -5,8 +5,8 @@ export interface SubscriptionStatus {
     tier: "FREE" | "PREMIUM";
     status: "ACTIVE" | "CANCELED" | "PAST_DUE" | "NONE";
     subscriptionId?: string;
-    // Trial fields
-    isTrialActive: boolean;
+    // Trial fields (Jackson removes "is" prefix from boolean getters)
+    trialActive: boolean;
     trialDaysRemaining: number | null;
 }
 

@@ -163,7 +163,7 @@ public class SubscriptionService {
     /**
      * Checks if the user's trial has expired.
      * Premium users are never considered expired.
-     * Users without trialStartDate are treated as expired.
+     * Legacy users (without trialStartDate) are grandfathered and NOT expired.
      *
      * @param user the user to check
      * @return true if trial expired, false otherwise
@@ -172,8 +172,12 @@ public class SubscriptionService {
         if (isPremium(user)) {
             return false;
         }
-        if (user == null || user.getTrialStartDate() == null) {
+        if (user == null) {
             return true;
+        }
+        // Legacy users (registered before trial feature) are grandfathered
+        if (user.getTrialStartDate() == null) {
+            return false;
         }
 
         java.time.Instant trialEnd = user.getTrialStartDate().plus(3, java.time.temporal.ChronoUnit.DAYS);
@@ -184,14 +188,19 @@ public class SubscriptionService {
      * Returns the number of days remaining in the trial.
      *
      * @param user the user to check
-     * @return null for Premium users, 0 if expired, or days remaining (1-3)
+     * @return null for Premium users or legacy users, 0 if expired, or days
+     *         remaining (1-3)
      */
     public Integer getTrialDaysRemaining(User user) {
         if (isPremium(user)) {
             return null;
         }
-        if (user == null || user.getTrialStartDate() == null) {
+        if (user == null) {
             return 0;
+        }
+        // Legacy users (registered before trial feature) - no trial badge
+        if (user.getTrialStartDate() == null) {
+            return null;
         }
 
         java.time.Instant trialEnd = user.getTrialStartDate().plus(3, java.time.temporal.ChronoUnit.DAYS);

@@ -152,12 +152,13 @@ class SubscriptionServiceTest {
     }
 
     @Test
-    void testIsTrialExpired_NoTrialStartDate_ShouldReturnTrue() {
+    void testIsTrialExpired_NoTrialStartDate_LegacyUser_ShouldReturnFalse() {
+        // Legacy users (registered before trial feature) are grandfathered
         User user = User.builder()
                 .subscriptionTier(User.SubscriptionTier.FREE)
                 .trialStartDate(null)
                 .build();
-        assertTrue(subscriptionService.isTrialExpired(user));
+        assertFalse(subscriptionService.isTrialExpired(user));
     }
 
     @Test
@@ -190,11 +191,12 @@ class SubscriptionServiceTest {
     }
 
     @Test
-    void testGetTrialDaysRemaining_NoTrialStartDate_ShouldReturnZero() {
+    void testGetTrialDaysRemaining_NoTrialStartDate_LegacyUser_ShouldReturnNull() {
+        // Legacy users (registered before trial feature) - no badge shown
         User user = User.builder()
                 .subscriptionTier(User.SubscriptionTier.FREE)
                 .trialStartDate(null)
                 .build();
-        assertEquals(0, subscriptionService.getTrialDaysRemaining(user));
+        assertNull(subscriptionService.getTrialDaysRemaining(user));
     }
 }

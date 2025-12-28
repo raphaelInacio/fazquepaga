@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Check, Loader2, Star } from "lucide-react";
+import { Check, Loader2, Star, Gift } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { subscriptionService } from "@/services/subscriptionService";
@@ -12,7 +12,7 @@ import { navigateTo } from "@/lib/utils";
 
 export default function PricingPage() {
     const { t } = useTranslation();
-    const { isPremium } = useSubscription();
+    const { isPremium, isTrialActive, trialDaysRemaining } = useSubscription();
     const navigate = useNavigate();
     const [isLoading, setIsLoading] = useState(false);
 
@@ -34,12 +34,13 @@ export default function PricingPage() {
     };
 
     const features = [
-        "Unlimited Tasks",
-        "AI Task Suggestions",
-        "AI Image Verification",
-        "Gift Card Store Access",
-        "Priority Support",
-        "Add unlimited children"
+        "Tarefas ilimitadas",
+        "Filhos ilimitados",
+        "Sugestões de tarefas por IA",
+        "Validação com IA avançada",
+        "Loja de Gift Cards",
+        "Integração com WhatsApp",
+        "Relatórios financeiros"
     ];
 
     return (
@@ -52,43 +53,37 @@ export default function PricingPage() {
                 {t("common.back")}
             </Button>
             <div className="text-center mb-10">
-                <h1 className="text-4xl font-bold mb-4">Upgrade to Premium</h1>
-                <p className="text-xl text-muted-foreground">Unlock the full potential of TaskAndPay for your family.</p>
+                <h1 className="text-4xl font-bold mb-4">
+                    {isTrialActive() ? `Seu Trial: ${trialDaysRemaining} dias restantes` : "Assine o Premium"}
+                </h1>
+                <p className="text-xl text-muted-foreground">
+                    Desbloqueie todo o potencial do TaskAndPay para sua família
+                </p>
             </div>
 
-            <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-                {/* Free Plan */}
-                <Card className="border-2">
-                    <CardHeader>
-                        <CardTitle className="text-2xl">Free</CardTitle>
-                        <CardDescription>Essential tools to get started</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div className="text-3xl font-bold">R$ 0<span className="text-sm font-normal text-muted-foreground">/mo</span></div>
-                        <ul className="space-y-2">
-                            <li className="flex items-center gap-2"><Check className="h-4 w-4 text-green-500" /> Up to 5 recurring tasks</li>
-                            <li className="flex items-center gap-2"><Check className="h-4 w-4 text-green-500" /> 1 Child profile</li>
-                            <li className="flex items-center gap-2"><Check className="h-4 w-4 text-green-500" /> Basic Allowance tracking</li>
-                        </ul>
-                    </CardContent>
-                    <CardFooter>
-                        <Button className="w-full" variant="outline" disabled>Current Plan</Button>
-                    </CardFooter>
-                </Card>
-
+            <div className="max-w-lg mx-auto">
                 {/* Premium Plan */}
                 <Card className="border-2 border-primary shadow-lg relative overflow-hidden">
-                    <div className="absolute top-0 right-0 bg-primary text-primary-foreground px-3 py-1 text-sm font-medium rounded-bl-lg">
-                        Recommended
+                    <div className="absolute top-0 right-0 bg-gradient-to-r from-purple-500 to-indigo-500 text-white px-3 py-1 text-sm font-medium rounded-bl-lg flex items-center gap-1">
+                        <Gift className="w-4 h-4" /> Oferta Beta Testers
                     </div>
-                    <CardHeader>
+                    <CardHeader className="pt-8">
                         <CardTitle className="text-2xl flex items-center gap-2">
                             Premium <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
                         </CardTitle>
-                        <CardDescription>Supercharge your parenting with AI</CardDescription>
+                        <CardDescription>Acesso completo a todas as funcionalidades</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                        <div className="text-3xl font-bold">R$ 29,90<span className="text-sm font-normal text-muted-foreground">/mo</span></div>
+                        <div className="flex items-baseline gap-2">
+                            <span className="text-xl text-muted-foreground line-through">R$ 29,90</span>
+                            <span className="text-4xl font-bold text-primary">R$ 9,90</span>
+                            <span className="text-sm font-normal text-muted-foreground">/mês</span>
+                        </div>
+                        {isTrialActive() && (
+                            <div className="bg-purple-100 text-purple-700 px-4 py-2 rounded-lg text-center font-medium">
+                                🎁 Seu trial está ativo! Experimente tudo grátis.
+                            </div>
+                        )}
                         <ul className="space-y-2">
                             {features.map((feature, i) => (
                                 <li key={i} className="flex items-center gap-2">
@@ -99,15 +94,21 @@ export default function PricingPage() {
                     </CardContent>
                     <CardFooter>
                         {isPremium() ? (
-                            <Button className="w-full" variant="secondary" disabled>Active</Button>
+                            <Button className="w-full" variant="secondary" disabled>
+                                ✓ Plano Ativo
+                            </Button>
                         ) : (
-                            <Button className="w-full" onClick={handleSubscribe} disabled={isLoading}>
+                            <Button className="w-full bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600" onClick={handleSubscribe} disabled={isLoading}>
                                 {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                                Upgrade Now
+                                {isTrialActive() ? "Assinar Agora" : "Começar Trial Grátis"}
                             </Button>
                         )}
                     </CardFooter>
                 </Card>
+
+                <p className="text-center text-muted-foreground text-sm mt-6">
+                    3 dias grátis para experimentar • Cancele a qualquer momento
+                </p>
             </div>
         </div>
     );
