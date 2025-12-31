@@ -49,6 +49,7 @@ A estrutura no Firestore segue o design original, com a adição de um campo par
         -   `subscriptionStatus`: STRING ('ACTIVE', 'OVERDUE', 'CANCELED')
         -   `asaasCustomerId`: STRING
         -   `subscriptionId`: STRING (ID da assinatura no Asaas)
+        -   `trialStartDate`: TIMESTAMP (Data de início do trial, UTC - setada automaticamente no registro)
 
 -   **Coleção:** `children`
     -   **Campos Adicionais:**

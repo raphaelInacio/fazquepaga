@@ -1,5 +1,5 @@
 ---
-status: pending
+status: completed
 ---
 
 # Task 3.0: Frontend - Context e Estado de Trial

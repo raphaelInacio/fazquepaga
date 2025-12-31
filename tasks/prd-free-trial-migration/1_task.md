@@ -1,5 +1,5 @@
 ---
-status: pending
+status: completed
 ---
 
 # Task 1.0: Backend - Modelo de Dados e Lógica de Trial

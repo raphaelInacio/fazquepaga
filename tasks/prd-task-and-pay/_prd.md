@@ -12,7 +12,7 @@ Este documento serve como uma baseline, refletindo o estado atual da implementa�
 
 - **Objetivo Primário**: Alcançar alto engajamento do usuário, medido por famílias ativas.
 - **Objetivo Secundário**: Fomentar a responsabilidade e educação financeira nas crianças.
-- **Objetivo de Negócio**: Validar e expandir o modelo de monetização Freemium.
+- **Objetivo de Negócio**: Validar e expandir o modelo de monetização Free Trial + Assinatura Premium.
 
 **Referência**: Para a estratégia de produto original, consulte [Estratégia de Produto](../../docs/product_strategy.md).
 

@@ -24,19 +24,22 @@ public class SubscriptionController {
     @GetMapping("/status")
     public ResponseEntity<SubscriptionStatusResponse> getStatus(
             @AuthenticationPrincipal User user) {
-        // Refresh user status from DB in case webhook updated it recently
-        User.SubscriptionStatus status = subscriptionService.getStatus(user.getId());
-        User.SubscriptionTier tier = subscriptionService.getTier(user.getId());
+        // Fetch fresh user data from DB
+        User freshUser = subscriptionService.getUser(user.getId());
+
+        // Calculate trial state
+        boolean trialExpired = subscriptionService.isTrialExpired(freshUser);
+        Integer daysRemaining = subscriptionService.getTrialDaysRemaining(freshUser);
+        boolean isPremium = freshUser.getSubscriptionTier() == User.SubscriptionTier.PREMIUM
+                && freshUser.getSubscriptionStatus() == User.SubscriptionStatus.ACTIVE;
 
         return ResponseEntity.ok(
                 SubscriptionStatusResponse.builder()
-                        .status(status)
-                        .tier(tier)
-                        .subscriptionId(user.getSubscriptionId()) // Might be null if fresh from
-                        // principal, but we fetched
-                        // status/tier from service which fetches fresh user.
-                        // Wait, service.getStatus calls getUser(userId).
-                        // Ideally I should get the fresh User object once.
+                        .status(freshUser.getSubscriptionStatus())
+                        .tier(freshUser.getSubscriptionTier())
+                        .subscriptionId(freshUser.getSubscriptionId())
+                        .isTrialActive(!trialExpired && !isPremium)
+                        .trialDaysRemaining(daysRemaining)
                         .build());
     }
 }

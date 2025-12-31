@@ -1,5 +1,5 @@
 ---
-status: pending
+status: completed
 ---
 
 # Task 2.0: Backend - API de Status de Trial

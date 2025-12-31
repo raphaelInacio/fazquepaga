@@ -1,4 +1,4 @@
-import React, { createContext, useContext, ReactNode } from 'react';
+import React, { createContext, useContext, ReactNode, useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { subscriptionService } from '../services/subscriptionService';
 
@@ -10,6 +10,10 @@ interface SubscriptionContextType {
     getMaxRecurringTasks: () => number;
     isPremium: () => boolean;
     reloadUser: () => Promise<void>;
+    // Trial methods
+    isTrialActive: () => boolean;
+    isTrialExpired: () => boolean;
+    trialDaysRemaining: number | null;
 }
 
 const SubscriptionContext = createContext<SubscriptionContextType | undefined>(undefined);
@@ -20,8 +24,21 @@ const FREE_TIER_MAX_CHILDREN = 1;
 export const SubscriptionProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const { user, updateUser, isAuthenticated } = useAuth();
 
+    // Trial state
+    const [trialDaysRemaining, setTrialDaysRemaining] = useState<number | null>(null);
+    const [trialActive, setTrialActive] = useState<boolean>(false);
+    const [trialLoaded, setTrialLoaded] = useState<boolean>(false);
+
     const isPremium = (): boolean => {
         return user?.subscriptionTier === 'PREMIUM';
+    };
+
+    const isTrialActive = (): boolean => trialActive;
+
+    // Only show expired if trial state has been loaded from API
+    const isTrialExpired = (): boolean => {
+        if (!trialLoaded) return false; // Don't show expired until we know the actual state
+        return !isPremium() && !trialActive;
     };
 
     const canCreateTask = (currentRecurringTaskCount: number): boolean => {
@@ -54,6 +71,11 @@ export const SubscriptionProvider: React.FC<{ children: ReactNode }> = ({ childr
         if (!isAuthenticated || !user) return;
         try {
             const status = await subscriptionService.getStatus();
+            // Update trial state
+            setTrialActive(status.trialActive);
+            setTrialDaysRemaining(status.trialDaysRemaining);
+            setTrialLoaded(true); // Mark as loaded
+            // Update user subscription info
             updateUser({
                 ...user,
                 subscriptionTier: status.tier,
@@ -61,8 +83,16 @@ export const SubscriptionProvider: React.FC<{ children: ReactNode }> = ({ childr
             });
         } catch (error) {
             console.error("Failed to reload subscription status:", error);
+            setTrialLoaded(true); // Still mark as loaded to prevent infinite loading
         }
     };
+
+    // Load trial state on mount when authenticated
+    useEffect(() => {
+        if (isAuthenticated && user) {
+            reloadUser();
+        }
+    }, [isAuthenticated, user?.id]);
 
     return (
         <SubscriptionContext.Provider
@@ -74,6 +104,9 @@ export const SubscriptionProvider: React.FC<{ children: ReactNode }> = ({ childr
                 getMaxRecurringTasks,
                 isPremium,
                 reloadUser,
+                isTrialActive,
+                isTrialExpired,
+                trialDaysRemaining,
             }}
         >
             {children}
@@ -88,3 +121,4 @@ export const useSubscription = (): SubscriptionContextType => {
     }
     return context;
 };
+
