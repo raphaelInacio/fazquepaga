@@ -3,6 +3,7 @@ package com.fazquepaga.taskandpay.config;
 import static org.springframework.security.config.Customizer.withDefaults;
 
 import com.fazquepaga.taskandpay.security.JwtAuthenticationFilter;
+import com.fazquepaga.taskandpay.security.RateLimitFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -16,9 +17,11 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SecurityConfig {
 
         private final JwtAuthenticationFilter jwtAuthFilter;
+        private final RateLimitFilter rateLimitFilter;
 
-        public SecurityConfig(JwtAuthenticationFilter jwtAuthFilter) {
+        public SecurityConfig(JwtAuthenticationFilter jwtAuthFilter, RateLimitFilter rateLimitFilter) {
                 this.jwtAuthFilter = jwtAuthFilter;
+                this.rateLimitFilter = rateLimitFilter;
         }
 
         @Bean
@@ -62,6 +65,9 @@ public class SecurityConfig {
                                                 session -> session.sessionCreationPolicy(
                                                                 org.springframework.security.config.http.SessionCreationPolicy.STATELESS))
                                 .authenticationProvider(authenticationProvider())
+                                .addFilterBefore(
+                                                rateLimitFilter,
+                                                JwtAuthenticationFilter.class)
                                 .addFilterBefore(
                                                 jwtAuthFilter,
                                                 org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class);

@@ -299,5 +299,8 @@
         "ageMin": "Idade deve ser pelo menos {{min}}",
         "ageMax": "Idade deve ser no máximo {{max}}",
         "required": "Este campo é obrigatório"
+    },
+    "error": {
+        "ai_quota_exceeded": "Você atingiu o limite diário de sugestões. Tente novamente amanhã."
     }
 }

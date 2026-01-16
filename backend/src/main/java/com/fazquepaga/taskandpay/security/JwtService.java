@@ -10,16 +10,20 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 @Service
 public class JwtService {
 
-    // IMPORTANT: In a real production app, this key should be in environment
-    // variables / secret manager
-    private static final String SECRET_KEY =
-            "404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970";
+    private static final long PARENT_TOKEN_TTL_MS = 1000L * 60 * 60 * 24; // 24 hours
+
+    @Value("${jwt.secret}")
+    private String secret;
+
+    @Value("${jwt.child-token-ttl-days:30}")
+    private int childTokenTtlDays;
 
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
@@ -40,7 +44,7 @@ public class JwtService {
                 .setSubject(userDetails.getUsername())
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(
-                        new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24)) // 24 hours
+                        new Date(System.currentTimeMillis() + PARENT_TOKEN_TTL_MS)) // 24 hours
                 .signWith(getSignInKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
@@ -60,7 +64,7 @@ public class JwtService {
                 .setExpiration(
                         new Date(
                                 System.currentTimeMillis()
-                                        + 1000 * 60 * 60 * 24 * 365)) // 1 year for children
+                                        + 1000L * 60 * 60 * 24 * childTokenTtlDays)) // Configurable TTL for children
                 // (simplified login)
                 .signWith(getSignInKey(), SignatureAlgorithm.HS256)
                 .compact();
@@ -93,7 +97,7 @@ public class JwtService {
     }
 
     private Key getSignInKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(SECRET_KEY);
+        byte[] keyBytes = Decoders.BASE64.decode(secret);
         return Keys.hmacShaKeyFor(keyBytes);
     }
 }
