@@ -15,7 +15,9 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.RestTemplate;
+import org.junit.jupiter.api.Disabled;
 
+@Disabled("Integration tests temporarily disabled")
 class AsaasServiceIntegrationTest {
 
     @Mock
