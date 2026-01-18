@@ -17,6 +17,7 @@ A aplicação é um monólito com uma estrutura interna modular. O código está
 -   `allowance/` - Motor de cálculo de valores de mesada.
 -   `ai/` - Lógica de negócio para interação com o Vertex AI (Gemini).
 -   `whatsapp/` - Orquestra interações com a API do WhatsApp (Twilio), incluindo o webhook para conclusão de tarefas.
+-   `security/` - **(Novo)** Rate limiting, reCAPTCHA, refresh tokens e hardening de autenticação.
 -   `giftcard/` - **(Novo)** Lógica de negócios para a loja de Gift Cards (funcionalidade Premium).
 -   `subscription/` - **(Novo)** Lógica de negócio que governa as permissões e limites dos planos Free vs. Premium.
 -   `payment/` - **(Novo)** Integração com gateway Asaas para assinaturas (Customer, Subscription, Webhook).
@@ -61,6 +62,21 @@ A estrutura no Firestore segue o design original, com a adição de um campo par
         -   `type`: STRING ('TASK_EARNING', 'WITHDRAWAL')
         -   `status`: STRING ('COMPLETED', 'PENDING_APPROVAL', 'PAID', 'REJECTED')
         -   `paymentProof`: STRING (Opcional - link ou código de comprovante manual)
+
+### Data Models de Segurança (Firestore)
+
+-   **Coleção:** `users/{userId}/quotas` (Subcoleção)
+    -   **Document:** `ai`
+        -   `usedToday`: NUMBER (Contador diário)
+        -   `lastResetDate`: STRING (Data ISO do último reset)
+        -   `dailyLimit`: NUMBER (Limite baseado no plano)
+
+-   **Coleção:** `refreshTokens`
+    -   **Document:** `{tokenId}`
+        -   `userId`: STRING
+        -   `tokenHash`: STRING (SHA-256)
+        -   `expiresAt`: TIMESTAMP (30 dias)
+        -   `revoked`: BOOLEAN
 
 ### Endpoints da API (Implementados)
 

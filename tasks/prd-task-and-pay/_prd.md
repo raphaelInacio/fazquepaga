@@ -39,8 +39,13 @@ Este documento serve como uma baseline, refletindo o estado atual da implementa�
     - ⚠️ Acompanhar quanto dinheiro ganhei com minhas tarefas. *(Disponível para pais, em breve para filhos com Coach Financeiro)*.
     - ✅ Receber notificações sobre novas tarefas no WhatsApp.
     - ✅ **(Plano Pago)** Trocar meu saldo acumulado por Gift Cards (Roblox, iFood, etc.) diretamente no app. *(Funcionalidade mockada disponível para pais Premium)*.
-    - 🆕 **(Saque)** Quero solicitar o saque do meu saldo acumulado.
     - 🆕 **(Saque)** Quero ser avisado no WhatsApp quando meu saque for aprovado/pago.
+
+- **Como operador/desenvolvedor da plataforma, eu quero...**
+    - ✅ Limitar o número de requisições por usuário/IP para evitar abuso e controlar custos (Rate Limiting).
+    - ✅ Ter quotas diárias de uso de IA por usuário (Free/Premium) para evitar surpresas na fatura.
+    - ✅ Garantir que secrets de autenticação estejam seguros no GCP Secret Manager (Zero secrets no código).
+    - ✅ Bloquear tráfego automatizado (Bots) em endpoints de login/registro.
 
 ## Funcionalidades Essenciais (Status de Implementação)
 
@@ -49,13 +54,15 @@ Este documento serve como uma baseline, refletindo o estado atual da implementa�
 | **1. Gerenciamento de Usuários** | **Implementado** | Pais podem se registrar e adicionar filhos. A criança é integrada (onboarded) via WhatsApp. |
 | **2. Gerenciamento de Tarefas** | **Parcialmente Implementado** | Pais podem criar e visualizar tarefas. A criação de tarefas respeita os limites do plano (Free/Premium). |
 | **3. Motor de Cálculo de Mesada** | **Implementado** | O backend calcula o valor previsto da mesada com base nas tarefas e pesos definidos. |
-| **4. Recursos com IA (Premium)** | **Parcialmente Implementado** | **Sugestão de Tarefas**: Implementado e funcional. **Validação de Imagem**: Backend está pronto para receber imagem e processar de forma assíncrona, mas o fluxo completo de aprovação não está finalizado. |
+| **4. Recursos com IA (Premium)** | **Implementado** | **Sugestão de Tarefas (Quota)**: Funcional com limite diário (5 Free / 50 Premium). **Validação de Imagem (Quota)**: Processamento assíncrono com limite de uso. |
 | **5. Fluxo de Conclusão** | **Implementado** | **Criança**: Submete via WhatsApp ou Portal. **Pais**: Aprovam via Dashboard Web. |
 | **6. Registro Financeiro** | **Implementado** | Extrato financeiro (Ledger) disponível para pais. |
-| **7. Planos e Monetização** | **Implementado** | Integração com **Asaas** para gestão de assinaturas (Checkout transparente ou Link). Controla acesso a funcionalidades Premium. |
+| **7. Planos e Monetização** | **Implementado** | Integração com **Asaas** para gestão de assinaturas. Controla acesso a funcionalidades Premium e Quotas de IA. |
 | **8. Loja de Gift Cards (Premium)** | **Implementado (Mock)** | Pais com plano Premium podem acessar uma loja de gift cards e "resgatar" itens. A funcionalidade é simulada. |
-| **9. Controle de Saque** | **Planejado** | Fluxo: Solicitação (Filho) -> Notificação (Pai) -> Pagamento Externo -> Baixa manual no sistema (Pai). (Sem custódia de valores). |
+| **9. Controle de Saque** | **Planejado** | Fluxo: Solicitação (Filho) -> Notificação (Pai) -> Pagamento Externo -> Baixa manual no sistema (Pai). |
 | **10. AI Context** | **Planejado** | Cadastro de "Bio/Interesses" da criança para personalizar sugestões de tarefas. |
+| **11. Segurança e Proteção** | **Implementado** | **Rate Limiting**: In-memory (Caffeine) global e por endpoint. **Bot Protection**: reCAPTCHA v3 no login/registro. **Hardening**: Secrets no GCP Secret Manager e Refresh Tokens implementados. |
+
 
 ## Fluxo de Notificações (WhatsApp)
 
