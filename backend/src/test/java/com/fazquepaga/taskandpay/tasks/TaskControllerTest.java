@@ -31,6 +31,8 @@ class TaskControllerTest {
     @MockBean private TaskService taskService;
     @MockBean private com.fazquepaga.taskandpay.identity.UserRepository userRepository;
     @MockBean private com.fazquepaga.taskandpay.security.JwtService jwtService;
+    @MockBean private com.fazquepaga.taskandpay.security.RateLimitService rateLimitService;
+    @MockBean private com.fazquepaga.taskandpay.security.RateLimitConfig rateLimitConfig;
 
     @Test
     void shouldCreateTaskSuccessfully() throws Exception {

@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 import { parentService } from "@/services/parentService";
 import { useSubscription } from "@/contexts/SubscriptionContext";
 import { Button } from "@/components/ui/button";
@@ -23,7 +24,7 @@ import { CreateParentRequest } from "@/types";
 export default function RegisterParent() {
     const { t } = useTranslation();
     const navigate = useNavigate();
-    // const { setUser } = useSubscription(); // Unused and causes type error
+    const { executeRecaptcha } = useGoogleReCaptcha();
     const [isLoading, setIsLoading] = useState(false);
 
     const formSchema = z.object({
@@ -51,11 +52,15 @@ export default function RegisterParent() {
     async function onSubmit(values: z.infer<typeof formSchema>) {
         setIsLoading(true);
         try {
+            // Generate reCAPTCHA token if available
+            const recaptchaToken = executeRecaptcha ? await executeRecaptcha('register') : undefined;
+
             const parentData: CreateParentRequest = {
                 name: values.name,
                 email: values.email,
                 phoneNumber: values.phoneNumber,
-                password: values.password
+                password: values.password,
+                recaptchaToken
             };
             const parent = await parentService.registerParent(parentData);
             toast.success(t("auth.register.success"));

@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(controllers = AllowanceController.class)
@@ -20,113 +20,119 @@ import org.springframework.test.web.servlet.MockMvc;
 @org.springframework.test.context.TestPropertySource(properties = "asaas.api-key=dummy-test-key")
 class AllowanceControllerTest {
 
-    @Autowired private MockMvc mockMvc;
+        @Autowired
+        private MockMvc mockMvc;
 
-    @MockBean private AllowanceService allowanceService;
+        @MockitoBean
+        private AllowanceService allowanceService;
 
-    @MockBean private LedgerService ledgerService;
+        @MockitoBean
+        private LedgerService ledgerService;
 
-    @MockBean private WithdrawalService withdrawalService;
+        @MockitoBean
+        private WithdrawalService withdrawalService;
 
-    @MockBean private com.fazquepaga.taskandpay.identity.UserRepository userRepository;
-    @MockBean private com.fazquepaga.taskandpay.security.JwtService jwtService;
+        @MockitoBean
+        private com.fazquepaga.taskandpay.identity.UserRepository userRepository;
+        @MockitoBean
+        private com.fazquepaga.taskandpay.security.JwtService jwtService;
+        @MockitoBean
+        private com.fazquepaga.taskandpay.security.RateLimitService rateLimitService;
+        @MockitoBean
+        private com.fazquepaga.taskandpay.security.RateLimitConfig rateLimitConfig;
 
-    @Test
-    void shouldGetPredictedAllowance() throws Exception {
-        // Given
-        String childId = "child-id";
-        BigDecimal predictedAllowance = BigDecimal.valueOf(100.0);
+        @Test
+        void shouldGetPredictedAllowance() throws Exception {
+                // Given
+                String childId = "child-id";
+                BigDecimal predictedAllowance = BigDecimal.valueOf(100.0);
 
-        when(allowanceService.calculatePredictedAllowance(childId)).thenReturn(predictedAllowance);
+                when(allowanceService.calculatePredictedAllowance(childId)).thenReturn(predictedAllowance);
 
-        // When & Then
-        mockMvc.perform(get("/api/v1/allowance/predicted").param("child_id", childId))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.predicted_allowance").value(100.0));
-    }
+                // When & Then
+                mockMvc.perform(get("/api/v1/allowance/predicted").param("child_id", childId))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.predicted_allowance").value(100.0));
+        }
 
-    @Test
-    void shouldGetLedger() throws Exception {
-        // Given
-        String childId = "child-id";
-        String parentId = "parent-id";
-        Transaction transaction =
-                Transaction.builder()
-                        .id("tx-1")
-                        .amount(BigDecimal.valueOf(10.0))
-                        .description("Task Reward")
-                        .type(Transaction.TransactionType.CREDIT)
-                        .build();
+        @Test
+        void shouldGetLedger() throws Exception {
+                // Given
+                String childId = "child-id";
+                String parentId = "parent-id";
+                Transaction transaction = Transaction.builder()
+                                .id("tx-1")
+                                .amount(BigDecimal.valueOf(10.0))
+                                .description("Task Reward")
+                                .type(Transaction.TransactionType.CREDIT)
+                                .build();
 
-        LedgerResponse response =
-                LedgerResponse.builder()
-                        .transactions(List.of(transaction))
-                        .balance(BigDecimal.valueOf(50.0))
-                        .build();
+                LedgerResponse response = LedgerResponse.builder()
+                                .transactions(List.of(transaction))
+                                .balance(BigDecimal.valueOf(50.0))
+                                .build();
 
-        when(ledgerService.getTransactions(childId, parentId)).thenReturn(response);
+                when(ledgerService.getTransactions(childId, parentId)).thenReturn(response);
 
-        // When & Then
-        mockMvc.perform(
-                        get("/api/v1/allowance/children/{childId}/ledger", childId)
-                                .param("parent_id", parentId))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.transactions[0].id").value("tx-1"))
-                .andExpect(jsonPath("$.transactions[0].amount").value(10.0))
-                .andExpect(jsonPath("$.transactions[0].description").value("Task Reward"))
-                .andExpect(jsonPath("$.transactions[0].type").value("CREDIT"))
-                .andExpect(jsonPath("$.balance").value(50.0));
-    }
+                // When & Then
+                mockMvc.perform(
+                                get("/api/v1/allowance/children/{childId}/ledger", childId)
+                                                .param("parent_id", parentId))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.transactions[0].id").value("tx-1"))
+                                .andExpect(jsonPath("$.transactions[0].amount").value(10.0))
+                                .andExpect(jsonPath("$.transactions[0].description").value("Task Reward"))
+                                .andExpect(jsonPath("$.transactions[0].type").value("CREDIT"))
+                                .andExpect(jsonPath("$.balance").value(50.0));
+        }
 
-    @Test
-    void shouldGetLedgerInsights() throws Exception {
-        // Given
-        String childId = "child-id";
-        String parentId = "parent-id";
-        String aiInsight = "Parabéns! Você está economizando muito bem! 🎉";
+        @Test
+        void shouldGetLedgerInsights() throws Exception {
+                // Given
+                String childId = "child-id";
+                String parentId = "parent-id";
+                String aiInsight = "Parabéns! Você está economizando muito bem! 🎉";
 
-        LedgerResponse response =
-                LedgerResponse.builder()
-                        .transactions(List.of())
-                        .balance(BigDecimal.valueOf(50.0))
-                        .build();
+                LedgerResponse response = LedgerResponse.builder()
+                                .transactions(List.of())
+                                .balance(BigDecimal.valueOf(50.0))
+                                .build();
 
-        when(ledgerService.getTransactions(childId, parentId)).thenReturn(response);
-        when(ledgerService.getInsights(childId)).thenReturn(aiInsight);
+                when(ledgerService.getTransactions(childId, parentId)).thenReturn(response);
+                when(ledgerService.getInsights(childId)).thenReturn(aiInsight);
 
-        // When & Then
-        mockMvc.perform(
-                        get("/api/v1/allowance/children/{childId}/ledger/insights", childId)
-                                .param("parent_id", parentId))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.insight").value(aiInsight));
-    }
+                // When & Then
+                mockMvc.perform(
+                                get("/api/v1/allowance/children/{childId}/ledger/insights", childId)
+                                                .param("parent_id", parentId))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.insight").value(aiInsight));
+        }
 
-    @Test
-    void shouldRequestWithdrawal() throws Exception {
-        // Given
-        String childId = "child-id";
-        BigDecimal amount = BigDecimal.valueOf(20.0);
-        Transaction transaction =
-                Transaction.builder()
-                        .id("tx-2")
-                        .amount(amount)
-                        .description("Withdrawal Request")
-                        .type(Transaction.TransactionType.WITHDRAWAL)
-                        .status(Transaction.TransactionStatus.PENDING)
-                        .build();
+        @Test
+        void shouldRequestWithdrawal() throws Exception {
+                // Given
+                String childId = "child-id";
+                BigDecimal amount = BigDecimal.valueOf(20.0);
+                Transaction transaction = Transaction.builder()
+                                .id("tx-2")
+                                .amount(amount)
+                                .description("Withdrawal Request")
+                                .type(Transaction.TransactionType.WITHDRAWAL)
+                                .status(Transaction.TransactionStatus.PENDING)
+                                .build();
 
-        when(withdrawalService.requestWithdrawal(childId, amount)).thenReturn(transaction);
+                when(withdrawalService.requestWithdrawal(childId, amount)).thenReturn(transaction);
 
-        // When & Then
-        mockMvc.perform(
-                        org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post(
-                                        "/api/v1/allowance/children/{childId}/withdraw", childId)
-                                .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
-                                .content("{\"amount\": 20.0}"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value("tx-2"))
-                .andExpect(jsonPath("$.amount").value(20.0))
-                .andExpect(jsonPath("$.status").value("PENDING"));
-    }
+                // When & Then
+                mockMvc.perform(
+                                org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post(
+                                                "/api/v1/allowance/children/{childId}/withdraw", childId)
+                                                .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                                                .content("{\"amount\": 20.0}"))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.id").value("tx-2"))
+                                .andExpect(jsonPath("$.amount").value(20.0))
+                                .andExpect(jsonPath("$.status").value("PENDING"));
+        }
 }

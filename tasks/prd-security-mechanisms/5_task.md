@@ -1,5 +1,5 @@
 ---
-status: pending
+status: completed
 ---
 
 # Task 5.0: Refresh Token Implementation
@@ -22,25 +22,25 @@ Implement a refresh token mechanism to allow silent token renewal without requir
 
 ### Backend
 
-- [ ] 5.1 Create `RefreshToken` model class for Firestore
-- [ ] 5.2 Create `RefreshTokenRepository` for Firestore operations
-- [ ] 5.3 Create `RefreshTokenService` interface and implementation
-- [ ] 5.4 Implement `createRefreshToken()` - generates opaque token, stores SHA-256 hash
-- [ ] 5.5 Implement `validateAndRefresh()` - validates token, returns new access token
-- [ ] 5.6 Implement `revokeAllTokens()` - marks all user tokens as revoked
-- [ ] 5.7 Add `POST /api/v1/auth/refresh` endpoint to `AuthController`
-- [ ] 5.8 Modify login response to include refresh token
-- [ ] 5.9 Add `POST /api/v1/auth/logout-all` endpoint for global logout
-- [ ] 5.10 Write unit tests for `RefreshTokenService`
-- [ ] 5.11 Write integration tests for refresh flow
+- [x] 5.1 Create `RefreshToken` model class for Firestore
+- [x] 5.2 Create `RefreshTokenRepository` for Firestore operations
+- [x] 5.3 Create `RefreshTokenService` interface and implementation
+- [x] 5.4 Implement `createRefreshToken()` - generates opaque token, stores SHA-256 hash
+- [x] 5.5 Implement `validateAndRefresh()` - validates token, returns new access token
+- [x] 5.6 Implement `revokeAllTokens()` - marks all user tokens as revoked
+- [x] 5.7 Add `POST /api/v1/auth/refresh` endpoint to `AuthController`
+- [x] 5.8 Modify login response to include refresh token
+- [x] 5.9 Add `POST /api/v1/auth/logout-all` endpoint for global logout
+- [x] 5.10 Write unit tests for `RefreshTokenService`
+- [x] 5.11 Write integration tests for refresh flow
 
 ### Frontend
 
-- [ ] 5.12 Update auth service to store refresh token (secure storage)
-- [ ] 5.13 Implement automatic token refresh on 401 response
-- [ ] 5.14 Add axios interceptor for transparent token refresh
-- [ ] 5.15 Clear refresh token on logout
-- [ ] 5.16 Add "Logout from all devices" option in settings
+- [x] 5.12 Update auth service to store refresh token (secure storage)
+- [x] 5.13 Implement automatic token refresh on 401 response
+- [x] 5.14 Add axios interceptor for transparent token refresh
+- [x] 5.15 Clear refresh token on logout
+- [x] 5.16 Add "Logout from all devices" option in settings
 
 ## Implementation Details
 

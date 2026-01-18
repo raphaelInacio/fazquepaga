@@ -28,6 +28,8 @@ class WhatsAppControllerTest {
     @MockBean private WhatsAppService whatsAppService;
     @MockBean private com.fazquepaga.taskandpay.identity.UserRepository userRepository;
     @MockBean private com.fazquepaga.taskandpay.security.JwtService jwtService;
+    @MockBean private com.fazquepaga.taskandpay.security.RateLimitService rateLimitService;
+    @MockBean private com.fazquepaga.taskandpay.security.RateLimitConfig rateLimitConfig;
 
     @MockBean private TwilioRequestValidator requestValidator;
 

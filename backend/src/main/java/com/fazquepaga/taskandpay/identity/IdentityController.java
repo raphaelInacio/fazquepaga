@@ -4,9 +4,15 @@ import com.fazquepaga.taskandpay.identity.dto.ChildLoginRequest;
 import com.fazquepaga.taskandpay.identity.dto.ChildLoginResponse;
 import com.fazquepaga.taskandpay.identity.dto.CreateChildRequest;
 import com.fazquepaga.taskandpay.identity.dto.CreateParentRequest;
+import com.fazquepaga.taskandpay.identity.dto.RefreshTokenRequest;
 import com.fazquepaga.taskandpay.identity.dto.UpdateChildRequest;
+import com.fazquepaga.taskandpay.security.RecaptchaException;
+import com.fazquepaga.taskandpay.security.RecaptchaService;
+import com.fazquepaga.taskandpay.security.RefreshTokenService;
+import java.security.Principal;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,19 +23,28 @@ import org.springframework.web.bind.annotation.*;
 public class IdentityController {
 
     private final IdentityService identityService;
-
     private final com.fazquepaga.taskandpay.security.JwtService jwtService;
+    private final RefreshTokenService refreshTokenService;
+    private final RecaptchaService recaptchaService;
 
     public IdentityController(
             IdentityService identityService,
-            com.fazquepaga.taskandpay.security.JwtService jwtService) {
+            com.fazquepaga.taskandpay.security.JwtService jwtService,
+            RefreshTokenService refreshTokenService,
+            RecaptchaService recaptchaService) {
         this.identityService = identityService;
         this.jwtService = jwtService;
+        this.refreshTokenService = refreshTokenService;
+        this.recaptchaService = recaptchaService;
     }
 
     @PostMapping("/auth/register")
     public ResponseEntity<User> registerParent(@RequestBody CreateParentRequest request)
             throws ExecutionException, InterruptedException {
+        // Verify reCAPTCHA token
+        if (!recaptchaService.verify(request.getRecaptchaToken(), "register")) {
+            throw new RecaptchaException("reCAPTCHA verification failed");
+        }
         User parent = identityService.registerParent(request);
         // We could return a token here too, but for now let's stick to returning User
         // and requiring login.
@@ -40,11 +55,17 @@ public class IdentityController {
     public ResponseEntity<com.fazquepaga.taskandpay.identity.dto.LoginResponse> login(
             @RequestBody com.fazquepaga.taskandpay.identity.dto.LoginRequest request)
             throws ExecutionException, InterruptedException {
+        // Verify reCAPTCHA token
+        if (!recaptchaService.verify(request.getRecaptchaToken(), "login")) {
+            throw new RecaptchaException("reCAPTCHA verification failed");
+        }
         User user = identityService.authenticateParent(request.getEmail(), request.getPassword());
         String token = jwtService.generateToken(user);
+        String refreshToken = refreshTokenService.createRefreshToken(user.getId());
         return ResponseEntity.ok(
                 com.fazquepaga.taskandpay.identity.dto.LoginResponse.builder()
                         .token(token)
+                        .refreshToken(refreshToken)
                         .user(user)
                         .build());
     }
@@ -52,17 +73,42 @@ public class IdentityController {
     @PostMapping("/children/login")
     public ResponseEntity<ChildLoginResponse> childLogin(@RequestBody ChildLoginRequest request)
             throws ExecutionException, InterruptedException {
+        // Verify reCAPTCHA token
+        if (!recaptchaService.verify(request.getRecaptchaToken(), "child_login")) {
+            throw new RecaptchaException("reCAPTCHA verification failed");
+        }
         User child = identityService.authenticateChildByCode(request.getCode());
-        String token =
-                jwtService.generateToken(
-                        child.getId(), child.getId(), "CHILD"); // Simplified token for child
-        ChildLoginResponse response =
-                ChildLoginResponse.builder()
-                        .child(child)
-                        .token(token)
-                        .message("Login successful")
-                        .build();
+        String token = jwtService.generateToken(
+                child.getId(), child.getId(), "CHILD"); // Simplified token for child
+        String refreshToken = refreshTokenService.createRefreshToken(child.getId());
+        ChildLoginResponse response = ChildLoginResponse.builder()
+                .child(child)
+                .token(token)
+                .refreshToken(refreshToken)
+                .message("Login successful")
+                .build();
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/auth/refresh")
+    public ResponseEntity<Map<String, String>> refreshToken(
+            @RequestBody RefreshTokenRequest request) {
+        Optional<String> newToken = refreshTokenService.validateAndRefresh(request.getRefreshToken());
+        if (newToken.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("error", "Invalid or expired refresh token"));
+        }
+        return ResponseEntity.ok(Map.of("token", newToken.get()));
+    }
+
+    @PostMapping("/auth/logout-all")
+    public ResponseEntity<Map<String, String>> logoutAll(Principal principal) {
+        if (principal == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("error", "Authentication required"));
+        }
+        refreshTokenService.revokeAllTokens(principal.getName());
+        return ResponseEntity.ok(Map.of("message", "All sessions logged out"));
     }
 
     @PostMapping("/children")
@@ -145,8 +191,7 @@ public class IdentityController {
             @RequestBody com.fazquepaga.taskandpay.identity.dto.UpdateAiContextRequest request,
             @RequestParam("parent_id") String parentId)
             throws ExecutionException, InterruptedException {
-        User updatedChild =
-                identityService.updateAiContext(childId, request.getContext(), parentId);
+        User updatedChild = identityService.updateAiContext(childId, request.getContext(), parentId);
         return ResponseEntity.ok(updatedChild);
     }
 }

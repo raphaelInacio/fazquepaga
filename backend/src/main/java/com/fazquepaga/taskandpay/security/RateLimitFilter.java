@@ -40,7 +40,7 @@ public class RateLimitFilter extends OncePerRequestFilter {
 
     // AI endpoint patterns (quota-based limits)
     private static final String[] AI_PATTERNS = {
-            "/api/v1/tasks/suggest", "/api/v1/tasks/*/validate-image"
+            "/api/v1/ai/tasks/suggestions", "/api/v1/ai/goal-coach", "/api/v1/ai/adventure-mode/tasks"
     };
 
     public RateLimitFilter(

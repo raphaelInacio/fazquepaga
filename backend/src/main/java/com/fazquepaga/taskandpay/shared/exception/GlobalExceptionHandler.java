@@ -62,4 +62,15 @@ public class GlobalExceptionHandler {
         ApiError apiError = new ApiError(HttpStatus.TOO_MANY_REQUESTS, message, request.getRequestURI());
         return new ResponseEntity<>(apiError, HttpStatus.TOO_MANY_REQUESTS);
     }
+
+    @ExceptionHandler(com.fazquepaga.taskandpay.security.RecaptchaException.class)
+    public ResponseEntity<ApiError> handleRecaptchaException(
+            com.fazquepaga.taskandpay.security.RecaptchaException ex, HttpServletRequest request) {
+        log.warn("reCAPTCHA verification failed: {} path={}", ex.getMessage(), request.getRequestURI());
+        Locale locale = LocaleContextHolder.getLocale();
+        String message = messageSource.getMessage("error.recaptcha_failed", null,
+                "Security verification failed. Please try again.", locale);
+        ApiError apiError = new ApiError(HttpStatus.BAD_REQUEST, message, request.getRequestURI());
+        return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
+    }
 }

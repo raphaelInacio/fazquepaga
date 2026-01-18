@@ -32,6 +32,24 @@ The application is divided into focused domain modules:
     *   **Free Trial**: 3-day full access to all features for new users.
     *   **Premium Plan**: Paid subscription after trial with unlimited tasks, AI features, Gift Card Store.
 
+## 🔒 Security Mechanisms
+
+The platform implements robust security measures to protect user data and ensure fair usage:
+
+*   **Rate Limiting**: In-memory (Caffeine-based) rate limiting protects APIs from abuse.
+    *   **Global**: Limit on total requests per IP.
+    *   **Auth**: Stricter limits on login/register endpoints to prevent brute-force.
+    *   **AI**: User-based limits on expensive AI operations.
+*   **AI Usage Quotas**:
+    *   **Free Tier**: 5 AI requests per day.
+    *   **Premium Tier**: 10+ AI requests per day (configurable).
+    *   Daily reset at midnight UTC.
+*   **Bot Protection**: Google reCAPTCHA v3 integration on critical endpoints (Login, Register).
+*   **Session Management**:
+    *   Based on **JWT** (JSON Web Tokens) with a dual-token system (Access + Refresh).
+    *   **Refresh Tokens**: Securely utilized to extend sessions without re-login.
+    *   **Logout All**: Capability to revoke all active sessions for a user.
+
 ## 🛠️ Tech Stack
 
 ### Backend

@@ -1,6 +1,8 @@
 package com.fazquepaga.taskandpay.payment;
 
 import com.fazquepaga.taskandpay.security.JwtAuthenticationFilter;
+import com.fazquepaga.taskandpay.security.RateLimitConfig;
+import com.fazquepaga.taskandpay.security.RateLimitService;
 import com.fazquepaga.taskandpay.subscription.SubscriptionService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,11 +27,27 @@ public class AsaasWebhookControllerTest {
         @Autowired
         private MockMvc mockMvc;
 
-        @MockBean
-        private SubscriptionService subscriptionService;
+                                        @MockBean
 
-        @MockBean
-        private JwtAuthenticationFilter jwtAuthenticationFilter; // Required for SecurityConfig
+                                        private SubscriptionService subscriptionService;
+
+                                
+
+                                        @MockBean
+
+                                        private RateLimitService rateLimitService;
+
+                                
+
+                                        @MockBean
+
+                                        private RateLimitConfig rateLimitConfig;
+
+        
+
+                @MockBean
+
+                private JwtAuthenticationFilter jwtAuthenticationFilter; // Required for SecurityConfig
 
         @Test
         public void shouldReturn403WhenTokenIsMissing() throws Exception {

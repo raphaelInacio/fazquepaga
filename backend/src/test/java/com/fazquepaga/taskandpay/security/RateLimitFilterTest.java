@@ -185,8 +185,6 @@ class RateLimitFilterTest {
         config.setEnabled(false);
         rateLimitFilter = new RateLimitFilter(rateLimitService, config, objectMapper);
 
-        when(request.getRequestURI()).thenReturn("/api/v1/users");
-
         // Act
         rateLimitFilter.doFilterInternal(request, response, filterChain);
 
