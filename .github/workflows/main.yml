@@ -82,9 +82,6 @@ jobs:
         env_vars: |
           SPRING_PROFILES_ACTIVE=prod
           SPRING_CLOUD_GCP_PROJECT_ID=gen-lang-client-0807030077
-          GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}
-          ASAAS_API_KEY=${{ secrets.ASAAS_API_KEY }}
-          ASAAS_WEBHOOK_TOKEN=${{ secrets.ASAAS_WEBHOOK_TOKEN }}
           JWT_SECRET=${{ secrets.JWT_SECRET }}
           RECAPTCHA_ENABLED=false
           RECAPTCHA_SITE_KEY=${{ secrets.RECAPTCHA_SITE_KEY }}

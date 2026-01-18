@@ -106,10 +106,10 @@ The project is a monorepo with two main parts:
 ## Project Rules
 
 ### GitHub Pipeline
-### GitHub Pipeline
-- **Backend**: `CI/CD Pipeline` triggers on push to `main` (build, test, deploy).
-- **Frontend**: `Frontend Deploy` triggers on push to `main` (build, deploy to Firebase).
-- Status checks required: build success, tests pass, coverage >= 60%.
+- **Backend Deployment**: `CI/CD Pipeline` triggers on push to `main`. Requires `GCP_CREDENTIALS` and `JWT_SECRET` secrets.
+- **Frontend Deployment**: `Frontend Deploy` triggers on push to `main` (`frontend/**`). Requires `VITE_FIREBASE_*` secrets.
+- **Secrets Management**: Some secrets (`GEMINI_API_KEY`, `ASAAS_API_KEY`) are managed directly in GCP Secret Manager and bound to Cloud Run, NOT passed via GitHub Actions.
+- **Status Checks**: Build success, tests pass, coverage >= 60%.
 
 ### Backend Code Formatting
 - Enforced with **Spotless** using **Google Java Format (AOSP style)**.

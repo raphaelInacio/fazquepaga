@@ -129,16 +129,73 @@ The platform implements robust security measures to protect user data and ensure
 ## 🚀 Deployment
 
 ### Frontend (Firebase Hosting)
-The frontend is deployed to Firebase Hosting.
--   **Build**: `npm run build`
--   **Deploy**: `firebase deploy --only hosting`
--   **CI/CD**: The `Frontend Deploy` GitHub Action automatically deploys changes from `main`.
+
+The frontend is a static React application hosted on Firebase.
+
+**Build & Deploy:**
+```bash
+cd frontend
+npm install
+npm run build
+firebase deploy --only hosting
+```
+
+**Validation:**
+Visit your Firebase Hosting URL (e.g., `https://your-project-id.web.app`).
+
+---
 
 ### Backend (Cloud Run)
-The backend is deployed to Google Cloud Run.
--   **Build**: `mvn clean package`
--   **Deploy**: `gcloud run deploy` (or via Cloud Build).
--   **CI/CD**: The `CI/CD Pipeline` GitHub Action builds, tests, and deploys the backend.
+
+The backend is a Spring Boot application running on Cloud Run.
+
+**Build:**
+```bash
+cd backend
+mvn clean package -DskipTests
+```
+
+**Deploy (Source):**
+```bash
+gcloud run deploy taskandpay-backend \
+  --source . \
+  --region us-central1 \
+  --allow-unauthenticated
+```
+
+**Configuration:**
+-   Ensure `SPRING_PROFILES_ACTIVE=prod`.
+-   Swagger UI is disabled in production.
+
+---
+
+### GitHub Actions Configuration
+
+To enable CI/CD, configure these **Secrets** in GitHub:
+
+**Common:**
+-   `GCP_CREDENTIALS`: Service Account JSON key (Cloud Run & Firebase permissions).
+-   `GCP_PROJECT_ID`: Google Cloud Project ID.
+
+**Frontend (Firebase):**
+-   `VITE_FIREBASE_API_KEY`, `VITE_FIREBASE_AUTH_DOMAIN`, etc. (See Firebase Console).
+
+**Backend (Runtime):**
+-   `JWT_SECRET`: Secure token for signing.
+-   `RECAPTCHA_SITE_KEY` / `RECAPTCHA_SECRET_KEY`: reCAPTCHA v3 keys.
+
+### Troubleshooting
+
+#### Deployment Error: "Cannot update environment variable..."
+If a variable (e.g., `GEMINI_API_KEY`) is bound to Secret Manager, the pipeline cannot overwrite it with text.
+
+**Fix:**
+Unbind the secret using:
+```bash
+gcloud run services update taskandpay-service \
+  --region us-central1 \
+  --clear-secrets GEMINI_API_KEY
+```
 
 ## 📂 Project Structure
 
