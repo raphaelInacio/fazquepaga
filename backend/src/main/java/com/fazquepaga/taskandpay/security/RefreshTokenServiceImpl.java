@@ -34,6 +34,13 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
     @Value("${jwt.refresh-token-ttl-days:30}")
     private int refreshTokenTtlDays;
 
+    /**
+     * Constructs a RefreshTokenServiceImpl with the required repositories and JWT service and initializes cryptographic randomness.
+     *
+     * @param refreshTokenRepository repository used to persist and query refresh token records
+     * @param userRepository         repository used to load user information
+     * @param jwtService             service used to generate access JWTs
+     */
     public RefreshTokenServiceImpl(
             RefreshTokenRepository refreshTokenRepository,
             UserRepository userRepository,
@@ -44,6 +51,13 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
         this.secureRandom = new SecureRandom();
     }
 
+    /**
+     * Generate and persist a new opaque refresh token for the given user.
+     *
+     * @param userId the identifier of the user to associate the refresh token with
+     * @return the newly generated refresh token (plain, URL-safe Base64, not the stored hash)
+     * @throws RuntimeException if token persistence fails or the operation is interrupted
+     */
     @Override
     public String createRefreshToken(String userId) {
         try {
@@ -76,6 +90,13 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
         }
     }
 
+    /**
+     * Validate a refresh token and produce a new access token.
+     *
+     * @param refreshToken the opaque refresh token presented by the client
+     * @return an Optional containing a newly generated access token when the refresh token exists, is not revoked, is not expired, and the user exists; `Optional.empty()` otherwise.
+     *         If the associated user has role `CHILD`, the access token is generated using the user's id, name, and role; otherwise it is generated from the full user object.
+     */
     @Override
     public Optional<String> validateAndRefresh(String refreshToken) {
         try {
@@ -125,6 +146,12 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
         }
     }
 
+    /**
+     * Revoke all stored refresh tokens for the specified user.
+     *
+     * @param userId the user's unique identifier whose refresh tokens will be revoked
+     * @throws RuntimeException if the repository operation fails or is interrupted
+     */
     @Override
     public void revokeAllTokens(String userId) {
         try {
@@ -138,7 +165,11 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
     }
 
     /**
-     * Hash a token using SHA-256.
+     * Compute the SHA-256 digest of the given token and return it encoded as Base64.
+     *
+     * @param token the plaintext token to hash
+     * @return the SHA-256 hash of the token encoded as a Base64 string
+     * @throws RuntimeException if the SHA-256 algorithm is unavailable
      */
     private String hashToken(String token) {
         try {

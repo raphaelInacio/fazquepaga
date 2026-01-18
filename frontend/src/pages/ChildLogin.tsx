@@ -9,6 +9,13 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
 import { Gamepad2, Loader2 } from "lucide-react";
 
+/**
+ * Renders a child-facing login form that accepts a 6-character code and performs authentication.
+ *
+ * Validates the entered code, optionally obtains a reCAPTCHA token when available, displays success or error toasts, and navigates to "/child-portal" on successful authentication.
+ *
+ * @returns The login form UI as a JSX element.
+ */
 export default function ChildLogin() {
     const { t } = useTranslation();
     const navigate = useNavigate();

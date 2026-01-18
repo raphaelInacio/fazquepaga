@@ -16,11 +16,11 @@ public interface RefreshTokenService {
     String createRefreshToken(String userId);
 
     /**
-     * Validates a refresh token and returns a new access token if valid.
-     *
-     * @param refreshToken the opaque refresh token
-     * @return new access token if valid, empty if invalid/expired/revoked
-     */
+ * Validate a refresh token and issue a new access token.
+ *
+ * @param refreshToken the opaque refresh token
+ * @return an Optional containing the new access token if the refresh token is valid; empty otherwise (invalid, expired, or revoked)
+ */
     Optional<String> validateAndRefresh(String refreshToken);
 
     /**

@@ -27,16 +27,29 @@ public class RefreshTokenRepository {
 
     private final Firestore firestore;
 
+    /**
+     * Create a RefreshTokenRepository backed by the given Firestore instance.
+     */
     public RefreshTokenRepository(Firestore firestore) {
         this.firestore = firestore;
     }
 
+    /**
+     * Obtain the Firestore collection reference for refresh tokens.
+     *
+     * @return the CollectionReference for the "refreshTokens" collection
+     */
     private CollectionReference getCollection() {
         return firestore.collection(COLLECTION_NAME);
     }
 
     /**
-     * Save a new refresh token.
+     * Persist the given refresh token to Firestore, assigning a new document ID when the token has no {@code id}.
+     *
+     * @param refreshToken the refresh token to persist; its {@code id} will be set if null
+     * @return the persisted RefreshToken with its {@code id} populated if it was previously null
+     * @throws ExecutionException   if the Firestore write operation fails
+     * @throws InterruptedException if the thread is interrupted while waiting for the write to complete
      */
     public RefreshToken save(RefreshToken refreshToken) throws ExecutionException, InterruptedException {
         DocumentReference docRef;
@@ -53,7 +66,10 @@ public class RefreshTokenRepository {
     }
 
     /**
-     * Find a refresh token by its hash.
+     * Retrieves the refresh token that matches the provided token hash.
+     *
+     * @param tokenHash the hashed token value to search for
+     * @return an Optional containing the matching RefreshToken if found, otherwise Optional.empty()
      */
     public Optional<RefreshToken> findByTokenHash(String tokenHash)
             throws ExecutionException, InterruptedException {
@@ -68,8 +84,13 @@ public class RefreshTokenRepository {
     }
 
     /**
-     * Revoke all refresh tokens for a user.
-     * Uses batch write for efficiency.
+     * Mark all non-revoked refresh tokens belonging to the specified user as revoked.
+     *
+     * Only documents where the `revoked` field is currently `false` are updated.
+     *
+     * @param userId the identifier of the user whose active refresh tokens should be revoked
+     * @throws ExecutionException if an error occurs while executing Firestore operations
+     * @throws InterruptedException if the thread is interrupted while waiting for Firestore operations to complete
      */
     public void revokeAllForUser(String userId) throws ExecutionException, InterruptedException {
         Query query = getCollection().whereEqualTo("userId", userId).whereEqualTo("revoked", false);
@@ -92,7 +113,11 @@ public class RefreshTokenRepository {
     }
 
     /**
-     * Delete expired tokens (cleanup job).
+     * Deletes expired refresh tokens from Firestore in a single batch.
+     *
+     * @return the number of deleted tokens (up to 500 per invocation)
+     * @throws ExecutionException if a Firestore operation fails while querying or committing the batch
+     * @throws InterruptedException if the thread is interrupted while waiting for Firestore operations to complete
      */
     public int deleteExpiredTokens() throws ExecutionException, InterruptedException {
         Query query = getCollection()

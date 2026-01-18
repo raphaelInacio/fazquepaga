@@ -19,6 +19,13 @@ import {
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
+/**
+ * Render the Settings page with account and security controls.
+ *
+ * Provides a "Logout from all devices" action that opens a confirmation dialog; when confirmed, it revokes all sessions via the API, shows a success or error toast, clears local authentication state, and navigates to the login page.
+ *
+ * @returns The rendered Settings page React element.
+ */
 export default function Settings() {
     const { t } = useTranslation();
     const navigate = useNavigate();

@@ -7,19 +7,19 @@ package com.fazquepaga.taskandpay.security;
 public interface RecaptchaService {
 
     /**
-     * Verifies a reCAPTCHA token for a specific action.
-     *
-     * @param token  The reCAPTCHA token from the frontend
-     * @param action The action name (e.g., "login", "register")
-     * @return true if the token is valid and score is above threshold
-     */
+ * Verifies that a reCAPTCHA v3 token corresponds to the given action and meets the service's score threshold.
+ *
+ * @param token  the reCAPTCHA token received from the client
+ * @param action the expected action name associated with the token (e.g., "login", "register")
+ * @return true if the token is valid and its score meets the required threshold, false otherwise
+ */
     boolean verify(String token, String action);
 
     /**
-     * Gets the reCAPTCHA score for a token.
-     *
-     * @param token The reCAPTCHA token from the frontend
-     * @return The score between 0.0 and 1.0 (1.0 is very likely a good interaction)
-     */
+ * Retrieves the reCAPTCHA v3 score associated with the provided token.
+ *
+ * @param token the reCAPTCHA token issued by the frontend
+ * @return the score in the range 0.0 to 1.0; 1.0 indicates a high likelihood of a legitimate human interaction
+ */
     float getScore(String token);
 }

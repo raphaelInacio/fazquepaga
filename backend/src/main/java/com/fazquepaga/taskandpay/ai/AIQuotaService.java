@@ -65,10 +65,10 @@ public class AIQuotaService {
     }
 
     /**
-     * Gets the remaining AI quota for the user.
+     * Retrieves the number of remaining AI usage operations available to the user for today.
      *
-     * @param userId the user ID
-     * @return remaining quota count
+     * @param userId the user's unique identifier
+     * @return the number of remaining uses for today, or 0 if none remain or an error occurs
      */
     public int getRemainingQuota(String userId) {
         try {
@@ -82,10 +82,13 @@ public class AIQuotaService {
     }
 
     /**
-     * Gets the daily limit for the user based on subscription tier.
+     * Determine the user's daily AI usage limit based on their subscription tier.
      *
-     * @param userId the user ID
-     * @return daily limit
+     * If an internal error occurs while retrieving quota information, the method interrupts
+     * the current thread and returns FREE_DAILY_LIMIT as a safe fallback.
+     *
+     * @param userId the identifier of the user
+     * @return the user's daily AI usage limit (FREE_DAILY_LIMIT or PREMIUM_DAILY_LIMIT)
      */
     public int getDailyLimit(String userId) {
         try {
@@ -99,10 +102,10 @@ public class AIQuotaService {
     }
 
     /**
-     * Verifies the user has quota available, throwing an exception if exceeded.
+     * Ensure the user has remaining AI quota for today.
      *
-     * @param userId the user ID
-     * @throws AIQuotaExceededException if quota is exceeded
+     * @param userId the ID of the user to check
+     * @throws AIQuotaExceededException if the user has zero remaining daily AI uses
      */
     public void verifyQuotaOrThrow(String userId) {
         if (!canUseAI(userId)) {
@@ -117,8 +120,17 @@ public class AIQuotaService {
     }
 
     /**
-     * Gets or creates an AI quota record for the user.
-     * Handles daily reset logic by checking lastResetDate.
+     * Retrieve the user's AIQuota record or create and initialize one if it does not exist.
+     *
+     * If a new record is created it will be initialized with usedToday = 0, lastResetDate = today,
+     * and a daily limit computed from the user's subscription. If an existing record's lastResetDate
+     * is null or before today, this method resets usedToday to 0, updates lastResetDate to today,
+     * recalculates dailyLimit, and persists the updated record.
+     *
+     * @param userId the identifier of the user whose quota is requested
+     * @return the existing or newly created AIQuota for the given user
+     * @throws ExecutionException if a repository or user lookup operation fails
+     * @throws InterruptedException if the current thread is interrupted while performing lookup or calculations
      */
     private AIQuota getOrCreateQuota(String userId)
             throws ExecutionException, InterruptedException {
@@ -156,7 +168,14 @@ public class AIQuotaService {
     }
 
     /**
-     * Calculates the daily limit based on the user's subscription tier.
+     * Determine the user's daily AI usage limit based on subscription status.
+     *
+     * Returns `PREMIUM_DAILY_LIMIT` for users with an active `PREMIUM` subscription; returns
+     * `FREE_DAILY_LIMIT` if the user is not found or does not have an active premium subscription.
+     *
+     * @return `PREMIUM_DAILY_LIMIT` if the user has an active premium subscription, `FREE_DAILY_LIMIT` otherwise
+     * @throws ExecutionException   if an error occurs while accessing the user repository
+     * @throws InterruptedException if the thread is interrupted while retrieving the user
      */
     private int calculateDailyLimit(String userId)
             throws ExecutionException, InterruptedException {

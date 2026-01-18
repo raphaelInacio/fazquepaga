@@ -25,6 +25,12 @@ public class JwtService {
     @Value("${jwt.child-token-ttl-days:30}")
     private int childTokenTtlDays;
 
+    /**
+     * Extracts the username stored in the token's subject claim.
+     *
+     * @param token the JWT string to read the subject from
+     * @return the subject (username) claim from the token, or {@code null} if the claim is absent
+     */
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
     }
@@ -38,6 +44,15 @@ public class JwtService {
         return generateToken(new HashMap<>(), userDetails);
     }
 
+    /**
+     * Create a signed JWT with the user's username as the subject and the supplied claims.
+     *
+     * The token's issued-at is the current time and its expiration is current time plus PARENT_TOKEN_TTL_MS.
+     *
+     * @param extraClaims additional claims to include in the token payload
+     * @param userDetails user whose username will be set as the token subject
+     * @return the compact serialized JWT string
+     */
     public String generateToken(Map<String, Object> extraClaims, UserDetails userDetails) {
         return Jwts.builder()
                 .setClaims(extraClaims)
@@ -50,7 +65,14 @@ public class JwtService {
     }
 
     // For Child which might not be a full UserDetails yet, or just to handle
-    // non-UserDetails objects
+    /**
+     * Generate a signed child JWT with the given subject and role claim.
+     *
+     * @param userId   the user identifier placed in the token's subject
+     * @param username the username associated with the user (not included in the token's claims)
+     * @param role     the role value stored in the token under the `role` claim
+     * @return         the compact serialized JWT signed with HS256, expiring after the configured child-token TTL
+     */
     public String generateToken(String userId, String username, String role) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("role", role);
@@ -88,6 +110,12 @@ public class JwtService {
         return extractClaim(token, Claims::getExpiration);
     }
 
+    /**
+     * Parses the provided JWT string using the service's signing key and returns all claims from its body.
+     *
+     * @param token the compact JWT string to parse
+     * @return the token's claims
+     */
     private Claims extractAllClaims(String token) {
         return Jwts.parserBuilder()
                 .setSigningKey(getSignInKey())
@@ -96,6 +124,11 @@ public class JwtService {
                 .getBody();
     }
 
+    /**
+     * Derives the HMAC-SHA signing key from the configured Base64-encoded secret.
+     *
+     * @return the HMAC-SHA key used for signing and verifying JWTs
+     */
     private Key getSignInKey() {
         byte[] keyBytes = Decoders.BASE64.decode(secret);
         return Keys.hmacShaKeyFor(keyBytes);

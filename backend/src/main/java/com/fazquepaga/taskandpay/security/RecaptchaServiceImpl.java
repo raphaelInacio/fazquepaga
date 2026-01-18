@@ -26,11 +26,27 @@ public class RecaptchaServiceImpl implements RecaptchaService {
     private final RecaptchaConfig config;
     private final RestTemplate restTemplate;
 
+    /**
+     * Creates a RecaptchaServiceImpl using the provided configuration and RestTemplate for HTTP calls to the reCAPTCHA API.
+     */
     public RecaptchaServiceImpl(RecaptchaConfig config, RestTemplate restTemplate) {
         this.config = config;
         this.restTemplate = restTemplate;
     }
 
+    /**
+     * Verify a reCAPTCHA v3 token for the specified action using the configured verification endpoint and threshold.
+     *
+     * <p>The method validates the token, checks the response success and that the response action matches the expected
+     * action, and compares the returned score against the configured threshold.</p>
+     *
+     * @param token  the reCAPTCHA token received from the client
+     * @param action the expected action name associated with the token
+     * @return `true` if verification passes (response is successful, action matches, and score is greater than or equal to
+     *         the configured threshold); `false` if verification fails (invalid/blank token, null or unsuccessful response,
+     *         action mismatch, or score below threshold). In case of API errors contacting the verification endpoint, the
+     *         method returns `true` (fail-open).
+     */
     @Override
     public boolean verify(String token, String action) {
         if (!config.isEnabled()) {
@@ -93,6 +109,12 @@ public class RecaptchaServiceImpl implements RecaptchaService {
         }
     }
 
+    /**
+     * Retrieve the reCAPTCHA v3 score for a provided client token.
+     *
+     * @param token the reCAPTCHA token issued by the client; may be null or blank
+     * @return the score in the range 0.0 to 1.0; returns 1.0 when reCAPTCHA verification is disabled, and 0.0 for invalid tokens or when verification fails
+     */
     @Override
     public float getScore(String token) {
         if (!config.isEnabled()) {
@@ -112,6 +134,12 @@ public class RecaptchaServiceImpl implements RecaptchaService {
         }
     }
 
+    /**
+     * Send the given reCAPTCHA token to the configured verification endpoint and parse the response.
+     *
+     * @param token the reCAPTCHA response token provided by the client
+     * @return the parsed RecaptchaResponse from the verification endpoint, or `null` if the HTTP call returned no body
+     */
     private RecaptchaResponse verifyToken(String token) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
