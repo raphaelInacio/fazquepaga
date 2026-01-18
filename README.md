@@ -126,7 +126,22 @@ The platform implements robust security measures to protect user data and ensure
 | `/child-portal` | Child Portal (Task Completion & Gamification) |
 | `/subscription` | Pricing & Subscription Management |
 
+## 🚀 Deployment
+
+### Frontend (Firebase Hosting)
+The frontend is deployed to Firebase Hosting.
+-   **Build**: `npm run build`
+-   **Deploy**: `firebase deploy --only hosting`
+-   **CI/CD**: The `Frontend Deploy` GitHub Action automatically deploys changes from `main`.
+
+### Backend (Cloud Run)
+The backend is deployed to Google Cloud Run.
+-   **Build**: `mvn clean package`
+-   **Deploy**: `gcloud run deploy` (or via Cloud Build).
+-   **CI/CD**: The `CI/CD Pipeline` GitHub Action builds, tests, and deploys the backend.
+
 ## 📂 Project Structure
+
 
 The project is a monorepo with two main parts:
 

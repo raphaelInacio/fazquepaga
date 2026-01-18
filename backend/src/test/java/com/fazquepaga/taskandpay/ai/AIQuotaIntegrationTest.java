@@ -1,8 +1,7 @@
 package com.fazquepaga.taskandpay.ai;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.verify;
+
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -73,7 +72,7 @@ class AIQuotaIntegrationTest {
                                 .userId("test-user-id")
                                 .usedToday(0)
                                 .dailyLimit(5)
-                                .lastResetDate(LocalDate.now())
+                                .lastResetDate(LocalDate.now().toString())
                                 .build();
 
                 when(aiQuotaRepository.findByUserId("test-user-id")).thenReturn(quota);
@@ -96,7 +95,7 @@ class AIQuotaIntegrationTest {
                                 .userId("test-user-id")
                                 .usedToday(5)
                                 .dailyLimit(5)
-                                .lastResetDate(LocalDate.now())
+                                .lastResetDate(LocalDate.now().toString())
                                 .build();
 
                 when(aiQuotaRepository.findByUserId("test-user-id")).thenReturn(quota);

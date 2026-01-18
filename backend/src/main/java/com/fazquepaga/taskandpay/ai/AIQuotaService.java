@@ -132,7 +132,7 @@ public class AIQuotaService {
             quota = AIQuota.builder()
                     .userId(userId)
                     .usedToday(0)
-                    .lastResetDate(today)
+                    .lastResetDate(today.toString())
                     .dailyLimit(dailyLimit)
                     .build();
             aiQuotaRepository.save(userId, quota);
@@ -141,10 +141,12 @@ public class AIQuotaService {
         }
 
         // Check if we need to reset for a new day
-        if (quota.getLastResetDate() == null || quota.getLastResetDate().isBefore(today)) {
+        LocalDate lastReset = quota.getLastResetDate() != null ? LocalDate.parse(quota.getLastResetDate()) : null;
+
+        if (lastReset == null || lastReset.isBefore(today)) {
             int dailyLimit = calculateDailyLimit(userId);
             quota.setUsedToday(0);
-            quota.setLastResetDate(today);
+            quota.setLastResetDate(today.toString());
             quota.setDailyLimit(dailyLimit);
             aiQuotaRepository.save(userId, quota);
             log.info("Reset AI quota for userId={}: newDay, dailyLimit={}", userId, dailyLimit);

@@ -1,6 +1,5 @@
 package com.fazquepaga.taskandpay.ai;
 
-import java.time.LocalDate;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -17,6 +16,6 @@ import lombok.NoArgsConstructor;
 public class AIQuota {
     private String userId;
     private int usedToday;
-    private LocalDate lastResetDate;
+    private String lastResetDate; // Stored as ISO-8601 string (YYYY-MM-DD)
     private int dailyLimit; // 5 (Free) or 10 (Premium)
 }

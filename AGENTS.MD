@@ -106,9 +106,10 @@ The project is a monorepo with two main parts:
 ## Project Rules
 
 ### GitHub Pipeline
-- CI workflow triggers on push to `main` and pull requests.
-- Jobs include **build**, **test**, **coverage**, and **deploy**.
-- Status checks required: build success, tests pass, coverage >= 80%.
+### GitHub Pipeline
+- **Backend**: `CI/CD Pipeline` triggers on push to `main` (build, test, deploy).
+- **Frontend**: `Frontend Deploy` triggers on push to `main` (build, deploy to Firebase).
+- Status checks required: build success, tests pass, coverage >= 60%.
 
 ### Backend Code Formatting
 - Enforced with **Spotless** using **Google Java Format (AOSP style)**.

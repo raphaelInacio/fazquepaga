@@ -24,7 +24,8 @@ public class SecurityConfig {
         private final RateLimitFilter rateLimitFilter;
         private final RecaptchaConfig recaptchaConfig;
 
-        public SecurityConfig(JwtAuthenticationFilter jwtAuthFilter, RateLimitFilter rateLimitFilter, RecaptchaConfig recaptchaConfig) {
+        public SecurityConfig(JwtAuthenticationFilter jwtAuthFilter, RateLimitFilter rateLimitFilter,
+                        RecaptchaConfig recaptchaConfig) {
                 this.jwtAuthFilter = jwtAuthFilter;
                 this.rateLimitFilter = rateLimitFilter;
                 this.recaptchaConfig = recaptchaConfig;
@@ -84,7 +85,8 @@ public class SecurityConfig {
                                 .addFilterBefore(
                                                 jwtAuthFilter,
                                                 org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class)
-                                .addFilterBefore(rateLimitFilter, com.fazquepaga.taskandpay.security.JwtAuthenticationFilter.class);
+                                .addFilterBefore(rateLimitFilter,
+                                                com.fazquepaga.taskandpay.security.JwtAuthenticationFilter.class);
 
                 return http.build();
         }
@@ -120,5 +122,24 @@ public class SecurityConfig {
                         org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration config)
                         throws Exception {
                 return config.getAuthenticationManager();
+        }
+
+        @Bean
+        public org.springframework.web.cors.CorsConfigurationSource corsConfigurationSource() {
+                org.springframework.web.cors.CorsConfiguration configuration = new org.springframework.web.cors.CorsConfiguration();
+                configuration.setAllowedOrigins(java.util.Arrays.asList(
+                                "https://gen-lang-client-0807030077.web.app",
+                                "https://gen-lang-client-0807030077.firebaseapp.com",
+                                "https://taskandpay.com",
+                                "http://localhost:5173",
+                                "http://localhost:3000"));
+                configuration.setAllowedMethods(
+                                java.util.Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD"));
+                configuration.setAllowedHeaders(java.util.Arrays.asList("*"));
+                configuration.setAllowCredentials(true);
+
+                org.springframework.web.cors.UrlBasedCorsConfigurationSource source = new org.springframework.web.cors.UrlBasedCorsConfigurationSource();
+                source.registerCorsConfiguration("/**", configuration);
+                return source;
         }
 }
