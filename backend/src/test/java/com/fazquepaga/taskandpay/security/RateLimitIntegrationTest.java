@@ -91,7 +91,7 @@ class RateLimitIntegrationTest {
         // Global limit is 10. Use root path
         for (int i = 0; i < 10; i++) {
             int finalI = i;
-            mockMvc.perform(get("/"))
+            mockMvc.perform(get("/api/v1/global-test"))
                     .andExpect(result -> {
                         if (result.getResponse().getStatus() == 429) {
                             throw new AssertionError("Premature 429 exceeded at request " + finalI);
@@ -100,7 +100,7 @@ class RateLimitIntegrationTest {
         }
 
         // The 11th request should be blocked
-        mockMvc.perform(get("/"))
+        mockMvc.perform(get("/api/v1/global-test"))
                 .andExpect(status().isTooManyRequests())
                 .andExpect(header().string("X-RateLimit-Limit", "10"))
                 .andExpect(header().string("X-RateLimit-Remaining", "0"));

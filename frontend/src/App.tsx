@@ -20,6 +20,8 @@ import Settings from "./pages/Settings";
 import { LanguageSwitcher } from "./components/LanguageSwitcher";
 import { SubscriptionProvider } from "./contexts/SubscriptionContext";
 
+import { MockGoogleReCaptchaProvider } from "@/components/MockGoogleReCaptchaProvider";
+
 const RECAPTCHA_SITE_KEY = import.meta.env.VITE_RECAPTCHA_SITE_KEY || "";
 
 const queryClient = new QueryClient();
@@ -56,11 +58,21 @@ const App = () => (
     <AuthProvider>
       <SubscriptionProvider>
         {RECAPTCHA_SITE_KEY ? (
-          <GoogleReCaptchaProvider reCaptchaKey={RECAPTCHA_SITE_KEY}>
+          <GoogleReCaptchaProvider
+            reCaptchaKey={RECAPTCHA_SITE_KEY}
+            scriptProps={{
+              async: false,
+              defer: false,
+              appendTo: "head",
+              nonce: undefined
+            }}
+          >
             <AppContent />
           </GoogleReCaptchaProvider>
         ) : (
-          <AppContent />
+          <MockGoogleReCaptchaProvider>
+            <AppContent />
+          </MockGoogleReCaptchaProvider>
         )}
       </SubscriptionProvider>
     </AuthProvider>

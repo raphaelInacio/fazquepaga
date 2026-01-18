@@ -49,7 +49,8 @@ class RecaptchaServiceTest {
         // Arrange
         String token = "valid-token";
         RecaptchaResponse response = createResponse(true, 0.9f);
-        when(restTemplate.postForObject(any(String.class), any(HttpEntity.class), eq(RecaptchaResponse.class))).thenReturn(response);
+        when(restTemplate.postForObject(any(String.class), any(HttpEntity.class), eq(RecaptchaResponse.class)))
+                .thenReturn(response);
 
         // Act
         boolean result = recaptchaService.verify(token, "login");
@@ -63,7 +64,8 @@ class RecaptchaServiceTest {
         // Arrange
         String token = "suspicious-token";
         RecaptchaResponse response = createResponse(true, 0.3f);
-        when(restTemplate.postForObject(any(String.class), any(HttpEntity.class), eq(RecaptchaResponse.class))).thenReturn(response);
+        when(restTemplate.postForObject(any(String.class), any(HttpEntity.class), eq(RecaptchaResponse.class)))
+                .thenReturn(response);
 
         // Act
         boolean result = recaptchaService.verify(token, "register");
@@ -77,7 +79,8 @@ class RecaptchaServiceTest {
         // Arrange
         String token = "invalid-token";
         RecaptchaResponse response = createResponse(false, 0.0f);
-        when(restTemplate.postForObject(any(String.class), any(HttpEntity.class), eq(RecaptchaResponse.class))).thenReturn(response);
+        when(restTemplate.postForObject(any(String.class), any(HttpEntity.class), eq(RecaptchaResponse.class)))
+                .thenReturn(response);
 
         // Act
         boolean result = recaptchaService.verify(token, "login");
@@ -125,7 +128,8 @@ class RecaptchaServiceTest {
     void shouldReturnTrue_whenApiErrorOccurs_failOpen() {
         // Arrange - API error should fail open (allow) to not block legitimate users
         String token = "valid-token";
-        when(restTemplate.postForObject(any(String.class), any(HttpEntity.class), eq(RecaptchaResponse.class))).thenThrow(new RestClientException("API timeout"));
+        when(restTemplate.postForObject(any(String.class), any(HttpEntity.class), eq(RecaptchaResponse.class)))
+                .thenThrow(new RestClientException("API timeout"));
 
         // Act
         boolean result = recaptchaService.verify(token, "login");
@@ -139,7 +143,8 @@ class RecaptchaServiceTest {
         // Arrange
         String token = "valid-token";
         RecaptchaResponse response = createResponse(true, 0.85f);
-        when(restTemplate.postForObject(any(String.class), any(HttpEntity.class), eq(RecaptchaResponse.class))).thenReturn(response);
+        when(restTemplate.postForObject(any(String.class), any(HttpEntity.class), eq(RecaptchaResponse.class)))
+                .thenReturn(response);
 
         // Act
         float score = recaptchaService.getScore(token);
@@ -176,14 +181,8 @@ class RecaptchaServiceTest {
         response.setSuccess(success);
         response.setScore(score);
         response.setHostname("localhost");
+        response.setAction("login");
         return response;
     }
-
-
-
-
-
-
-
 
 }
