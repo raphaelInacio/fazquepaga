@@ -10,6 +10,14 @@ import org.springframework.context.annotation.Primary;
 @Configuration
 public class JacksonConfig {
 
+    /**
+     * Create and configure the primary Jackson ObjectMapper for the application.
+     *
+     * Configures support for Java 8 date/time types and serializes dates as ISO-8601 strings
+     * by registering JavaTimeModule and disabling WRITE_DATES_AS_TIMESTAMPS.
+     *
+     * @return the configured ObjectMapper instance
+     */
     @Bean
     @Primary
     public ObjectMapper objectMapper() {

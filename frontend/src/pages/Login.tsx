@@ -11,6 +11,11 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 
+/**
+ * Renders a login form and handles user authentication, including optional reCAPTCHA verification, feedback to the user, and post-login navigation.
+ *
+ * @returns The Login component's JSX element that contains the email/password form, submission handling, and related UI.
+ */
 export default function Login() {
     const { t } = useTranslation();
     const navigate = useNavigate();

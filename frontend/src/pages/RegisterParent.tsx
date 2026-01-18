@@ -21,6 +21,13 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
 import { CreateParentRequest } from "@/types";
 
+/**
+ * Render a parent registration form and handle sign-up, including client-side validation,
+ * optional reCAPTCHA token retrieval, submission to the registration service, demo storage of
+ * returned parent data, and navigation to the login page on success.
+ *
+ * @returns The React element for the parent registration UI.
+ */
 export default function RegisterParent() {
     const { t } = useTranslation();
     const navigate = useNavigate();

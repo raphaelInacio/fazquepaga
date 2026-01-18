@@ -27,6 +27,11 @@ public class IdentityController {
     private final RefreshTokenService refreshTokenService;
     private final RecaptchaService recaptchaService;
 
+    /**
+     * Creates an IdentityController configured with the required service dependencies.
+     *
+     * Initializes the controller with the identity management, JWT, refresh-token, and reCAPTCHA services.
+     */
     public IdentityController(
             IdentityService identityService,
             com.fazquepaga.taskandpay.security.JwtService jwtService,
@@ -38,6 +43,15 @@ public class IdentityController {
         this.recaptchaService = recaptchaService;
     }
 
+    /**
+     * Register a new parent user after verifying the provided reCAPTCHA token.
+     *
+     * @param request the registration payload containing parent details and the reCAPTCHA token
+     * @return the created User wrapped in a ResponseEntity with HTTP 201 Created
+     * @throws RecaptchaException   if reCAPTCHA verification fails
+     * @throws ExecutionException   if an error occurs during asynchronous reCAPTCHA verification
+     * @throws InterruptedException if the reCAPTCHA verification thread is interrupted
+     */
     @PostMapping("/auth/register")
     public ResponseEntity<User> registerParent(@RequestBody CreateParentRequest request)
             throws ExecutionException, InterruptedException {
@@ -51,6 +65,15 @@ public class IdentityController {
         return ResponseEntity.status(HttpStatus.CREATED).body(parent);
     }
 
+    /**
+     * Authenticate a parent using credentials, verify reCAPTCHA, and issue an access token and refresh token.
+     *
+     * @param request the login request containing the parent's email, password, and reCAPTCHA token
+     * @return a LoginResponse containing the JWT access token, a refresh token, and the authenticated User
+     * @throws RecaptchaException   if reCAPTCHA verification fails
+     * @throws ExecutionException   if an asynchronous operation involved in authentication or token creation fails
+     * @throws InterruptedException if an asynchronous operation is interrupted
+     */
     @PostMapping("/auth/login")
     public ResponseEntity<com.fazquepaga.taskandpay.identity.dto.LoginResponse> login(
             @RequestBody com.fazquepaga.taskandpay.identity.dto.LoginRequest request)
@@ -70,6 +93,15 @@ public class IdentityController {
                         .build());
     }
 
+    /**
+     * Authenticate a child by onboarding code, verify reCAPTCHA, and return session tokens.
+     *
+     * @param request contains the child's onboarding code and the reCAPTCHA token
+     * @return a ChildLoginResponse containing the authenticated child, a JWT access token,
+     *         a refresh token, and a success message
+     * @throws ExecutionException if an error occurs during reCAPTCHA verification or related async processing
+     * @throws InterruptedException if reCAPTCHA verification or related async processing is interrupted
+     */
     @PostMapping("/children/login")
     public ResponseEntity<ChildLoginResponse> childLogin(@RequestBody ChildLoginRequest request)
             throws ExecutionException, InterruptedException {
@@ -90,6 +122,13 @@ public class IdentityController {
         return ResponseEntity.ok(response);
     }
 
+    /**
+     * Exchange a refresh token for a new access token.
+     *
+     * @param request contains the refresh token to validate and exchange
+     * @return a map with key `token` containing the new access token on success (HTTP 200),
+     *         or key `error` with an error message on failure (HTTP 401)
+     */
     @PostMapping("/auth/refresh")
     public ResponseEntity<Map<String, String>> refreshToken(
             @RequestBody RefreshTokenRequest request) {
@@ -101,6 +140,14 @@ public class IdentityController {
         return ResponseEntity.ok(Map.of("token", newToken.get()));
     }
 
+    /**
+     * Log out all refresh-token sessions for the currently authenticated user.
+     *
+     * Returns HTTP 200 with a map containing "message" on successful logout, or HTTP 401 with a map containing "error" when no authenticated principal is present.
+     *
+     * @param principal the authenticated principal (may be null for unauthenticated requests)
+     * @return a map with a "message" key on success or an "error" key on unauthorized requests
+     */
     @PostMapping("/auth/logout-all")
     public ResponseEntity<Map<String, String>> logoutAll(Principal principal) {
         if (principal == null) {
@@ -111,6 +158,15 @@ public class IdentityController {
         return ResponseEntity.ok(Map.of("message", "All sessions logged out"));
     }
 
+    /**
+     * Create a child user associated with the specified parent.
+     *
+     * @param request  the child's creation data; the child will be associated with the provided parentId
+     * @param parentId the identifier of the parent who will own the new child
+     * @return the created child User
+     * @throws ExecutionException   if an error occurs during asynchronous processing
+     * @throws InterruptedException if the operation is interrupted
+     */
     @PostMapping("/children")
     public ResponseEntity<User> createChild(
             @RequestBody CreateChildRequest request, @RequestParam("parent_id") String parentId)
@@ -185,6 +241,16 @@ public class IdentityController {
         return ResponseEntity.noContent().build();
     }
 
+    /**
+     * Update a child's AI context after verifying the provided parent owns the child.
+     *
+     * @param childId  the ID of the child whose AI context will be updated
+     * @param request  request containing the new AI context
+     * @param parentId the ID of the parent used to verify ownership before applying the update
+     * @return the updated child User
+     * @throws ExecutionException   if the asynchronous update operation fails
+     * @throws InterruptedException if the update operation is interrupted
+     */
     @PatchMapping("/children/{childId}/context")
     public ResponseEntity<User> updateAiContext(
             @PathVariable String childId,

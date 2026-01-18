@@ -24,6 +24,13 @@ public class SecurityConfig {
         private final RateLimitFilter rateLimitFilter;
         private final RecaptchaConfig recaptchaConfig;
 
+        /**
+         * Create a SecurityConfig wired with the required authentication, rate-limiting, and reCAPTCHA components.
+         *
+         * @param jwtAuthFilter  the filter that validates JWTs and authenticates requests
+         * @param rateLimitFilter  the filter that enforces request rate limits
+         * @param recaptchaConfig  configuration values used by the reCAPTCHA service
+         */
         public SecurityConfig(JwtAuthenticationFilter jwtAuthFilter, RateLimitFilter rateLimitFilter,
                         RecaptchaConfig recaptchaConfig) {
                 this.jwtAuthFilter = jwtAuthFilter;
@@ -31,16 +38,36 @@ public class SecurityConfig {
                 this.recaptchaConfig = recaptchaConfig;
         }
 
+        /**
+         * Creates a RestTemplate bean for executing outgoing HTTP requests.
+         *
+         * @return a RestTemplate instance to use for synchronous HTTP calls
+         */
         @Bean
         public RestTemplate restTemplate() {
                 return new RestTemplate();
         }
 
+        /**
+         * Create a RecaptchaService that validates reCAPTCHA tokens using the configured Recaptcha settings.
+         *
+         * @return a RecaptchaService implementation that uses the configured RecaptchaConfig and the provided RestTemplate
+         */
         @Bean
         public RecaptchaService recaptchaService(RestTemplate restTemplate) {
                 return new RecaptchaServiceImpl(recaptchaConfig, restTemplate);
         }
 
+        /**
+         * Configure and build the application's SecurityFilterChain.
+         *
+         * Configures CSRF, CORS, public endpoint patterns, session management (stateless),
+         * the authentication provider, and the filter ordering including JWT authentication
+         * and rate limiting.
+         *
+         * @param http the HttpSecurity instance used to configure the security pipeline
+         * @return the configured SecurityFilterChain enforcing the application's security rules
+         */
         @Bean
         public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
                 http.csrf(AbstractHttpConfigurer::disable)
@@ -117,6 +144,13 @@ public class SecurityConfig {
                 return new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder();
         }
 
+        /**
+         * Obtain the AuthenticationManager from the provided AuthenticationConfiguration.
+         *
+         * @param config the AuthenticationConfiguration used to retrieve the AuthenticationManager
+         * @return the configured AuthenticationManager
+         * @throws Exception if an AuthenticationManager cannot be obtained from the provided configuration
+         */
         @Bean
         public org.springframework.security.authentication.AuthenticationManager authenticationManager(
                         org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration config)
@@ -124,6 +158,13 @@ public class SecurityConfig {
                 return config.getAuthenticationManager();
         }
 
+        /**
+         * Exposes a CorsConfigurationSource bean that applies the application's CORS policy to all request paths.
+         *
+         * The configuration allows the application's client origins, standard HTTP methods, all headers, and credentials.
+         *
+         * @return the CorsConfigurationSource configured for all paths (/**) with the defined CORS policy
+         */
         @Bean
         public org.springframework.web.cors.CorsConfigurationSource corsConfigurationSource() {
                 org.springframework.web.cors.CorsConfiguration configuration = new org.springframework.web.cors.CorsConfiguration();
