@@ -56,6 +56,7 @@ export interface CreateParentRequest {
     email: string;
     phoneNumber: string;
     password?: string;
+    recaptchaToken?: string;
 }
 
 export interface GiftCard {

@@ -29,6 +29,10 @@ class IdentityControllerTest {
     @MockBean private IdentityService identityService;
     @MockBean private com.fazquepaga.taskandpay.security.JwtService jwtService;
     @MockBean private com.fazquepaga.taskandpay.identity.UserRepository userRepository;
+    @MockBean private com.fazquepaga.taskandpay.security.RefreshTokenService refreshTokenService;
+    @MockBean private com.fazquepaga.taskandpay.security.RateLimitService rateLimitService;
+    @MockBean private com.fazquepaga.taskandpay.security.RateLimitConfig rateLimitConfig;
+    @MockBean private com.fazquepaga.taskandpay.security.RecaptchaService recaptchaService;
 
     @Test
     void shouldRegisterParentSuccessfully() throws Exception {
@@ -36,6 +40,7 @@ class IdentityControllerTest {
         CreateParentRequest request = new CreateParentRequest();
         request.setName("John Doe");
         request.setEmail("john@example.com");
+        request.setRecaptchaToken("dummy-token");
 
         User parent =
                 User.builder()
@@ -46,6 +51,7 @@ class IdentityControllerTest {
                         .build();
 
         when(identityService.registerParent(any(CreateParentRequest.class))).thenReturn(parent);
+        when(recaptchaService.verify(eq("dummy-token"), eq("register"))).thenReturn(true);
 
         // When & Then
         mockMvc.perform(

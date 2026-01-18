@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 import { useAuth } from "@/context/AuthContext";
 import api from "@/lib/api";
 import { Button } from "@/components/ui/button";
@@ -14,6 +15,7 @@ export default function Login() {
     const { t } = useTranslation();
     const navigate = useNavigate();
     const { login } = useAuth();
+    const { executeRecaptcha } = useGoogleReCaptcha();
 
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -24,13 +26,17 @@ export default function Login() {
         setIsLoading(true);
 
         try {
+            // Generate reCAPTCHA token if available
+            const recaptchaToken = executeRecaptcha ? await executeRecaptcha('login') : undefined;
+
             const response = await api.post("/api/v1/auth/login", {
                 email,
-                password
+                password,
+                recaptchaToken
             });
 
-            const { token, user } = response.data;
-            login(token, user);
+            const { token, refreshToken, user } = response.data;
+            login(token, user, refreshToken);
 
             toast.success("Login successful!");
             navigate("/dashboard");

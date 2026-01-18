@@ -5,9 +5,11 @@ import { User } from '@/types';
 interface AuthContextType {
     user: User | null;
     token: string | null;
-    login: (token: string, user: User) => void;
+    refreshToken: string | null;
+    login: (token: string, user: User, refreshToken?: string) => void;
     logout: () => void;
     updateUser: (user: User) => void;
+    updateToken: (token: string) => void;
     isAuthenticated: boolean;
 }
 
@@ -16,40 +18,54 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [user, setUser] = useState<User | null>(null);
     const [token, setToken] = useState<string | null>(null);
+    const [refreshToken, setRefreshToken] = useState<string | null>(null);
 
     useEffect(() => {
         // Load from localStorage on mount
         const storedToken = localStorage.getItem('token');
         const storedUser = localStorage.getItem('user');
+        const storedRefreshToken = localStorage.getItem('refreshToken');
 
         if (storedToken && storedUser) {
             setToken(storedToken);
             setUser(JSON.parse(storedUser));
         }
+        if (storedRefreshToken) {
+            setRefreshToken(storedRefreshToken);
+        }
     }, []);
 
-    const login = (newToken: string, newUser: User) => {
+    const login = (newToken: string, newUser: User, newRefreshToken?: string) => {
         setToken(newToken);
         setUser(newUser);
         localStorage.setItem('token', newToken);
         localStorage.setItem('user', JSON.stringify(newUser));
 
+        if (newRefreshToken) {
+            setRefreshToken(newRefreshToken);
+            localStorage.setItem('refreshToken', newRefreshToken);
+        }
+
         // Legacy compatibility
         if (newUser.id) localStorage.setItem('parentId', newUser.id);
         if (newUser.name) localStorage.setItem('parentName', newUser.name);
-
-        // Also set axios default header if we had an api instance setup globally
-        // api.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
     };
 
     const logout = () => {
         setToken(null);
         setUser(null);
+        setRefreshToken(null);
         localStorage.removeItem('token');
         localStorage.removeItem('user');
+        localStorage.removeItem('refreshToken');
 
         // Clear child session too if any
         localStorage.removeItem('fazquepaga_child');
+    };
+
+    const updateToken = (newToken: string) => {
+        setToken(newToken);
+        localStorage.setItem('token', newToken);
     };
 
     const updateUser = (updatedUser: User) => {
@@ -62,7 +78,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     return (
-        <AuthContext.Provider value={{ user, token, login, logout, updateUser, isAuthenticated: !!token }}>
+        <AuthContext.Provider value={{ user, token, refreshToken, login, logout, updateUser, updateToken, isAuthenticated: !!token }}>
             {children}
         </AuthContext.Provider>
     );

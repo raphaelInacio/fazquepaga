@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 import { childAuthService } from "@/services/childAuthService";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,6 +12,7 @@ import { Gamepad2, Loader2 } from "lucide-react";
 export default function ChildLogin() {
     const { t } = useTranslation();
     const navigate = useNavigate();
+    const { executeRecaptcha } = useGoogleReCaptcha();
     const [code, setCode] = useState("");
     const [isLoading, setIsLoading] = useState(false);
 
@@ -24,7 +26,10 @@ export default function ChildLogin() {
 
         setIsLoading(true);
         try {
-            await childAuthService.login(code.trim().toUpperCase());
+            // Generate reCAPTCHA token if available
+            const recaptchaToken = executeRecaptcha ? await executeRecaptcha('child_login') : undefined;
+
+            await childAuthService.login(code.trim().toUpperCase(), recaptchaToken);
             toast.success(t("childLogin.welcome"));
             navigate("/child-portal");
         } catch (error) {

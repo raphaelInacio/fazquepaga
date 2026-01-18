@@ -3,6 +3,10 @@ package com.fazquepaga.taskandpay.config;
 import static org.springframework.security.config.Customizer.withDefaults;
 
 import com.fazquepaga.taskandpay.security.JwtAuthenticationFilter;
+import com.fazquepaga.taskandpay.security.RateLimitFilter;
+import com.fazquepaga.taskandpay.security.RecaptchaConfig;
+import com.fazquepaga.taskandpay.security.RecaptchaService;
+import com.fazquepaga.taskandpay.security.RecaptchaServiceImpl;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -10,15 +14,31 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.client.RestTemplate;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
         private final JwtAuthenticationFilter jwtAuthFilter;
+        private final RateLimitFilter rateLimitFilter;
+        private final RecaptchaConfig recaptchaConfig;
 
-        public SecurityConfig(JwtAuthenticationFilter jwtAuthFilter) {
+        public SecurityConfig(JwtAuthenticationFilter jwtAuthFilter, RateLimitFilter rateLimitFilter,
+                        RecaptchaConfig recaptchaConfig) {
                 this.jwtAuthFilter = jwtAuthFilter;
+                this.rateLimitFilter = rateLimitFilter;
+                this.recaptchaConfig = recaptchaConfig;
+        }
+
+        @Bean
+        public RestTemplate restTemplate() {
+                return new RestTemplate();
+        }
+
+        @Bean
+        public RecaptchaService recaptchaService(RestTemplate restTemplate) {
+                return new RecaptchaServiceImpl(recaptchaConfig, restTemplate);
         }
 
         @Bean
@@ -64,7 +84,9 @@ public class SecurityConfig {
                                 .authenticationProvider(authenticationProvider())
                                 .addFilterBefore(
                                                 jwtAuthFilter,
-                                                org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class);
+                                                org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class)
+                                .addFilterBefore(rateLimitFilter,
+                                                com.fazquepaga.taskandpay.security.JwtAuthenticationFilter.class);
 
                 return http.build();
         }
@@ -100,5 +122,24 @@ public class SecurityConfig {
                         org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration config)
                         throws Exception {
                 return config.getAuthenticationManager();
+        }
+
+        @Bean
+        public org.springframework.web.cors.CorsConfigurationSource corsConfigurationSource() {
+                org.springframework.web.cors.CorsConfiguration configuration = new org.springframework.web.cors.CorsConfiguration();
+                configuration.setAllowedOrigins(java.util.Arrays.asList(
+                                "https://gen-lang-client-0807030077.web.app",
+                                "https://gen-lang-client-0807030077.firebaseapp.com",
+                                "https://taskandpay.com",
+                                "http://localhost:5173",
+                                "http://localhost:3000"));
+                configuration.setAllowedMethods(
+                                java.util.Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD"));
+                configuration.setAllowedHeaders(java.util.Arrays.asList("*"));
+                configuration.setAllowCredentials(true);
+
+                org.springframework.web.cors.UrlBasedCorsConfigurationSource source = new org.springframework.web.cors.UrlBasedCorsConfigurationSource();
+                source.registerCorsConfiguration("/**", configuration);
+                return source;
         }
 }

@@ -296,5 +296,27 @@
         "ageMin": "Age must be at least {{min}}",
         "ageMax": "Age must be at most {{max}}",
         "required": "This field is required"
+    },
+    "error": {
+        "ai_quota_exceeded": "You have reached your daily AI suggestion limit. Try again tomorrow.",
+        "recaptcha_failed": "Security verification failed. Please try again."
+    },
+    "settings": {
+        "title": "Settings",
+        "subtitle": "Manage your account and security settings",
+        "security": {
+            "title": "Security",
+            "description": "Manage your account security settings"
+        },
+        "logoutAll": {
+            "title": "Logout from all devices",
+            "description": "This will sign you out from all devices and browsers",
+            "button": "Logout All",
+            "confirmTitle": "Are you sure?",
+            "confirmDescription": "This action will log you out from all devices and browsers. You will need to login again on each device.",
+            "confirm": "Yes, logout all devices",
+            "success": "All sessions have been logged out",
+            "error": "Failed to logout from all devices"
+        }
     }
 }

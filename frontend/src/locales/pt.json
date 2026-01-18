@@ -299,5 +299,27 @@
         "ageMin": "Idade deve ser pelo menos {{min}}",
         "ageMax": "Idade deve ser no máximo {{max}}",
         "required": "Este campo é obrigatório"
+    },
+    "error": {
+        "ai_quota_exceeded": "Você atingiu o limite diário de sugestões. Tente novamente amanhã.",
+        "recaptcha_failed": "Verificação de segurança falhou. Por favor, tente novamente."
+    },
+    "settings": {
+        "title": "Configurações",
+        "subtitle": "Gerencie sua conta e configurações de segurança",
+        "security": {
+            "title": "Segurança",
+            "description": "Gerencie as configurações de segurança da sua conta"
+        },
+        "logoutAll": {
+            "title": "Sair de todos os dispositivos",
+            "description": "Isso desconectará você de todos os dispositivos e navegadores",
+            "button": "Sair de Todos",
+            "confirmTitle": "Tem certeza?",
+            "confirmDescription": "Esta ação desconectará você de todos os dispositivos e navegadores. Você precisará fazer login novamente em cada dispositivo.",
+            "confirm": "Sim, sair de todos",
+            "success": "Todas as sessões foram encerradas",
+            "error": "Erro ao sair de todos os dispositivos"
+        }
     }
 }

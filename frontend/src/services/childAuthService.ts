@@ -2,6 +2,7 @@ import api from '@/lib/api';
 
 export interface ChildLoginRequest {
     code: string;
+    recaptchaToken?: string;
 }
 
 export interface ChildLoginResponse {
@@ -15,19 +16,23 @@ export interface ChildLoginResponse {
     };
     message: string;
     token?: string;
+    refreshToken?: string;
 }
 
 const CHILD_STORAGE_KEY = 'fazquepaga_child';
 
 export const childAuthService = {
-    login: async (code: string): Promise<ChildLoginResponse> => {
-        const response = await api.post('/api/v1/children/login', { code });
+    login: async (code: string, recaptchaToken?: string): Promise<ChildLoginResponse> => {
+        const response = await api.post('/api/v1/children/login', { code, recaptchaToken });
         const data = response.data;
 
         // Store child data and token
         localStorage.setItem(CHILD_STORAGE_KEY, JSON.stringify(data.child));
         if (data.token) {
             localStorage.setItem('token', data.token);
+        }
+        if (data.refreshToken) {
+            localStorage.setItem('refreshToken', data.refreshToken);
         }
 
         return data;

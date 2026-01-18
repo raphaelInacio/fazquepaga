@@ -13,5 +13,6 @@ import lombok.NoArgsConstructor;
 public class ChildLoginResponse {
     private User child;
     private String token;
+    private String refreshToken;
     private String message;
 }
