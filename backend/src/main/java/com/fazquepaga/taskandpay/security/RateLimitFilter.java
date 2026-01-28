@@ -197,6 +197,7 @@ public class RateLimitFilter extends OncePerRequestFilter {
                 || path.endsWith(".svg")
                 || path.endsWith(".json")
                 || path.equals("/")
-                || path.equals("/index.html");
+                || path.equals("/index.html")
+                || path.startsWith("/api/v1/webhooks/");
     }
 }

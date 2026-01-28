@@ -139,6 +139,14 @@ public class SecurityConfig {
                 configuration.setAllowCredentials(true);
 
                 org.springframework.web.cors.UrlBasedCorsConfigurationSource source = new org.springframework.web.cors.UrlBasedCorsConfigurationSource();
+
+                // Webhook specific CORS - allow everything
+                org.springframework.web.cors.CorsConfiguration webhookConfig = new org.springframework.web.cors.CorsConfiguration();
+                webhookConfig.setAllowedOrigins(java.util.Collections.singletonList("*"));
+                webhookConfig.setAllowedMethods(java.util.Arrays.asList("POST", "OPTIONS"));
+                webhookConfig.setAllowedHeaders(java.util.Arrays.asList("*"));
+                source.registerCorsConfiguration("/api/v1/webhooks/**", webhookConfig);
+
                 source.registerCorsConfiguration("/**", configuration);
                 return source;
         }
