@@ -1,8 +1,6 @@
 package com.fazquepaga.taskandpay.ai;
 
-/**
- * Exception thrown when a user exceeds their daily AI quota.
- */
+/** Exception thrown when a user exceeds their daily AI quota. */
 public class AIQuotaExceededException extends RuntimeException {
 
     private final int remainingQuota;

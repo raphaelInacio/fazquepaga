@@ -55,10 +55,11 @@ public class UserRepository {
 
         // Without it, the query will fail.
 
-        ApiFuture<com.google.cloud.firestore.QuerySnapshot> future = usersCollection
-                .whereEqualTo("phoneNumber", phoneNumber).limit(1).get();
+        ApiFuture<com.google.cloud.firestore.QuerySnapshot> future =
+                usersCollection.whereEqualTo("phoneNumber", phoneNumber).limit(1).get();
 
-        List<com.google.cloud.firestore.QueryDocumentSnapshot> documents = future.get().getDocuments();
+        List<com.google.cloud.firestore.QueryDocumentSnapshot> documents =
+                future.get().getDocuments();
 
         if (!documents.isEmpty()) {
 
@@ -69,9 +70,10 @@ public class UserRepository {
     }
 
     public User findByEmail(String email) throws ExecutionException, InterruptedException {
-        ApiFuture<com.google.cloud.firestore.QuerySnapshot> future = usersCollection.whereEqualTo("email", email)
-                .limit(1).get();
-        List<com.google.cloud.firestore.QueryDocumentSnapshot> documents = future.get().getDocuments();
+        ApiFuture<com.google.cloud.firestore.QuerySnapshot> future =
+                usersCollection.whereEqualTo("email", email).limit(1).get();
+        List<com.google.cloud.firestore.QueryDocumentSnapshot> documents =
+                future.get().getDocuments();
         if (!documents.isEmpty()) {
             return documents.get(0).toObject(User.class);
         }
@@ -80,9 +82,10 @@ public class UserRepository {
 
     public java.util.Optional<User> findByAccessCode(String accessCode)
             throws ExecutionException, InterruptedException {
-        ApiFuture<com.google.cloud.firestore.QuerySnapshot> future = usersCollection
-                .whereEqualTo("accessCode", accessCode).limit(1).get();
-        List<com.google.cloud.firestore.QueryDocumentSnapshot> documents = future.get().getDocuments();
+        ApiFuture<com.google.cloud.firestore.QuerySnapshot> future =
+                usersCollection.whereEqualTo("accessCode", accessCode).limit(1).get();
+        List<com.google.cloud.firestore.QueryDocumentSnapshot> documents =
+                future.get().getDocuments();
         if (!documents.isEmpty()) {
             return java.util.Optional.of(documents.get(0).toObject(User.class));
         }
@@ -102,9 +105,10 @@ public class UserRepository {
 
     public User findByAsaasCustomerId(String asaasCustomerId)
             throws ExecutionException, InterruptedException {
-        ApiFuture<com.google.cloud.firestore.QuerySnapshot> future = usersCollection
-                .whereEqualTo("asaasCustomerId", asaasCustomerId).limit(1).get();
-        List<com.google.cloud.firestore.QueryDocumentSnapshot> documents = future.get().getDocuments();
+        ApiFuture<com.google.cloud.firestore.QuerySnapshot> future =
+                usersCollection.whereEqualTo("asaasCustomerId", asaasCustomerId).limit(1).get();
+        List<com.google.cloud.firestore.QueryDocumentSnapshot> documents =
+                future.get().getDocuments();
         if (!documents.isEmpty()) {
             return documents.get(0).toObject(User.class);
         }
@@ -113,9 +117,13 @@ public class UserRepository {
 
     public User findByLastCheckoutSessionId(String checkoutSessionId)
             throws ExecutionException, InterruptedException {
-        ApiFuture<com.google.cloud.firestore.QuerySnapshot> future = usersCollection
-                .whereEqualTo("lastCheckoutSessionId", checkoutSessionId).limit(1).get();
-        List<com.google.cloud.firestore.QueryDocumentSnapshot> documents = future.get().getDocuments();
+        ApiFuture<com.google.cloud.firestore.QuerySnapshot> future =
+                usersCollection
+                        .whereEqualTo("lastCheckoutSessionId", checkoutSessionId)
+                        .limit(1)
+                        .get();
+        List<com.google.cloud.firestore.QueryDocumentSnapshot> documents =
+                future.get().getDocuments();
         if (!documents.isEmpty()) {
             return documents.get(0).toObject(User.class);
         }

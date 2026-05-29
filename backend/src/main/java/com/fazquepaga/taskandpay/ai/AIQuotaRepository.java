@@ -8,10 +8,7 @@ import com.google.cloud.firestore.WriteResult;
 import java.util.concurrent.ExecutionException;
 import org.springframework.stereotype.Repository;
 
-/**
- * Repository for AI quota operations in Firestore.
- * Path: users/{userId}/quotas/ai
- */
+/** Repository for AI quota operations in Firestore. Path: users/{userId}/quotas/ai */
 @Repository
 public class AIQuotaRepository {
 

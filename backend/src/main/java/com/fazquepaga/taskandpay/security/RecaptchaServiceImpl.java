@@ -1,8 +1,5 @@
 package com.fazquepaga.taskandpay.security;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fazquepaga.taskandpay.security.RecaptchaResponse;
-import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpEntity;
@@ -14,10 +11,7 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
-/**
- * Implementation of RecaptchaService that verifies tokens against Google's
- * reCAPTCHA v3 API.
- */
+/** Implementation of RecaptchaService that verifies tokens against Google's reCAPTCHA v3 API. */
 @Service
 public class RecaptchaServiceImpl implements RecaptchaService {
 
@@ -124,5 +118,4 @@ public class RecaptchaServiceImpl implements RecaptchaService {
 
         return restTemplate.postForObject(config.getVerifyUrl(), request, RecaptchaResponse.class);
     }
-
 }

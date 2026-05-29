@@ -17,8 +17,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 /**
- * Implementation of RefreshTokenService.
- * Generates opaque tokens, stores SHA-256 hashes in Firestore.
+ * Implementation of RefreshTokenService. Generates opaque tokens, stores SHA-256 hashes in
+ * Firestore.
  */
 @Service
 public class RefreshTokenServiceImpl implements RefreshTokenService {
@@ -56,13 +56,14 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
             String tokenHash = hashToken(token);
 
             // Create and save the refresh token entity
-            RefreshToken refreshToken = RefreshToken.builder()
-                    .userId(userId)
-                    .tokenHash(tokenHash)
-                    .createdAt(Instant.now())
-                    .expiresAt(Instant.now().plus(refreshTokenTtlDays, ChronoUnit.DAYS))
-                    .revoked(false)
-                    .build();
+            RefreshToken refreshToken =
+                    RefreshToken.builder()
+                            .userId(userId)
+                            .tokenHash(tokenHash)
+                            .createdAt(Instant.now())
+                            .expiresAt(Instant.now().plus(refreshTokenTtlDays, ChronoUnit.DAYS))
+                            .revoked(false)
+                            .build();
 
             refreshTokenRepository.save(refreshToken);
             log.debug("Created refresh token for user: {}", userId);
@@ -110,7 +111,9 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
             String newAccessToken;
 
             if (user.getRole() == User.Role.CHILD) {
-                newAccessToken = jwtService.generateToken(user.getId(), user.getName(), user.getRole().name());
+                newAccessToken =
+                        jwtService.generateToken(
+                                user.getId(), user.getName(), user.getRole().name());
             } else {
                 newAccessToken = jwtService.generateToken(user);
             }
@@ -137,9 +140,7 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
         }
     }
 
-    /**
-     * Hash a token using SHA-256.
-     */
+    /** Hash a token using SHA-256. */
     private String hashToken(String token) {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");

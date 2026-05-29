@@ -6,7 +6,7 @@
 - [x] 2.0 Subscription Flow & Webhooks
 - [x] 3.0 Logic: Notification Hub & WhatsApp Templates
 - [x] 4.0 Feature: Allowance Withdrawal
-- [ ] 5.0 Feature: AI Context & Prompt Refinement
+- [x] 5.0 Feature: AI Context & Prompt Refinement
 - [x] 6.0 Frontend: Subscription Flow
 - [x] 7.0 Frontend: Allowance Withdrawal
-- [ ] 8.0 Frontend: AI Context (Bio/Interests)
+- [x] 8.0 Frontend: AI Context (Bio/Interests)

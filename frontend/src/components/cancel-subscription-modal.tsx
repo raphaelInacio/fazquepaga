@@ -40,7 +40,7 @@ export function CancelSubscriptionModal({ open, onOpenChange, onSuccess }: Cance
         try {
             await subscriptionService.cancelSubscription({
                 reason: reason as CancellationReason,
-                details: reason === "OTHER" ? details : undefined,
+                reasonDetails: reason === "OTHER" ? details : undefined,
             });
             toast.success(t("settings.subscription.cancelSuccess") || "Subscription successfully canceled");
             onSuccess();
@@ -96,8 +96,12 @@ export function CancelSubscriptionModal({ open, onOpenChange, onSuccess }: Cance
                             {reason === "OTHER" && (
                                 <Textarea 
                                     placeholder={t("settings.subscription.reasons.OTHER_details") || "Please elaborate..."} 
+                                    maxLength={500}
                                     value={details}
-                                    onChange={(e) => setDetails(e.target.value)}
+                                    onChange={(e) => {
+                                        const val = e.target.value;
+                                        setDetails(val.slice(0, 500));
+                                    }}
                                 />
                             )}
                         </div>

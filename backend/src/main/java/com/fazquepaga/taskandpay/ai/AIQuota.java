@@ -5,10 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/**
- * Represents daily AI usage quota for a user.
- * Stored in Firestore at: users/{userId}/quotas/ai
- */
+/** Represents daily AI usage quota for a user. Stored in Firestore at: users/{userId}/quotas/ai */
 @Data
 @Builder
 @NoArgsConstructor

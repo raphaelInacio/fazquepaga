@@ -32,7 +32,8 @@ public class SubscriptionController {
         Integer daysRemaining = subscriptionService.getTrialDaysRemaining(freshUser);
         boolean isPremium =
                 freshUser.getSubscriptionTier() == User.SubscriptionTier.PREMIUM
-                        && freshUser.getSubscriptionStatus() == User.SubscriptionStatus.ACTIVE;
+                        && (freshUser.getSubscriptionStatus() == User.SubscriptionStatus.ACTIVE
+                                || freshUser.getSubscriptionStatus() == User.SubscriptionStatus.PENDING_CANCELLATION);
 
         return ResponseEntity.ok(
                 SubscriptionStatusResponse.builder()

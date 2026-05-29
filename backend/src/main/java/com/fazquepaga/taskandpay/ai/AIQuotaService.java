@@ -9,10 +9,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 /**
- * Service for managing AI usage quotas.
- * Implements daily limits per user based on subscription tier:
- * - Free: 5 suggestions/day
- * - Premium: 10 suggestions/day
+ * Service for managing AI usage quotas. Implements daily limits per user based on subscription
+ * tier: - Free: 5 suggestions/day - Premium: 10 suggestions/day
  */
 @Service
 @RequiredArgsConstructor
@@ -53,7 +51,8 @@ public class AIQuotaService {
             quota.setUsedToday(quota.getUsedToday() + 1);
             aiQuotaRepository.save(userId, quota);
 
-            log.info("AI quota used: userId={}, usedToday={}, dailyLimit={}, remaining={}",
+            log.info(
+                    "AI quota used: userId={}, usedToday={}, dailyLimit={}, remaining={}",
                     userId,
                     quota.getUsedToday(),
                     quota.getDailyLimit(),
@@ -109,16 +108,13 @@ public class AIQuotaService {
             int remaining = getRemainingQuota(userId);
             int limit = getDailyLimit(userId);
             log.warn("AI quota exceeded: userId={}, dailyLimit={}", userId, limit);
-            throw new AIQuotaExceededException(
-                    "Daily AI quota exceeded",
-                    remaining,
-                    limit);
+            throw new AIQuotaExceededException("Daily AI quota exceeded", remaining, limit);
         }
     }
 
     /**
-     * Gets or creates an AI quota record for the user.
-     * Handles daily reset logic by checking lastResetDate.
+     * Gets or creates an AI quota record for the user. Handles daily reset logic by checking
+     * lastResetDate.
      */
     private AIQuota getOrCreateQuota(String userId)
             throws ExecutionException, InterruptedException {
@@ -129,19 +125,21 @@ public class AIQuotaService {
         if (quota == null) {
             // Create new quota for this user
             int dailyLimit = calculateDailyLimit(userId);
-            quota = AIQuota.builder()
-                    .userId(userId)
-                    .usedToday(0)
-                    .lastResetDate(today.toString())
-                    .dailyLimit(dailyLimit)
-                    .build();
+            quota =
+                    AIQuota.builder()
+                            .userId(userId)
+                            .usedToday(0)
+                            .lastResetDate(today.toString())
+                            .dailyLimit(dailyLimit)
+                            .build();
             aiQuotaRepository.save(userId, quota);
             log.info("Created AI quota for userId={}, dailyLimit={}", userId, dailyLimit);
             return quota;
         }
 
         // Check if we need to reset for a new day
-        LocalDate lastReset = quota.getLastResetDate() != null ? LocalDate.parse(quota.getLastResetDate()) : null;
+        LocalDate lastReset =
+                quota.getLastResetDate() != null ? LocalDate.parse(quota.getLastResetDate()) : null;
 
         if (lastReset == null || lastReset.isBefore(today)) {
             int dailyLimit = calculateDailyLimit(userId);
@@ -155,19 +153,17 @@ public class AIQuotaService {
         return quota;
     }
 
-    /**
-     * Calculates the daily limit based on the user's subscription tier.
-     */
-    private int calculateDailyLimit(String userId)
-            throws ExecutionException, InterruptedException {
+    /** Calculates the daily limit based on the user's subscription tier. */
+    private int calculateDailyLimit(String userId) throws ExecutionException, InterruptedException {
 
         User user = userRepository.findByIdSync(userId);
         if (user == null) {
             return FREE_DAILY_LIMIT;
         }
 
-        boolean isPremium = user.getSubscriptionTier() == User.SubscriptionTier.PREMIUM
-                && user.getSubscriptionStatus() == User.SubscriptionStatus.ACTIVE;
+        boolean isPremium =
+                user.getSubscriptionTier() == User.SubscriptionTier.PREMIUM
+                        && user.getSubscriptionStatus() == User.SubscriptionStatus.ACTIVE;
 
         return isPremium ? PREMIUM_DAILY_LIMIT : FREE_DAILY_LIMIT;
     }

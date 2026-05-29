@@ -23,7 +23,7 @@ export type CancellationReason =
 
 export interface CancelSubscriptionRequest {
     reason: CancellationReason;
-    details?: string;
+    reasonDetails?: string;
 }
 
 export interface CancelSubscriptionResponse {

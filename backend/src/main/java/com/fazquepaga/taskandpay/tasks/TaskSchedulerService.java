@@ -42,10 +42,11 @@ public class TaskSchedulerService {
                         "Error processing task reset message: " + payload + " - " + e.getMessage());
             }
 
-            BasicAcknowledgeablePubsubMessage originalMessage = message.getHeaders()
-                    .get(
-                            GcpPubSubHeaders.ORIGINAL_MESSAGE,
-                            BasicAcknowledgeablePubsubMessage.class);
+            BasicAcknowledgeablePubsubMessage originalMessage =
+                    message.getHeaders()
+                            .get(
+                                    GcpPubSubHeaders.ORIGINAL_MESSAGE,
+                                    BasicAcknowledgeablePubsubMessage.class);
             if (originalMessage != null) {
                 originalMessage.ack();
             }
@@ -62,7 +63,8 @@ public class TaskSchedulerService {
     }
 
     private void resetDailyTasks() throws ExecutionException, InterruptedException {
-        List<QueryDocumentSnapshot> dailyTasks = taskRepository.findRecurringTasks("DAILY").get().getDocuments();
+        List<QueryDocumentSnapshot> dailyTasks =
+                taskRepository.findRecurringTasks("DAILY").get().getDocuments();
 
         for (QueryDocumentSnapshot doc : dailyTasks) {
             processTaskReset(doc);
@@ -70,7 +72,8 @@ public class TaskSchedulerService {
     }
 
     private void resetWeeklyTasks() throws ExecutionException, InterruptedException {
-        List<QueryDocumentSnapshot> weeklyTasks = taskRepository.findRecurringTasks("WEEKLY").get().getDocuments();
+        List<QueryDocumentSnapshot> weeklyTasks =
+                taskRepository.findRecurringTasks("WEEKLY").get().getDocuments();
 
         // 1 (Mon) to 7 (Sun)
         int currentDayOfWeek = LocalDate.now().getDayOfWeek().getValue();

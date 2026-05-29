@@ -7,6 +7,7 @@ public enum AsaasWebhookEventType {
     PAYMENT_REFUNDED,
     CHARGEBACK_REQUESTED,
     SUBSCRIPTION_CREATED,
+    SUBSCRIPTION_DELETED,
     UNKNOWN;
 
     public static AsaasWebhookEventType fromString(String event) {

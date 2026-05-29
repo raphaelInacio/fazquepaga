@@ -20,8 +20,8 @@ import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 /**
- * Filter that applies rate limiting to incoming requests.
- * Uses different limits for global, authentication, and AI endpoints.
+ * Filter that applies rate limiting to incoming requests. Uses different limits for global,
+ * authentication, and AI endpoints.
  */
 @Component
 public class RateLimitFilter extends OncePerRequestFilter {
@@ -34,13 +34,11 @@ public class RateLimitFilter extends OncePerRequestFilter {
     private final AntPathMatcher pathMatcher;
 
     // Auth endpoint patterns (stricter limits)
-    private static final String[] AUTH_PATTERNS = {
-            "/api/v1/auth/**", "/api/v1/children/login"
-    };
+    private static final String[] AUTH_PATTERNS = {"/api/v1/auth/**", "/api/v1/children/login"};
 
     // AI endpoint patterns (quota-based limits)
     private static final String[] AI_PATTERNS = {
-            "/api/v1/ai/tasks/suggestions", "/api/v1/ai/goal-coach", "/api/v1/ai/adventure-mode/tasks"
+        "/api/v1/ai/tasks/suggestions", "/api/v1/ai/goal-coach", "/api/v1/ai/adventure-mode/tasks"
     };
 
     public RateLimitFilter(
@@ -149,8 +147,9 @@ public class RateLimitFilter extends OncePerRequestFilter {
             HttpServletResponse response, String key, RateLimitService.BucketType bucketType) {
         long limit = getLimit(bucketType);
         long remaining = rateLimitService.getAvailableTokens(key, bucketType);
-        long resetTime = Instant.now().getEpochSecond()
-                + rateLimitService.getSecondsUntilRefill(key, bucketType);
+        long resetTime =
+                Instant.now().getEpochSecond()
+                        + rateLimitService.getSecondsUntilRefill(key, bucketType);
 
         response.setHeader("X-RateLimit-Limit", String.valueOf(limit));
         response.setHeader("X-RateLimit-Remaining", String.valueOf(remaining));

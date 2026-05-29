@@ -7,8 +7,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * Refresh token entity stored in Firestore.
- * Only the SHA-256 hash of the token is stored for security.
+ * Refresh token entity stored in Firestore. Only the SHA-256 hash of the token is stored for
+ * security.
  */
 @Data
 @Builder

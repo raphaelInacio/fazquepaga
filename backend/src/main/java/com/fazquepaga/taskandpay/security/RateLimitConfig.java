@@ -4,8 +4,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
 /**
- * Configuration properties for rate limiting.
- * Allows tuning rate limits via application.properties.
+ * Configuration properties for rate limiting. Allows tuning rate limits via application.properties.
  */
 @Component
 @ConfigurationProperties(prefix = "ratelimit")

@@ -219,7 +219,8 @@ public class SubscriptionService {
     private boolean isPremium(User user) {
         return user != null
                 && user.getSubscriptionTier() == User.SubscriptionTier.PREMIUM
-                && user.getSubscriptionStatus() == User.SubscriptionStatus.ACTIVE;
+                && (user.getSubscriptionStatus() == User.SubscriptionStatus.ACTIVE
+                        || user.getSubscriptionStatus() == User.SubscriptionStatus.PENDING_CANCELLATION);
     }
 
     // Trial Methods

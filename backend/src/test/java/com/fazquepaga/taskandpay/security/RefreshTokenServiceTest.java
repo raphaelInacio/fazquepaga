@@ -23,21 +23,18 @@ import org.springframework.test.util.ReflectionTestUtils;
 @ExtendWith(MockitoExtension.class)
 class RefreshTokenServiceTest {
 
-    @Mock
-    private RefreshTokenRepository refreshTokenRepository;
+    @Mock private RefreshTokenRepository refreshTokenRepository;
 
-    @Mock
-    private UserRepository userRepository;
+    @Mock private UserRepository userRepository;
 
-    @Mock
-    private JwtService jwtService;
+    @Mock private JwtService jwtService;
 
     private RefreshTokenServiceImpl refreshTokenService;
 
     @BeforeEach
     void setUp() throws Exception {
-        refreshTokenService = new RefreshTokenServiceImpl(
-                refreshTokenRepository, userRepository, jwtService);
+        refreshTokenService =
+                new RefreshTokenServiceImpl(refreshTokenRepository, userRepository, jwtService);
         ReflectionTestUtils.setField(refreshTokenService, "refreshTokenTtlDays", 30);
     }
 
@@ -71,13 +68,14 @@ class RefreshTokenServiceTest {
         String userId = "user-123";
         User user = User.builder().id(userId).name("Test User").role(User.Role.PARENT).build();
 
-        RefreshToken storedToken = RefreshToken.builder()
-                .id("token-id")
-                .userId(userId)
-                .tokenHash("hashed-value") // Will be matched by mock
-                .expiresAt(Instant.now().plus(15, ChronoUnit.DAYS))
-                .revoked(false)
-                .build();
+        RefreshToken storedToken =
+                RefreshToken.builder()
+                        .id("token-id")
+                        .userId(userId)
+                        .tokenHash("hashed-value") // Will be matched by mock
+                        .expiresAt(Instant.now().plus(15, ChronoUnit.DAYS))
+                        .revoked(false)
+                        .build();
 
         when(refreshTokenRepository.findByTokenHash(anyString()))
                 .thenReturn(Optional.of(storedToken));
@@ -108,13 +106,14 @@ class RefreshTokenServiceTest {
     @Test
     void shouldReturnEmpty_whenTokenExpired() throws Exception {
         // Given
-        RefreshToken expiredToken = RefreshToken.builder()
-                .id("token-id")
-                .userId("user-123")
-                .tokenHash("hashed-value")
-                .expiresAt(Instant.now().minus(1, ChronoUnit.DAYS)) // Expired
-                .revoked(false)
-                .build();
+        RefreshToken expiredToken =
+                RefreshToken.builder()
+                        .id("token-id")
+                        .userId("user-123")
+                        .tokenHash("hashed-value")
+                        .expiresAt(Instant.now().minus(1, ChronoUnit.DAYS)) // Expired
+                        .revoked(false)
+                        .build();
 
         when(refreshTokenRepository.findByTokenHash(anyString()))
                 .thenReturn(Optional.of(expiredToken));
@@ -130,13 +129,14 @@ class RefreshTokenServiceTest {
     @Test
     void shouldReturnEmpty_whenTokenRevoked() throws Exception {
         // Given
-        RefreshToken revokedToken = RefreshToken.builder()
-                .id("token-id")
-                .userId("user-123")
-                .tokenHash("hashed-value")
-                .expiresAt(Instant.now().plus(15, ChronoUnit.DAYS))
-                .revoked(true) // Revoked
-                .build();
+        RefreshToken revokedToken =
+                RefreshToken.builder()
+                        .id("token-id")
+                        .userId("user-123")
+                        .tokenHash("hashed-value")
+                        .expiresAt(Instant.now().plus(15, ChronoUnit.DAYS))
+                        .revoked(true) // Revoked
+                        .build();
 
         when(refreshTokenRepository.findByTokenHash(anyString()))
                 .thenReturn(Optional.of(revokedToken));
@@ -166,19 +166,16 @@ class RefreshTokenServiceTest {
         // Given
         String rawToken = "valid-raw-token";
         String userId = "child-123";
-        User child = User.builder()
-                .id(userId)
-                .name("Child User")
-                .role(User.Role.CHILD)
-                .build();
+        User child = User.builder().id(userId).name("Child User").role(User.Role.CHILD).build();
 
-        RefreshToken storedToken = RefreshToken.builder()
-                .id("token-id")
-                .userId(userId)
-                .tokenHash("hashed-value")
-                .expiresAt(Instant.now().plus(15, ChronoUnit.DAYS))
-                .revoked(false)
-                .build();
+        RefreshToken storedToken =
+                RefreshToken.builder()
+                        .id("token-id")
+                        .userId(userId)
+                        .tokenHash("hashed-value")
+                        .expiresAt(Instant.now().plus(15, ChronoUnit.DAYS))
+                        .revoked(false)
+                        .build();
 
         when(refreshTokenRepository.findByTokenHash(anyString()))
                 .thenReturn(Optional.of(storedToken));

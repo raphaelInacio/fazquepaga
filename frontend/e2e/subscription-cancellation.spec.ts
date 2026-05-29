@@ -83,6 +83,7 @@ test.describe('Subscription Cancellation', () => {
         
         // Next button should be disabled
         const nextBtn = page.locator('button:has-text("Próximo"), button:has-text("Next")');
+        await expect(nextBtn).toBeDisabled();
 
         // Select reason
         await page.click('label[for="r1"]');

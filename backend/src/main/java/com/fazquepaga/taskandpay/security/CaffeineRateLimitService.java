@@ -12,9 +12,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 /**
- * Implementation of RateLimitService using Caffeine cache and Bucket4j.
- * Provides in-memory rate limiting without requiring external storage like
- * Redis.
+ * Implementation of RateLimitService using Caffeine cache and Bucket4j. Provides in-memory rate
+ * limiting without requiring external storage like Redis.
  */
 @Service
 public class CaffeineRateLimitService implements RateLimitService {
@@ -31,20 +30,23 @@ public class CaffeineRateLimitService implements RateLimitService {
         this.config = config;
 
         // Initialize caches with expiration to prevent memory leaks
-        this.globalBuckets = Caffeine.newBuilder()
-                .expireAfterAccess(config.getGlobalDurationSeconds() * 2, TimeUnit.SECONDS)
-                .maximumSize(10000)
-                .build();
+        this.globalBuckets =
+                Caffeine.newBuilder()
+                        .expireAfterAccess(config.getGlobalDurationSeconds() * 2, TimeUnit.SECONDS)
+                        .maximumSize(10000)
+                        .build();
 
-        this.authBuckets = Caffeine.newBuilder()
-                .expireAfterAccess(config.getAuthDurationSeconds() * 2, TimeUnit.SECONDS)
-                .maximumSize(10000)
-                .build();
+        this.authBuckets =
+                Caffeine.newBuilder()
+                        .expireAfterAccess(config.getAuthDurationSeconds() * 2, TimeUnit.SECONDS)
+                        .maximumSize(10000)
+                        .build();
 
-        this.aiBuckets = Caffeine.newBuilder()
-                .expireAfterAccess(config.getAiDurationSeconds() * 2, TimeUnit.SECONDS)
-                .maximumSize(10000)
-                .build();
+        this.aiBuckets =
+                Caffeine.newBuilder()
+                        .expireAfterAccess(config.getAiDurationSeconds() * 2, TimeUnit.SECONDS)
+                        .maximumSize(10000)
+                        .build();
 
         log.info(
                 "Rate limiter initialized with limits: global={}/{}s, auth={}/{}s, ai={}/{}s",
@@ -115,23 +117,27 @@ public class CaffeineRateLimitService implements RateLimitService {
     }
 
     private Bucket createBucket(BucketType bucketType) {
-        Bandwidth bandwidth = switch (bucketType) {
-            case GLOBAL -> Bandwidth.classic(
-                    config.getGlobalLimit(),
-                    Refill.intervally(
-                            config.getGlobalLimit(),
-                            Duration.ofSeconds(config.getGlobalDurationSeconds())));
-            case AUTH -> Bandwidth.classic(
-                    config.getAuthLimit(),
-                    Refill.intervally(
-                            config.getAuthLimit(),
-                            Duration.ofSeconds(config.getAuthDurationSeconds())));
-            case AI -> Bandwidth.classic(
-                    config.getAiLimit(),
-                    Refill.intervally(
-                            config.getAiLimit(),
-                            Duration.ofSeconds(config.getAiDurationSeconds())));
-        };
+        Bandwidth bandwidth =
+                switch (bucketType) {
+                    case GLOBAL ->
+                            Bandwidth.classic(
+                                    config.getGlobalLimit(),
+                                    Refill.intervally(
+                                            config.getGlobalLimit(),
+                                            Duration.ofSeconds(config.getGlobalDurationSeconds())));
+                    case AUTH ->
+                            Bandwidth.classic(
+                                    config.getAuthLimit(),
+                                    Refill.intervally(
+                                            config.getAuthLimit(),
+                                            Duration.ofSeconds(config.getAuthDurationSeconds())));
+                    case AI ->
+                            Bandwidth.classic(
+                                    config.getAiLimit(),
+                                    Refill.intervally(
+                                            config.getAiLimit(),
+                                            Duration.ofSeconds(config.getAiDurationSeconds())));
+                };
 
         return Bucket.builder().addLimit(bandwidth).build();
     }
