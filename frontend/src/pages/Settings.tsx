@@ -18,12 +18,15 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { CancelSubscriptionModal } from "@/components/cancel-subscription-modal";
+import { AlertTriangle } from "lucide-react";
 
 export default function Settings() {
     const { t } = useTranslation();
     const navigate = useNavigate();
-    const { logout } = useAuth();
+    const { user, logout, updateUser } = useAuth();
     const [isLoggingOutAll, setIsLoggingOutAll] = useState(false);
+    const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
 
     const handleLogoutAll = async () => {
         setIsLoggingOutAll(true);
@@ -137,6 +140,60 @@ export default function Settings() {
                         </div>
                     </CardContent>
                 </Card>
+
+                {/* Subscription Section */}
+                {user?.subscriptionTier === 'PREMIUM' && user?.subscriptionStatus === 'ACTIVE' && (
+                    <Card className="border-none shadow-soft mt-8 border-destructive/20">
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2 text-destructive">
+                                <AlertTriangle className="h-5 w-5" />
+                                {t("settings.subscription.title") || "Subscription"}
+                            </CardTitle>
+                            <CardDescription>
+                                {t("settings.subscription.description") || "Manage your Premium subscription"}
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <div className="flex items-center justify-between p-4 bg-destructive/5 rounded-lg border border-destructive/20">
+                                <div className="flex items-center gap-3">
+                                    <div className="p-2 bg-destructive/10 rounded-lg">
+                                        <AlertTriangle className="h-5 w-5 text-destructive" />
+                                    </div>
+                                    <div>
+                                        <p className="font-medium text-destructive">
+                                            {t("settings.subscription.cancelTitle") || "Cancel Subscription"}
+                                        </p>
+                                        <p className="text-sm text-muted-foreground">
+                                            {t("settings.subscription.cancelDescription") || "You will lose access to Premium features at the end of your billing cycle"}
+                                        </p>
+                                    </div>
+                                </div>
+                                <Button
+                                    variant="destructive"
+                                    size="sm"
+                                    onClick={() => setIsCancelModalOpen(true)}
+                                    data-testid="cancel-subscription-button"
+                                >
+                                    {t("settings.subscription.cancelButton") || "Cancel Subscription"}
+                                </Button>
+                            </div>
+                        </CardContent>
+                    </Card>
+                )}
+
+                <CancelSubscriptionModal 
+                    open={isCancelModalOpen} 
+                    onOpenChange={setIsCancelModalOpen} 
+                    onSuccess={() => {
+                        // Reload user to update status
+                        if (user) {
+                            updateUser({
+                                ...user,
+                                subscriptionStatus: "PENDING_CANCELLATION"
+                            });
+                        }
+                    }} 
+                />
             </div>
         </div>
     );

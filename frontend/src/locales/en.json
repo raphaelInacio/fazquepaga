@@ -317,6 +317,34 @@
             "confirm": "Yes, logout all devices",
             "success": "All sessions have been logged out",
             "error": "Failed to logout from all devices"
+        },
+        "subscription": {
+            "title": "Subscription",
+            "description": "Manage your Premium subscription",
+            "cancelTitle": "Cancel Subscription",
+            "cancelDescription": "You will lose access to Premium features at the end of your billing cycle",
+            "cancelButton": "Cancel Subscription",
+            "cancelSurveyTitle": "Why are you canceling?",
+            "cancelSurveyDesc": "Please let us know why you are leaving so we can improve.",
+            "reasons": {
+                "TOO_EXPENSIVE": "Too expensive",
+                "NOT_USING_FEATURES": "Not using Premium features",
+                "FOUND_ALTERNATIVE": "Found a better alternative",
+                "WILL_RETURN_LATER": "Will return later",
+                "OTHER": "Other",
+                "OTHER_details": "Please elaborate..."
+            },
+            "cancelConfirmTitle": "Are you sure?",
+            "cancelConfirmDesc": "If you cancel, you will lose access to the following at the end of your billing cycle:",
+            "impact": {
+                "children": "Child limit reduced from unlimited to 1",
+                "tasks": "Recurring task limit reduced from unlimited to 5",
+                "ai": "Loss of AI task suggestions",
+                "giftcards": "Loss of access to Gift Card store"
+            },
+            "confirmCancel": "Confirm Cancellation",
+            "cancelSuccess": "Subscription successfully canceled",
+            "cancelError": "Failed to cancel subscription. Try again later."
         }
     }
 }

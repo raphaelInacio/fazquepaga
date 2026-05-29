@@ -30,8 +30,9 @@ public class SubscriptionController {
         // Calculate trial state
         boolean trialExpired = subscriptionService.isTrialExpired(freshUser);
         Integer daysRemaining = subscriptionService.getTrialDaysRemaining(freshUser);
-        boolean isPremium = freshUser.getSubscriptionTier() == User.SubscriptionTier.PREMIUM
-                && freshUser.getSubscriptionStatus() == User.SubscriptionStatus.ACTIVE;
+        boolean isPremium =
+                freshUser.getSubscriptionTier() == User.SubscriptionTier.PREMIUM
+                        && freshUser.getSubscriptionStatus() == User.SubscriptionStatus.ACTIVE;
 
         return ResponseEntity.ok(
                 SubscriptionStatusResponse.builder()
@@ -41,5 +42,18 @@ public class SubscriptionController {
                         .isTrialActive(!trialExpired && !isPremium)
                         .trialDaysRemaining(daysRemaining)
                         .build());
+    }
+
+    @PostMapping("/cancel")
+    public ResponseEntity<com.fazquepaga.taskandpay.subscription.dto.CancelSubscriptionResponse>
+            cancelSubscription(
+                    @AuthenticationPrincipal User user,
+                    @jakarta.validation.Valid @RequestBody
+                            com.fazquepaga.taskandpay.subscription.dto.CancelSubscriptionRequest
+                                    request) {
+        if (user.getRole() != User.Role.PARENT) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.FORBIDDEN).build();
+        }
+        return ResponseEntity.ok(subscriptionService.cancelSubscription(user.getId(), request));
     }
 }

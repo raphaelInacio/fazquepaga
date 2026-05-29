@@ -33,7 +33,7 @@ export interface User {
     monthlyAllowance?: number;
     age?: number;
     subscriptionTier?: 'FREE' | 'PREMIUM';
-    subscriptionStatus?: 'ACTIVE' | 'CANCELED' | 'PAST_DUE' | 'NONE';
+    subscriptionStatus?: 'ACTIVE' | 'CANCELED' | 'PAST_DUE' | 'NONE' | 'PENDING_CANCELLATION';
     balance?: number;
     aiContext?: string;
 }

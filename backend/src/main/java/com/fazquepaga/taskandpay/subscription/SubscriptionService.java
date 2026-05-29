@@ -2,7 +2,10 @@ package com.fazquepaga.taskandpay.subscription;
 
 import com.fazquepaga.taskandpay.identity.User;
 import com.fazquepaga.taskandpay.identity.UserRepository;
+import com.fazquepaga.taskandpay.notification.NotificationService;
 import com.fazquepaga.taskandpay.payment.AsaasService;
+import com.fazquepaga.taskandpay.subscription.dto.CancelSubscriptionRequest;
+import com.fazquepaga.taskandpay.subscription.dto.CancelSubscriptionResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -14,6 +17,7 @@ public class SubscriptionService {
 
     private final UserRepository userRepository;
     private final AsaasService asaasService;
+    private final NotificationService notificationService;
 
     public String generateSubscribeUrl(String userId) {
         User user = getUser(userId);
@@ -51,7 +55,8 @@ public class SubscriptionService {
         }
     }
 
-    public void activateSubscription(String asaasCustomerId, String subscriptionId, String checkoutSessionId) {
+    public void activateSubscription(
+            String asaasCustomerId, String subscriptionId, String checkoutSessionId) {
         try {
             User user = null;
             if (asaasCustomerId != null) {
@@ -63,10 +68,14 @@ public class SubscriptionService {
                 user = userRepository.findByLastCheckoutSessionId(checkoutSessionId);
                 // Sync: If found by session, update the customerId to match the new one from
                 // webhook
-                if (user != null && asaasCustomerId != null
+                if (user != null
+                        && asaasCustomerId != null
                         && !asaasCustomerId.equals(user.getAsaasCustomerId())) {
-                    log.info("Updating User {} AsaasCustomerId from {} to {}", user.getId(),
-                            user.getAsaasCustomerId(), asaasCustomerId);
+                    log.info(
+                            "Updating User {} AsaasCustomerId from {} to {}",
+                            user.getId(),
+                            user.getAsaasCustomerId(),
+                            asaasCustomerId);
                     user.setAsaasCustomerId(asaasCustomerId);
                 }
             }
@@ -76,10 +85,15 @@ public class SubscriptionService {
                 user.setSubscriptionTier(User.SubscriptionTier.PREMIUM);
                 user.setSubscriptionId(subscriptionId);
                 userRepository.save(user);
-                log.info("Subscription activated for user: {}. CustomerID: {}", user.getId(), asaasCustomerId);
+                log.info(
+                        "Subscription activated for user: {}. CustomerID: {}",
+                        user.getId(),
+                        asaasCustomerId);
             } else {
-                log.error("User not found for subscription activation. CustomerID: {}, Session: {}",
-                        asaasCustomerId, checkoutSessionId);
+                log.error(
+                        "User not found for subscription activation. CustomerID: {}, Session: {}",
+                        asaasCustomerId,
+                        checkoutSessionId);
             }
         } catch (Exception e) {
             log.error("Error activating subscription", e);
@@ -87,8 +101,8 @@ public class SubscriptionService {
         }
     }
 
-    public void deactivateSubscription(String asaasCustomerId, User.SubscriptionStatus status,
-            String checkoutSessionId) {
+    public void deactivateSubscription(
+            String asaasCustomerId, User.SubscriptionStatus status, String checkoutSessionId) {
         try {
             User user = null;
             if (asaasCustomerId != null) {
@@ -101,10 +115,14 @@ public class SubscriptionService {
                 // Sync logic mirrors activation, though less critical for deactivation it keeps
                 // data
                 // consistent
-                if (user != null && asaasCustomerId != null
+                if (user != null
+                        && asaasCustomerId != null
                         && !asaasCustomerId.equals(user.getAsaasCustomerId())) {
-                    log.info("Updating User {} AsaasCustomerId from {} to {}", user.getId(),
-                            user.getAsaasCustomerId(), asaasCustomerId);
+                    log.info(
+                            "Updating User {} AsaasCustomerId from {} to {}",
+                            user.getId(),
+                            user.getAsaasCustomerId(),
+                            asaasCustomerId);
                     user.setAsaasCustomerId(asaasCustomerId);
                 }
             }
@@ -115,8 +133,10 @@ public class SubscriptionService {
                 userRepository.save(user);
                 log.info("Subscription deactivated for user: {}. Status: {}", user.getId(), status);
             } else {
-                log.error("User not found for subscription deactivation. CustomerID: {}, Session: {}",
-                        asaasCustomerId, checkoutSessionId);
+                log.error(
+                        "User not found for subscription deactivation. CustomerID: {}, Session: {}",
+                        asaasCustomerId,
+                        checkoutSessionId);
             }
         } catch (Exception e) {
             log.error("Error deactivating subscription", e);
@@ -124,11 +144,57 @@ public class SubscriptionService {
         }
     }
 
+    public CancelSubscriptionResponse cancelSubscription(
+            String userId, CancelSubscriptionRequest request) {
+        User user = getUser(userId);
+
+        if (user.getSubscriptionTier() != User.SubscriptionTier.PREMIUM
+                || user.getSubscriptionStatus() != User.SubscriptionStatus.ACTIVE) {
+            throw new IllegalStateException("User does not have an active premium subscription");
+        }
+
+        if (user.getSubscriptionId() == null) {
+            throw new IllegalStateException("User has no Asaas subscription ID");
+        }
+
+        asaasService.cancelSubscription(user.getSubscriptionId());
+
+        user.setSubscriptionStatus(User.SubscriptionStatus.PENDING_CANCELLATION);
+        user.setCancellationReason(request.getReason());
+        user.setCancellationReasonDetails(request.getReasonDetails());
+        user.setCancellationDate(java.time.Instant.now());
+
+        userRepository.save(user);
+
+        notificationService.sendSubscriptionCanceled(user, null);
+
+        log.info("Subscription cancel requested for user {}", user.getId());
+
+        return CancelSubscriptionResponse.builder()
+                .status(User.SubscriptionStatus.PENDING_CANCELLATION)
+                .cancellationDate(user.getCancellationDate())
+                .message("Assinatura cancelada com sucesso.")
+                .build();
+    }
+
+    public void confirmCancellation(String asaasCustomerId) {
+        try {
+            User user = userRepository.findByAsaasCustomerId(asaasCustomerId);
+            if (user != null) {
+                user.setSubscriptionStatus(User.SubscriptionStatus.CANCELED);
+                user.setSubscriptionTier(User.SubscriptionTier.FREE);
+                userRepository.save(user);
+                log.info("Subscription fully canceled for user {}", user.getId());
+            }
+        } catch (Exception e) {
+            log.error("Error confirming cancellation for customer {}", asaasCustomerId, e);
+        }
+    }
+
     // Permission Checks
 
     public boolean canCreateTask(User user, int currentTasks) {
-        if (isPremium(user))
-            return true;
+        if (isPremium(user)) return true;
         return currentTasks < 50; // Free limit example
     }
 
@@ -141,14 +207,12 @@ public class SubscriptionService {
     }
 
     public boolean canAddChild(User user, int currentChildren) {
-        if (isPremium(user))
-            return true;
+        if (isPremium(user)) return true;
         return currentChildren < 2; // Free limit
     }
 
     public int getMaxRecurringTasks(User user) {
-        if (isPremium(user))
-            return 100;
+        if (isPremium(user)) return 100;
         return 3;
     }
 
@@ -161,9 +225,8 @@ public class SubscriptionService {
     // Trial Methods
 
     /**
-     * Checks if the user's trial has expired.
-     * Premium users are never considered expired.
-     * Legacy users (without trialStartDate) are grandfathered and NOT expired.
+     * Checks if the user's trial has expired. Premium users are never considered expired. Legacy
+     * users (without trialStartDate) are grandfathered and NOT expired.
      *
      * @param user the user to check
      * @return true if trial expired, false otherwise
@@ -180,7 +243,8 @@ public class SubscriptionService {
             return false;
         }
 
-        java.time.Instant trialEnd = user.getTrialStartDate().plus(3, java.time.temporal.ChronoUnit.DAYS);
+        java.time.Instant trialEnd =
+                user.getTrialStartDate().plus(3, java.time.temporal.ChronoUnit.DAYS);
         return java.time.Instant.now().isAfter(trialEnd);
     }
 
@@ -188,8 +252,7 @@ public class SubscriptionService {
      * Returns the number of days remaining in the trial.
      *
      * @param user the user to check
-     * @return null for Premium users or legacy users, 0 if expired, or days
-     *         remaining (1-3)
+     * @return null for Premium users or legacy users, 0 if expired, or days remaining (1-3)
      */
     public Integer getTrialDaysRemaining(User user) {
         if (isPremium(user)) {
@@ -203,7 +266,8 @@ public class SubscriptionService {
             return null;
         }
 
-        java.time.Instant trialEnd = user.getTrialStartDate().plus(3, java.time.temporal.ChronoUnit.DAYS);
+        java.time.Instant trialEnd =
+                user.getTrialStartDate().plus(3, java.time.temporal.ChronoUnit.DAYS);
         long hours = java.time.temporal.ChronoUnit.HOURS.between(java.time.Instant.now(), trialEnd);
         if (hours <= 0) {
             return 0;
