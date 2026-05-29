@@ -15,19 +15,14 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.RestTemplate;
-import org.junit.jupiter.api.Disabled;
 
-@Disabled("Integration tests temporarily disabled")
 class AsaasServiceIntegrationTest {
 
-    @Mock
-    private RestTemplate restTemplate;
+    @Mock private RestTemplate restTemplate;
 
-    @Mock
-    private UserRepository userRepository;
+    @Mock private UserRepository userRepository;
 
-    @InjectMocks
-    private AsaasService asaasService;
+    @InjectMocks private AsaasService asaasService;
 
     @BeforeEach
     void setUp() {
@@ -43,20 +38,21 @@ class AsaasServiceIntegrationTest {
     @Test
     void createCheckoutSession_ShouldReturnLinkAndSaveSessionId_WhenSuccessful() {
         // Arrange
-        User user = User.builder()
-                .id("user123")
-                .email("john@example.com")
-                .asaasCustomerId("cus_EXISTING")
-                .build();
+        User user =
+                User.builder()
+                        .id("user123")
+                        .email("john@example.com")
+                        .asaasCustomerId("cus_EXISTING")
+                        .build();
 
         AsaasCheckoutResponse mockResponse = new AsaasCheckoutResponse();
         mockResponse.setId("sess_12345");
         mockResponse.setLink("https://sandbox.asaas.com/checkout/sess_12345");
 
         when(restTemplate.postForObject(
-                eq("/checkouts"),
-                any(AsaasCheckoutRequest.class),
-                eq(AsaasCheckoutResponse.class)))
+                        eq("/checkouts"),
+                        any(AsaasCheckoutRequest.class),
+                        eq(AsaasCheckoutResponse.class)))
                 .thenReturn(mockResponse);
 
         // Act
@@ -68,5 +64,50 @@ class AsaasServiceIntegrationTest {
         // Verify user was updated with session ID
         assertEquals("sess_12345", user.getLastCheckoutSessionId());
         verify(userRepository).save(user);
+    }
+
+    @Test
+    void cancelSubscription_ShouldReturnTrue_WhenSuccessful() {
+        // Arrange
+        doNothing().when(restTemplate).delete("/subscriptions/sub_123");
+
+        // Act
+        boolean result = asaasService.cancelSubscription("sub_123");
+
+        // Assert
+        assertTrue(result);
+        verify(restTemplate).delete("/subscriptions/sub_123");
+    }
+
+    @Test
+    void cancelSubscription_ShouldReturnTrue_WhenNotFound() {
+        // Arrange
+        doThrow(
+                        new org.springframework.web.client.HttpClientErrorException(
+                                org.springframework.http.HttpStatus.NOT_FOUND))
+                .when(restTemplate)
+                .delete("/subscriptions/sub_123");
+
+        // Act
+        boolean result = asaasService.cancelSubscription("sub_123");
+
+        // Assert
+        assertTrue(result);
+    }
+
+    @Test
+    void cancelSubscription_ShouldThrowException_WhenApiFails() {
+        // Arrange
+        doThrow(
+                        new org.springframework.web.client.HttpServerErrorException(
+                                org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR))
+                .when(restTemplate)
+                .delete("/subscriptions/sub_123");
+
+        // Act & Assert
+        RuntimeException exception =
+                assertThrows(
+                        RuntimeException.class, () -> asaasService.cancelSubscription("sub_123"));
+        assertEquals("Failed to cancel Asaas subscription", exception.getMessage());
     }
 }

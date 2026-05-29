@@ -32,8 +32,8 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
 /**
- * Integration tests for refresh token flow.
- * Tests the complete authentication and token refresh lifecycle.
+ * Integration tests for refresh token flow. Tests the complete authentication and token refresh
+ * lifecycle.
  */
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -43,10 +43,11 @@ import org.testcontainers.utility.DockerImageName;
 class RefreshTokenIntegrationTest {
 
     @Container
-    private static final FirestoreEmulatorContainer firestoreEmulator = new FirestoreEmulatorContainer(
-            DockerImageName.parse("google/cloud-sdk:latest")
-                    .asCompatibleSubstituteFor(
-                            "gcr.io/google.com/cloudsdktool/google-cloud-cli"));
+    private static final FirestoreEmulatorContainer firestoreEmulator =
+            new FirestoreEmulatorContainer(
+                    DockerImageName.parse("google/cloud-sdk:latest")
+                            .asCompatibleSubstituteFor(
+                                    "gcr.io/google.com/cloudsdktool/google-cloud-cli"));
 
     @DynamicPropertySource
     static void firestoreProperties(DynamicPropertyRegistry registry) {
@@ -62,12 +63,9 @@ class RefreshTokenIntegrationTest {
         }
     }
 
-    @Autowired
-    private MockMvc mockMvc;
-    @Autowired
-    private FirestoreTemplate firestoreTemplate;
-    @Autowired
-    private ObjectMapper objectMapper;
+    @Autowired private MockMvc mockMvc;
+    @Autowired private FirestoreTemplate firestoreTemplate;
+    @Autowired private ObjectMapper objectMapper;
 
     @AfterEach
     void cleanup() {
@@ -86,9 +84,9 @@ class RefreshTokenIntegrationTest {
         loginRequest.setPassword("password123");
 
         mockMvc.perform(
-                post("/api/v1/auth/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(loginRequest)))
+                        post("/api/v1/auth/login")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(loginRequest)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.token").exists())
                 .andExpect(jsonPath("$.refreshToken").exists())
@@ -106,9 +104,9 @@ class RefreshTokenIntegrationTest {
         refreshRequest.setRefreshToken(refreshToken);
 
         mockMvc.perform(
-                post("/api/v1/auth/refresh")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(refreshRequest)))
+                        post("/api/v1/auth/refresh")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(refreshRequest)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.token").exists());
     }
@@ -119,9 +117,9 @@ class RefreshTokenIntegrationTest {
         refreshRequest.setRefreshToken("invalid-token");
 
         mockMvc.perform(
-                post("/api/v1/auth/refresh")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(refreshRequest)))
+                        post("/api/v1/auth/refresh")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(refreshRequest)))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.error").value("Invalid or expired refresh token"));
     }
@@ -135,8 +133,8 @@ class RefreshTokenIntegrationTest {
 
         // Logout all sessions
         mockMvc.perform(
-                post("/api/v1/auth/logout-all")
-                        .header("Authorization", "Bearer " + accessToken))
+                        post("/api/v1/auth/logout-all")
+                                .header("Authorization", "Bearer " + accessToken))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("All sessions logged out"));
 
@@ -145,16 +143,15 @@ class RefreshTokenIntegrationTest {
         refreshRequest.setRefreshToken(refreshToken);
 
         mockMvc.perform(
-                post("/api/v1/auth/refresh")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(refreshRequest)))
+                        post("/api/v1/auth/refresh")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(refreshRequest)))
                 .andExpect(status().isUnauthorized());
     }
 
     @Test
     void shouldReturn401_whenNotAuthenticated_forLogoutAll() throws Exception {
-        mockMvc.perform(post("/api/v1/auth/logout-all"))
-                .andExpect(status().isUnauthorized());
+        mockMvc.perform(post("/api/v1/auth/logout-all")).andExpect(status().isUnauthorized());
     }
 
     // Helper methods
@@ -166,9 +163,9 @@ class RefreshTokenIntegrationTest {
         request.setPassword("password123");
 
         mockMvc.perform(
-                post("/api/v1/auth/register")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+                        post("/api/v1/auth/register")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated());
     }
 
@@ -177,12 +174,13 @@ class RefreshTokenIntegrationTest {
         loginRequest.setEmail("test@example.com");
         loginRequest.setPassword("password123");
 
-        MvcResult result = mockMvc.perform(
-                post("/api/v1/auth/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(loginRequest)))
-                .andExpect(status().isOk())
-                .andReturn();
+        MvcResult result =
+                mockMvc.perform(
+                                post("/api/v1/auth/login")
+                                        .contentType(MediaType.APPLICATION_JSON)
+                                        .content(objectMapper.writeValueAsString(loginRequest)))
+                        .andExpect(status().isOk())
+                        .andReturn();
 
         String responseJson = result.getResponse().getContentAsString();
         return objectMapper.readTree(responseJson).get("refreshToken").asText();
@@ -193,12 +191,13 @@ class RefreshTokenIntegrationTest {
         loginRequest.setEmail("test@example.com");
         loginRequest.setPassword("password123");
 
-        MvcResult result = mockMvc.perform(
-                post("/api/v1/auth/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(loginRequest)))
-                .andExpect(status().isOk())
-                .andReturn();
+        MvcResult result =
+                mockMvc.perform(
+                                post("/api/v1/auth/login")
+                                        .contentType(MediaType.APPLICATION_JSON)
+                                        .content(objectMapper.writeValueAsString(loginRequest)))
+                        .andExpect(status().isOk())
+                        .andReturn();
 
         String responseJson = result.getResponse().getContentAsString();
         return objectMapper.readTree(responseJson).get("token").asText();

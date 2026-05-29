@@ -96,7 +96,8 @@ class RateLimitServiceTest {
         rateLimitService.tryConsume(key, RateLimitService.BucketType.GLOBAL);
 
         // Act
-        long available = rateLimitService.getAvailableTokens(key, RateLimitService.BucketType.GLOBAL);
+        long available =
+                rateLimitService.getAvailableTokens(key, RateLimitService.BucketType.GLOBAL);
 
         // Assert
         assertThat(available).isEqualTo(config.getGlobalLimit() - 2);
@@ -149,7 +150,8 @@ class RateLimitServiceTest {
         String key = "192.168.1.9";
 
         // Act
-        long available = rateLimitService.getAvailableTokens(key, RateLimitService.BucketType.GLOBAL);
+        long available =
+                rateLimitService.getAvailableTokens(key, RateLimitService.BucketType.GLOBAL);
 
         // Assert
         assertThat(available).isEqualTo(Long.MAX_VALUE);

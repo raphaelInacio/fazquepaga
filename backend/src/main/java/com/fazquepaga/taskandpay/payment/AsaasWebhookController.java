@@ -56,18 +56,24 @@ public class AsaasWebhookController {
         switch (eventType) {
             case PAYMENT_CONFIRMED:
             case PAYMENT_RECEIVED:
-                subscriptionService.activateSubscription(asaasCustomerId, subscriptionId, checkoutSessionId);
+                subscriptionService.activateSubscription(
+                        asaasCustomerId, subscriptionId, checkoutSessionId);
                 break;
             case PAYMENT_OVERDUE:
                 subscriptionService.deactivateSubscription(
-                        asaasCustomerId, com.fazquepaga.taskandpay.identity.User.SubscriptionStatus.PAST_DUE,
+                        asaasCustomerId,
+                        com.fazquepaga.taskandpay.identity.User.SubscriptionStatus.PAST_DUE,
                         checkoutSessionId);
                 break;
             case PAYMENT_REFUNDED:
             case CHARGEBACK_REQUESTED:
                 subscriptionService.deactivateSubscription(
-                        asaasCustomerId, com.fazquepaga.taskandpay.identity.User.SubscriptionStatus.CANCELED,
+                        asaasCustomerId,
+                        com.fazquepaga.taskandpay.identity.User.SubscriptionStatus.CANCELED,
                         checkoutSessionId);
+                break;
+            case SUBSCRIPTION_DELETED:
+                subscriptionService.confirmCancellation(asaasCustomerId);
                 break;
             default:
                 log.debug("Ignored Asaas Webhook event type: {}", eventType);

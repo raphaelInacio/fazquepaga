@@ -28,9 +28,10 @@ The application is divided into focused domain modules:
     *   **Ledger**: Detailed transaction history (credits and debits).
     *   **AI Financial Insights**: Smart analysis of spending and saving habits.
     *   **Gift Card Store**: (Premium) Redeem balance for real-world rewards.
-*   **Plans and Monetization (Free Trial)**:
+*   **Plans and Monetization (Free Trial & Cancellation)**:
     *   **Free Trial**: 3-day full access to all features for new users.
     *   **Premium Plan**: Paid subscription after trial with unlimited tasks, AI features, Gift Card Store.
+    *   **Self-Service Cancellation**: Premium parents can autonomously cancel their subscription via the settings interface, providing churn survey feedback, viewing clear impacts of resource downgrades, and receiving WhatsApp confirmation, with automatic tier sync to `FREE` via webhook upon billing cycle expiration.
 
 ## 🔒 Security Mechanisms
 

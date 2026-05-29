@@ -320,6 +320,34 @@
             "confirm": "Sim, sair de todos",
             "success": "Todas as sessões foram encerradas",
             "error": "Erro ao sair de todos os dispositivos"
+        },
+        "subscription": {
+            "title": "Assinatura",
+            "description": "Gerencie sua assinatura Premium",
+            "cancelTitle": "Cancelar Assinatura",
+            "cancelDescription": "Você perderá acesso aos recursos Premium no final do seu ciclo de cobrança",
+            "cancelButton": "Cancelar Assinatura",
+            "cancelSurveyTitle": "Por que você está cancelando?",
+            "cancelSurveyDesc": "Por favor, nos informe por que você está saindo para podermos melhorar.",
+            "reasons": {
+                "TOO_EXPENSIVE": "Muito caro",
+                "NOT_USING_FEATURES": "Não uso os recursos Premium",
+                "FOUND_ALTERNATIVE": "Encontrei uma alternativa melhor",
+                "WILL_RETURN_LATER": "Vou voltar depois",
+                "OTHER": "Outro",
+                "OTHER_details": "Por favor, detalhe..."
+            },
+            "cancelConfirmTitle": "Tem certeza?",
+            "cancelConfirmDesc": "Se você cancelar, perderá acesso ao seguinte no final do seu ciclo de cobrança:",
+            "impact": {
+                "children": "Limite de crianças reduzido de ilimitado para 1",
+                "tasks": "Limite de tarefas recorrentes reduzido de ilimitado para 5",
+                "ai": "Perda de sugestões de tarefas com IA",
+                "giftcards": "Perda de acesso à loja de Gift Cards"
+            },
+            "confirmCancel": "Confirmar Cancelamento",
+            "cancelSuccess": "Assinatura cancelada com sucesso",
+            "cancelError": "Falha ao cancelar assinatura. Tente novamente mais tarde."
         }
     }
 }

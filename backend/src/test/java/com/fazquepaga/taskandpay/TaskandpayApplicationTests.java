@@ -3,7 +3,6 @@ package com.fazquepaga.taskandpay;
 import com.google.auth.Credentials;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.spring.core.GcpProjectIdProvider;
-
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -36,6 +35,5 @@ class TaskandpayApplicationTests {
     }
 
     @Test
-    void contextLoads() {
-    }
+    void contextLoads() {}
 }

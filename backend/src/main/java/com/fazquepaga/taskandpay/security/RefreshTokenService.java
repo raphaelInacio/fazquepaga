@@ -2,9 +2,7 @@ package com.fazquepaga.taskandpay.security;
 
 import java.util.Optional;
 
-/**
- * Service for managing refresh tokens.
- */
+/** Service for managing refresh tokens. */
 public interface RefreshTokenService {
 
     /**

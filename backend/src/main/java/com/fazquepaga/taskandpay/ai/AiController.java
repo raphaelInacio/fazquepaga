@@ -57,19 +57,17 @@ public class AiController {
         // Verify quota before AI call
         aiQuotaService.verifyQuotaOrThrow(user.getId());
 
-        String plan = suggestionService.generateGoalPlan(
-                request.getChildId(),
-                request.getGoalDescription(),
-                request.getTargetAmount(),
-                language);
+        String plan =
+                suggestionService.generateGoalPlan(
+                        request.getChildId(),
+                        request.getGoalDescription(),
+                        request.getTargetAmount(),
+                        language);
 
         // Record usage only after success
         aiQuotaService.recordUsage(user.getId());
 
-        return GoalCoachResponse.builder()
-                .plan(plan)
-                .imageUrl(null)
-                .build();
+        return GoalCoachResponse.builder().plan(plan).imageUrl(null).build();
     }
 
     @PostMapping("/adventure-mode/tasks")
@@ -81,7 +79,8 @@ public class AiController {
         // Verify quota before AI call
         aiQuotaService.verifyQuotaOrThrow(user.getId());
 
-        List<AdventureTask> adventureTasks = suggestionService.generateAdventureTasks(request.getTasks(), language);
+        List<AdventureTask> adventureTasks =
+                suggestionService.generateAdventureTasks(request.getTasks(), language);
 
         // Record usage only after success
         aiQuotaService.recordUsage(user.getId());

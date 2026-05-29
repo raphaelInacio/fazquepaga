@@ -20,13 +20,13 @@ import org.springframework.test.util.ReflectionTestUtils;
 @ExtendWith(MockitoExtension.class)
 class JwtServiceTest {
 
-    private static final String TEST_SECRET = "746573742D7365637265742D6B65792D666F722D756E69742D74657374732D6D757374";
+    private static final String TEST_SECRET =
+            "746573742D7365637265742D6B65792D666F722D756E69742D74657374732D6D757374";
     private static final int TEST_CHILD_TTL_DAYS = 30;
 
     private JwtService jwtService;
 
-    @Mock
-    private UserDetails userDetails;
+    @Mock private UserDetails userDetails;
 
     @BeforeEach
     void setUp() {

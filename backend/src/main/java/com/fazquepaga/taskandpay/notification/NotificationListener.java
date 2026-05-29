@@ -25,10 +25,11 @@ public class NotificationListener {
         return message -> {
             log.info("Message received from Pub/Sub");
             String payload = new String((byte[]) message.getPayload());
-            BasicAcknowledgeablePubsubMessage originalMessage = message.getHeaders()
-                    .get(
-                            GcpPubSubHeaders.ORIGINAL_MESSAGE,
-                            BasicAcknowledgeablePubsubMessage.class);
+            BasicAcknowledgeablePubsubMessage originalMessage =
+                    message.getHeaders()
+                            .get(
+                                    GcpPubSubHeaders.ORIGINAL_MESSAGE,
+                                    BasicAcknowledgeablePubsubMessage.class);
 
             try {
                 NotificationEvent event = objectMapper.readValue(payload, NotificationEvent.class);

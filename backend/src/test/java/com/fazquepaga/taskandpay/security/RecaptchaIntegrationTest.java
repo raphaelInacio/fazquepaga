@@ -7,29 +7,28 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.web.client.RestTemplate;
-import org.junit.jupiter.api.Disabled;
 
 @Disabled("Integration tests temporarily disabled")
 @SpringBootTest
 @org.springframework.test.annotation.DirtiesContext
-@org.springframework.test.context.TestPropertySource(properties = {
-        "recaptcha.enabled=true",
-        "recaptcha.secret-key=test-secret",
-        "recaptcha.verify-url=http://localhost:9999/verify", // Dummy URL
-        "recaptcha.threshold=0.5"
-})
+@org.springframework.test.context.TestPropertySource(
+        properties = {
+            "recaptcha.enabled=true",
+            "recaptcha.secret-key=test-secret",
+            "recaptcha.verify-url=http://localhost:9999/verify", // Dummy URL
+            "recaptcha.threshold=0.5"
+        })
 class RecaptchaIntegrationTest {
 
-    @Autowired
-    private RecaptchaService recaptchaService;
+    @Autowired private RecaptchaService recaptchaService;
 
-    @MockitoBean
-    private RestTemplate restTemplate;
+    @MockitoBean private RestTemplate restTemplate;
 
     @BeforeEach
     void setup() {

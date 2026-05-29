@@ -66,4 +66,21 @@ class NotificationServiceTest {
         // Assert
         verify(pubSubTemplate).publish(eq("test-topic"), anyString());
     }
+
+    @Test
+    void sendSubscriptionCanceled_ShouldPublishEvent() throws JsonProcessingException {
+        // Arrange
+        User user = User.builder().name("Parent").phoneNumber("123456789").build();
+        java.time.Instant expiration = java.time.Instant.now();
+
+        when(objectMapper.writeValueAsString(
+                        org.mockito.ArgumentMatchers.any(NotificationEvent.class)))
+                .thenReturn("{\"type\":\"SUBSCRIPTION_CANCELED\"}");
+
+        // Act
+        notificationService.sendSubscriptionCanceled(user, expiration);
+
+        // Assert
+        verify(pubSubTemplate).publish(eq("test-topic"), anyString());
+    }
 }

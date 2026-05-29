@@ -78,22 +78,25 @@ public class IdentityController {
             throw new RecaptchaException("reCAPTCHA verification failed");
         }
         User child = identityService.authenticateChildByCode(request.getCode());
-        String token = jwtService.generateToken(
-                child.getId(), child.getId(), "CHILD"); // Simplified token for child
+        String token =
+                jwtService.generateToken(
+                        child.getId(), child.getId(), "CHILD"); // Simplified token for child
         String refreshToken = refreshTokenService.createRefreshToken(child.getId());
-        ChildLoginResponse response = ChildLoginResponse.builder()
-                .child(child)
-                .token(token)
-                .refreshToken(refreshToken)
-                .message("Login successful")
-                .build();
+        ChildLoginResponse response =
+                ChildLoginResponse.builder()
+                        .child(child)
+                        .token(token)
+                        .refreshToken(refreshToken)
+                        .message("Login successful")
+                        .build();
         return ResponseEntity.ok(response);
     }
 
     @PostMapping("/auth/refresh")
     public ResponseEntity<Map<String, String>> refreshToken(
             @RequestBody RefreshTokenRequest request) {
-        Optional<String> newToken = refreshTokenService.validateAndRefresh(request.getRefreshToken());
+        Optional<String> newToken =
+                refreshTokenService.validateAndRefresh(request.getRefreshToken());
         if (newToken.isEmpty()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(Map.of("error", "Invalid or expired refresh token"));
@@ -191,7 +194,8 @@ public class IdentityController {
             @RequestBody com.fazquepaga.taskandpay.identity.dto.UpdateAiContextRequest request,
             @RequestParam("parent_id") String parentId)
             throws ExecutionException, InterruptedException {
-        User updatedChild = identityService.updateAiContext(childId, request.getContext(), parentId);
+        User updatedChild =
+                identityService.updateAiContext(childId, request.getContext(), parentId);
         return ResponseEntity.ok(updatedChild);
     }
 }

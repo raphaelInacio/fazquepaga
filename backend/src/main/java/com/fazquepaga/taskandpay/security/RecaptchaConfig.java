@@ -3,9 +3,7 @@ package com.fazquepaga.taskandpay.security;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
-/**
- * Configuration properties for Google reCAPTCHA v3.
- */
+/** Configuration properties for Google reCAPTCHA v3. */
 @Configuration
 @ConfigurationProperties(prefix = "recaptcha")
 public class RecaptchaConfig {

@@ -15,7 +15,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import org.springframework.http.HttpEntity;
-import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
@@ -27,8 +26,7 @@ class RecaptchaServiceTest {
     private static final String TEST_VERIFY_URL = "https://www.google.com/recaptcha/api/siteverify";
     private static final float TEST_THRESHOLD = 0.5f;
 
-    @Mock
-    private RestTemplate restTemplate;
+    @Mock private RestTemplate restTemplate;
 
     private RecaptchaConfig config;
     private RecaptchaServiceImpl recaptchaService;
@@ -49,7 +47,8 @@ class RecaptchaServiceTest {
         // Arrange
         String token = "valid-token";
         RecaptchaResponse response = createResponse(true, 0.9f);
-        when(restTemplate.postForObject(any(String.class), any(HttpEntity.class), eq(RecaptchaResponse.class)))
+        when(restTemplate.postForObject(
+                        any(String.class), any(HttpEntity.class), eq(RecaptchaResponse.class)))
                 .thenReturn(response);
 
         // Act
@@ -64,7 +63,8 @@ class RecaptchaServiceTest {
         // Arrange
         String token = "suspicious-token";
         RecaptchaResponse response = createResponse(true, 0.3f);
-        when(restTemplate.postForObject(any(String.class), any(HttpEntity.class), eq(RecaptchaResponse.class)))
+        when(restTemplate.postForObject(
+                        any(String.class), any(HttpEntity.class), eq(RecaptchaResponse.class)))
                 .thenReturn(response);
 
         // Act
@@ -79,7 +79,8 @@ class RecaptchaServiceTest {
         // Arrange
         String token = "invalid-token";
         RecaptchaResponse response = createResponse(false, 0.0f);
-        when(restTemplate.postForObject(any(String.class), any(HttpEntity.class), eq(RecaptchaResponse.class)))
+        when(restTemplate.postForObject(
+                        any(String.class), any(HttpEntity.class), eq(RecaptchaResponse.class)))
                 .thenReturn(response);
 
         // Act
@@ -99,7 +100,8 @@ class RecaptchaServiceTest {
 
         // Assert
         assertThat(result).isTrue();
-        verify(restTemplate, never()).postForObject(any(String.class), any(HttpEntity.class), any(Class.class));
+        verify(restTemplate, never())
+                .postForObject(any(String.class), any(HttpEntity.class), any(Class.class));
     }
 
     @Test
@@ -111,7 +113,8 @@ class RecaptchaServiceTest {
 
         // Assert
         assertThat(result).isFalse();
-        verify(restTemplate, never()).postForObject(any(String.class), any(HttpEntity.class), any(Class.class));
+        verify(restTemplate, never())
+                .postForObject(any(String.class), any(HttpEntity.class), any(Class.class));
     }
 
     @Test
@@ -121,14 +124,16 @@ class RecaptchaServiceTest {
 
         // Assert
         assertThat(result).isFalse();
-        verify(restTemplate, never()).postForObject(any(String.class), any(HttpEntity.class), any(Class.class));
+        verify(restTemplate, never())
+                .postForObject(any(String.class), any(HttpEntity.class), any(Class.class));
     }
 
     @Test
     void shouldReturnTrue_whenApiErrorOccurs_failOpen() {
         // Arrange - API error should fail open (allow) to not block legitimate users
         String token = "valid-token";
-        when(restTemplate.postForObject(any(String.class), any(HttpEntity.class), eq(RecaptchaResponse.class)))
+        when(restTemplate.postForObject(
+                        any(String.class), any(HttpEntity.class), eq(RecaptchaResponse.class)))
                 .thenThrow(new RestClientException("API timeout"));
 
         // Act
@@ -143,7 +148,8 @@ class RecaptchaServiceTest {
         // Arrange
         String token = "valid-token";
         RecaptchaResponse response = createResponse(true, 0.85f);
-        when(restTemplate.postForObject(any(String.class), any(HttpEntity.class), eq(RecaptchaResponse.class)))
+        when(restTemplate.postForObject(
+                        any(String.class), any(HttpEntity.class), eq(RecaptchaResponse.class)))
                 .thenReturn(response);
 
         // Act
@@ -160,7 +166,8 @@ class RecaptchaServiceTest {
 
         // Assert
         assertThat(score).isZero();
-        verify(restTemplate, never()).postForObject(any(String.class), any(HttpEntity.class), any(Class.class));
+        verify(restTemplate, never())
+                .postForObject(any(String.class), any(HttpEntity.class), any(Class.class));
     }
 
     @Test
@@ -173,7 +180,8 @@ class RecaptchaServiceTest {
 
         // Assert
         assertThat(score).isEqualTo(1.0f);
-        verify(restTemplate, never()).postForObject(any(String.class), any(HttpEntity.class), any(Class.class));
+        verify(restTemplate, never())
+                .postForObject(any(String.class), any(HttpEntity.class), any(Class.class));
     }
 
     private RecaptchaResponse createResponse(boolean success, float score) {
@@ -184,5 +192,4 @@ class RecaptchaServiceTest {
         response.setAction("login");
         return response;
     }
-
 }

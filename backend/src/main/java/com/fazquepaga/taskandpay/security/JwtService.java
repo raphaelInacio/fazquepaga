@@ -64,7 +64,12 @@ public class JwtService {
                 .setExpiration(
                         new Date(
                                 System.currentTimeMillis()
-                                        + 1000L * 60 * 60 * 24 * childTokenTtlDays)) // Configurable TTL for children
+                                        + 1000L
+                                                * 60
+                                                * 60
+                                                * 24
+                                                * childTokenTtlDays)) // Configurable TTL for
+                // children
                 // (simplified login)
                 .signWith(getSignInKey(), SignatureAlgorithm.HS256)
                 .compact();

@@ -1,8 +1,6 @@
 package com.fazquepaga.taskandpay.security;
 
-/**
- * Exception thrown when reCAPTCHA verification fails.
- */
+/** Exception thrown when reCAPTCHA verification fails. */
 public class RecaptchaException extends RuntimeException {
 
     public RecaptchaException(String message) {

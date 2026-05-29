@@ -76,6 +76,21 @@ public class NotificationService {
                         .build());
     }
 
+    public void sendSubscriptionCanceled(User user, java.time.Instant premiumExpirationDate) {
+        publish(
+                NotificationEvent.builder()
+                        .type(NotificationType.SUBSCRIPTION_CANCELED)
+                        .recipientPhone(user.getPhoneNumber())
+                        .recipientName(user.getName())
+                        .data(
+                                Map.of(
+                                        "expirationDate",
+                                        premiumExpirationDate != null
+                                                ? premiumExpirationDate.toString()
+                                                : ""))
+                        .build());
+    }
+
     private void publish(NotificationEvent event) {
         try {
             String json = objectMapper.writeValueAsString(event);

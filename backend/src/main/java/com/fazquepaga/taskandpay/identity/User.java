@@ -13,8 +13,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 @AllArgsConstructor
 public class User implements UserDetails {
 
-    @DocumentId
-    private String id;
+    @DocumentId private String id;
 
     private String name;
     private String email; // Used for parents
@@ -34,6 +33,9 @@ public class User implements UserDetails {
     private String document; // CPF/CNPJ for payment registration
     private String lastCheckoutSessionId; // ID of the last created checkout session for correlation
     private java.time.Instant trialStartDate; // Trial start date (UTC) for 3-day free trial
+    private java.time.Instant cancellationDate;
+    private com.fazquepaga.taskandpay.subscription.CancellationReason cancellationReason;
+    private String cancellationReasonDetails;
 
     public enum Role {
         PARENT,
@@ -48,13 +50,15 @@ public class User implements UserDetails {
     public enum SubscriptionStatus {
         ACTIVE,
         CANCELED,
+        PENDING_CANCELLATION,
         PAST_DUE
     }
 
     // UserDetails Implementation
 
     @Override
-    public java.util.Collection<? extends org.springframework.security.core.GrantedAuthority> getAuthorities() {
+    public java.util.Collection<? extends org.springframework.security.core.GrantedAuthority>
+            getAuthorities() {
         return java.util.Collections.singletonList(
                 new org.springframework.security.core.authority.SimpleGrantedAuthority(
                         "ROLE_" + role.name()));

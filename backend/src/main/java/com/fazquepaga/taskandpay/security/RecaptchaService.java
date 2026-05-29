@@ -1,15 +1,15 @@
 package com.fazquepaga.taskandpay.security;
 
 /**
- * Service interface for reCAPTCHA v3 verification.
- * Validates tokens received from the frontend against Google's reCAPTCHA API.
+ * Service interface for reCAPTCHA v3 verification. Validates tokens received from the frontend
+ * against Google's reCAPTCHA API.
  */
 public interface RecaptchaService {
 
     /**
      * Verifies a reCAPTCHA token for a specific action.
      *
-     * @param token  The reCAPTCHA token from the frontend
+     * @param token The reCAPTCHA token from the frontend
      * @param action The action name (e.g., "login", "register")
      * @return true if the token is valid and score is above threshold
      */

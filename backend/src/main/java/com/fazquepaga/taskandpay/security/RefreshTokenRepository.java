@@ -15,10 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 
-/**
- * Repository for refresh token operations in Firestore.
- * Collection: refreshTokens/{tokenId}
- */
+/** Repository for refresh token operations in Firestore. Collection: refreshTokens/{tokenId} */
 @Repository
 public class RefreshTokenRepository {
 
@@ -35,10 +32,9 @@ public class RefreshTokenRepository {
         return firestore.collection(COLLECTION_NAME);
     }
 
-    /**
-     * Save a new refresh token.
-     */
-    public RefreshToken save(RefreshToken refreshToken) throws ExecutionException, InterruptedException {
+    /** Save a new refresh token. */
+    public RefreshToken save(RefreshToken refreshToken)
+            throws ExecutionException, InterruptedException {
         DocumentReference docRef;
         if (refreshToken.getId() == null) {
             docRef = getCollection().document();
@@ -52,12 +48,11 @@ public class RefreshTokenRepository {
         return refreshToken;
     }
 
-    /**
-     * Find a refresh token by its hash.
-     */
+    /** Find a refresh token by its hash. */
     public Optional<RefreshToken> findByTokenHash(String tokenHash)
             throws ExecutionException, InterruptedException {
-        ApiFuture<QuerySnapshot> query = getCollection().whereEqualTo("tokenHash", tokenHash).limit(1).get();
+        ApiFuture<QuerySnapshot> query =
+                getCollection().whereEqualTo("tokenHash", tokenHash).limit(1).get();
 
         List<QueryDocumentSnapshot> documents = query.get().getDocuments();
         if (documents.isEmpty()) {
@@ -67,10 +62,7 @@ public class RefreshTokenRepository {
         return Optional.of(documents.get(0).toObject(RefreshToken.class));
     }
 
-    /**
-     * Revoke all refresh tokens for a user.
-     * Uses batch write for efficiency.
-     */
+    /** Revoke all refresh tokens for a user. Uses batch write for efficiency. */
     public void revokeAllForUser(String userId) throws ExecutionException, InterruptedException {
         Query query = getCollection().whereEqualTo("userId", userId).whereEqualTo("revoked", false);
 
@@ -91,13 +83,12 @@ public class RefreshTokenRepository {
         log.info("Revoked {} refresh tokens for user: {}", documents.size(), userId);
     }
 
-    /**
-     * Delete expired tokens (cleanup job).
-     */
+    /** Delete expired tokens (cleanup job). */
     public int deleteExpiredTokens() throws ExecutionException, InterruptedException {
-        Query query = getCollection()
-                .whereLessThan("expiresAt", java.time.Instant.now())
-                .limit(500); // Process in batches
+        Query query =
+                getCollection()
+                        .whereLessThan("expiresAt", java.time.Instant.now())
+                        .limit(500); // Process in batches
 
         ApiFuture<QuerySnapshot> querySnapshot = query.get();
         List<QueryDocumentSnapshot> documents = querySnapshot.get().getDocuments();
