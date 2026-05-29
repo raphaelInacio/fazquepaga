@@ -33,7 +33,8 @@ public class SubscriptionController {
         boolean isPremium =
                 freshUser.getSubscriptionTier() == User.SubscriptionTier.PREMIUM
                         && (freshUser.getSubscriptionStatus() == User.SubscriptionStatus.ACTIVE
-                                || freshUser.getSubscriptionStatus() == User.SubscriptionStatus.PENDING_CANCELLATION);
+                                || freshUser.getSubscriptionStatus()
+                                        == User.SubscriptionStatus.PENDING_CANCELLATION);
 
         return ResponseEntity.ok(
                 SubscriptionStatusResponse.builder()
