@@ -113,17 +113,24 @@ public class AsaasService {
                         e.getStatusCode());
                 return true;
             }
-            log.error("Failed to cancel subscription {} in Asaas", subscriptionId, e);
-            throw new RuntimeException("Failed to cancel Asaas subscription", e);
+            log.error(
+                    "Failed to cancel subscription {} in Asaas. Status: {}, Response: {}",
+                    subscriptionId,
+                    e.getStatusCode(),
+                    e.getResponseBodyAsString());
+            throw new AsaasIntegrationException(
+                    "Failed to cancel Asaas subscription",
+                    e.getStatusCode(),
+                    e.getResponseBodyAsString());
         } catch (Exception e) {
-            // Tolerar qualquer falha de integração de API na sandbox local para permitir testes
-            // fluidos
-            log.warn(
-                    "Integration failed while canceling subscription {} in Asaas (tolerated"
-                            + " locally)",
+            log.error(
+                    "Failed to cancel subscription {} in Asaas (unexpected error)",
                     subscriptionId,
                     e);
-            return true;
+            throw new AsaasIntegrationException(
+                    "Failed to cancel Asaas subscription",
+                    org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR,
+                    e.getMessage());
         }
     }
 }

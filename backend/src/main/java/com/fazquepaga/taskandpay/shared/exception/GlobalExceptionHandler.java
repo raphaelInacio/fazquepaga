@@ -37,6 +37,23 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(apiError, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
+    @ExceptionHandler(com.fazquepaga.taskandpay.payment.AsaasIntegrationException.class)
+    public ResponseEntity<ApiError> handleAsaasIntegrationException(
+            com.fazquepaga.taskandpay.payment.AsaasIntegrationException ex,
+            HttpServletRequest request) {
+        log.error(
+                "Asaas Integration Error - Path: {} - Message: {} - Status: {} - Body: {}",
+                request.getRequestURI(),
+                ex.getMessage(),
+                ex.getStatusCode(),
+                ex.getResponseBody());
+        Locale locale = LocaleContextHolder.getLocale();
+        String message = messageSource.getMessage("error.internal", null, locale);
+        ApiError apiError =
+                new ApiError(HttpStatus.INTERNAL_SERVER_ERROR, message, request.getRequestURI());
+        return new ResponseEntity<>(apiError, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ApiError> handleIllegalArgumentException(
             IllegalArgumentException ex, HttpServletRequest request) {
