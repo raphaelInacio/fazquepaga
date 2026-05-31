@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { User as UserIcon, Gift, Loader2, QrCode, Plus, Sparkles, LogOut, Edit, Trash2 } from "lucide-react";
+import { User as UserIcon, Gift, Loader2, QrCode, Plus, Sparkles, LogOut, Edit, Trash2, Settings } from "lucide-react";
 import { User, Task } from "@/types";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -341,9 +341,18 @@ export default function Dashboard() {
                             </Button>
                             <Button
                                 variant="ghost"
+                                onClick={() => navigate("/settings")}
+                                data-testid="settings-button"
+                                className="text-muted-foreground hover:text-primary transition-all duration-300"
+                                title={t("settings.title") || "Settings"}
+                            >
+                                <Settings className="h-5 w-5" />
+                            </Button>
+                            <Button
+                                variant="ghost"
                                 onClick={handleLogout}
                                 data-testid="logout-button"
-                                className="text-muted-foreground hover:text-destructive"
+                                className="text-muted-foreground hover:text-destructive transition-all duration-300"
                             >
                                 <LogOut className="h-5 w-5" />
                             </Button>

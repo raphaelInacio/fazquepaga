@@ -81,16 +81,16 @@ export default function Settings() {
                     </CardHeader>
                     <CardContent className="space-y-4">
                         {/* Logout from all devices */}
-                        <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg border border-border/50">
-                            <div className="flex items-center gap-3">
-                                <div className="p-2 bg-destructive/10 rounded-lg">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 bg-muted/30 rounded-xl border border-border/60 hover:bg-muted/50 transition-all duration-300">
+                            <div className="flex items-start gap-4">
+                                <div className="p-2.5 bg-destructive/10 rounded-xl flex-shrink-0">
                                     <Monitor className="h-5 w-5 text-destructive" />
                                 </div>
-                                <div>
-                                    <p className="font-medium">
+                                <div className="space-y-1">
+                                    <p className="font-semibold text-foreground">
                                         {t("settings.logoutAll.title") || "Logout from all devices"}
                                     </p>
-                                    <p className="text-sm text-muted-foreground">
+                                    <p className="text-sm text-muted-foreground leading-relaxed">
                                         {t("settings.logoutAll.description") || "This will sign you out from all devices and browsers"}
                                     </p>
                                 </div>
@@ -98,10 +98,11 @@ export default function Settings() {
                             <AlertDialog>
                                 <AlertDialogTrigger asChild>
                                     <Button
-                                        variant="destructive"
+                                        variant="outline"
                                         size="sm"
                                         disabled={isLoggingOutAll}
                                         data-testid="logout-all-button"
+                                        className="border-destructive/30 text-destructive hover:bg-destructive hover:text-destructive-foreground flex-shrink-0 shadow-sm transition-all duration-300 font-medium self-end sm:self-center"
                                     >
                                         {isLoggingOutAll ? (
                                             <Loader2 className="h-4 w-4 animate-spin" />
@@ -154,25 +155,26 @@ export default function Settings() {
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-4">
-                            <div className="flex items-center justify-between p-4 bg-destructive/5 rounded-lg border border-destructive/20">
-                                <div className="flex items-center gap-3">
-                                    <div className="p-2 bg-destructive/10 rounded-lg">
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 bg-destructive/5 rounded-xl border border-destructive/10 hover:bg-destructive/10 transition-all duration-300">
+                                <div className="flex items-start gap-4">
+                                    <div className="p-2.5 bg-destructive/10 rounded-xl flex-shrink-0 animate-pulse">
                                         <AlertTriangle className="h-5 w-5 text-destructive" />
                                     </div>
-                                    <div>
-                                        <p className="font-medium text-destructive">
+                                    <div className="space-y-1">
+                                        <p className="font-semibold text-destructive">
                                             {t("settings.subscription.cancelTitle") || "Cancel Subscription"}
                                         </p>
-                                        <p className="text-sm text-muted-foreground">
+                                        <p className="text-sm text-muted-foreground leading-relaxed">
                                             {t("settings.subscription.cancelDescription") || "You will lose access to Premium features at the end of your billing cycle"}
                                         </p>
                                     </div>
                                 </div>
                                 <Button
-                                    variant="destructive"
+                                    variant="outline"
                                     size="sm"
                                     onClick={() => setIsCancelModalOpen(true)}
                                     data-testid="cancel-subscription-button"
+                                    className="border-destructive/30 text-destructive hover:bg-destructive hover:text-destructive-foreground flex-shrink-0 shadow-sm transition-all duration-300 font-medium self-end sm:self-center"
                                 >
                                     {t("settings.subscription.cancelButton") || "Cancel Subscription"}
                                 </Button>
