@@ -19,140 +19,151 @@ import org.springframework.web.client.RestTemplate;
 @EnableWebSecurity
 public class SecurityConfig {
 
-        private final JwtAuthenticationFilter jwtAuthFilter;
-        private final RateLimitFilter rateLimitFilter;
-        private final RecaptchaConfig recaptchaConfig;
+    private final JwtAuthenticationFilter jwtAuthFilter;
+    private final RateLimitFilter rateLimitFilter;
+    private final RecaptchaConfig recaptchaConfig;
 
-        public SecurityConfig(
-                        JwtAuthenticationFilter jwtAuthFilter,
-                        RateLimitFilter rateLimitFilter,
-                        RecaptchaConfig recaptchaConfig) {
-                this.jwtAuthFilter = jwtAuthFilter;
-                this.rateLimitFilter = rateLimitFilter;
-                this.recaptchaConfig = recaptchaConfig;
-        }
+    public SecurityConfig(
+            JwtAuthenticationFilter jwtAuthFilter,
+            RateLimitFilter rateLimitFilter,
+            RecaptchaConfig recaptchaConfig) {
+        this.jwtAuthFilter = jwtAuthFilter;
+        this.rateLimitFilter = rateLimitFilter;
+        this.recaptchaConfig = recaptchaConfig;
+    }
 
-        @Bean
-        public RestTemplate restTemplate() {
-                return new RestTemplate();
-        }
+    @Bean
+    public RestTemplate restTemplate() {
+        return new RestTemplate();
+    }
 
-        @Bean
-        public RecaptchaService recaptchaService(RestTemplate restTemplate) {
-                return new RecaptchaServiceImpl(recaptchaConfig, restTemplate);
-        }
+    @Bean
+    public RecaptchaService recaptchaService(RestTemplate restTemplate) {
+        return new RecaptchaServiceImpl(recaptchaConfig, restTemplate);
+    }
 
-        @Bean
-        public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-                http.csrf(csrf -> csrf.ignoringRequestMatchers("/api/**"))
-                                .cors(withDefaults())
-                                .authorizeHttpRequests(
-                                                authorize -> authorize
-                                                                // Public endpoints
-                                                                .requestMatchers(
-                                                                                "/api/v1/auth/**",
-                                                                                "/api/v1/webhooks/**",
-                                                                                "/api/v1/children/login",
-                                                                                "/v3/api-docs/**",
-                                                                                "/swagger-ui/**",
-                                                                                "/swagger-ui.html",
-                                                                                "/",
-                                                                                "/index.html",
-                                                                                "/assets/**",
-                                                                                "/*.js",
-                                                                                "/*.css",
-                                                                                "/*.ico",
-                                                                                "/*.png",
-                                                                                "/*.svg",
-                                                                                "/*.json",
-                                                                                "/manifest.json",
-                                                                                "/login",
-                                                                                "/register",
-                                                                                "/child-login",
-                                                                                "/child-portal",
-                                                                                "/gift-cards",
-                                                                                "/dashboard",
-                                                                                "/add-child",
-                                                                                "/child/**",
-                                                                                "/error") // Allow error dispatch
-                                                                .permitAll()
-                                                                // All other endpoints require authentication
-                                                                .anyRequest()
-                                                                .authenticated())
-                                .sessionManagement(
-                                                session -> session.sessionCreationPolicy(
-                                                                org.springframework.security.config.http.SessionCreationPolicy.STATELESS))
-                                .authenticationProvider(authenticationProvider())
-                                .addFilterBefore(
-                                                jwtAuthFilter,
-                                                org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class)
-                                .addFilterBefore(
-                                                rateLimitFilter,
-                                                com.fazquepaga.taskandpay.security.JwtAuthenticationFilter.class);
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http.csrf(csrf -> csrf.ignoringRequestMatchers("/api/**"))
+                .cors(withDefaults())
+                .authorizeHttpRequests(
+                        authorize ->
+                                authorize
+                                        // Public endpoints
+                                        .requestMatchers(
+                                                "/api/v1/auth/**",
+                                                "/api/v1/webhooks/**",
+                                                "/api/v1/children/login",
+                                                "/v3/api-docs/**",
+                                                "/swagger-ui/**",
+                                                "/swagger-ui.html",
+                                                "/",
+                                                "/index.html",
+                                                "/assets/**",
+                                                "/*.js",
+                                                "/*.css",
+                                                "/*.ico",
+                                                "/*.png",
+                                                "/*.svg",
+                                                "/*.json",
+                                                "/manifest.json",
+                                                "/login",
+                                                "/register",
+                                                "/child-login",
+                                                "/child-portal",
+                                                "/gift-cards",
+                                                "/dashboard",
+                                                "/add-child",
+                                                "/child/**",
+                                                "/error") // Allow error dispatch
+                                        .permitAll()
+                                        // All other endpoints require authentication
+                                        .anyRequest()
+                                        .authenticated())
+                .sessionManagement(
+                        session ->
+                                session.sessionCreationPolicy(
+                                        org.springframework.security.config.http
+                                                .SessionCreationPolicy.STATELESS))
+                .authenticationProvider(authenticationProvider())
+                .addFilterBefore(
+                        jwtAuthFilter,
+                        org.springframework.security.web.authentication
+                                .UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(
+                        rateLimitFilter,
+                        com.fazquepaga.taskandpay.security.JwtAuthenticationFilter.class);
 
-                return http.build();
-        }
+        return http.build();
+    }
 
-        @Bean
-        public org.springframework.security.authentication.AuthenticationProvider authenticationProvider() {
-                org.springframework.security.authentication.dao.DaoAuthenticationProvider authProvider = new org.springframework.security.authentication.dao.DaoAuthenticationProvider();
-                authProvider.setUserDetailsService(
-                                username -> {
-                                        // Simple inline UserDetailsService that calls our Repo
-                                        // NOTE: Accessing Repo statically or we need to inject it.
-                                        // Better to just return null here if we are doing custom filter stuff,
-                                        // BUT Spring AuthenticationManager needs it.
-                                        // Let's skip using AuthenticationManager for login if we do it manually in
-                                        // Service,
-                                        // which is often simpler for custom flows.
-                                        // However, for standard Spring Security, we should fix this.
-                                        // Given the constraints and existing code, I'll rely on our manual JWT check in
-                                        // Filter for now.
-                                        return null;
-                                });
-                authProvider.setPasswordEncoder(passwordEncoder());
-                return authProvider;
-        }
+    @Bean
+    public org.springframework.security.authentication.AuthenticationProvider
+            authenticationProvider() {
+        org.springframework.security.authentication.dao.DaoAuthenticationProvider authProvider =
+                new org.springframework.security.authentication.dao.DaoAuthenticationProvider();
+        authProvider.setUserDetailsService(
+                username -> {
+                    // Simple inline UserDetailsService that calls our Repo
+                    // NOTE: Accessing Repo statically or we need to inject it.
+                    // Better to just return null here if we are doing custom filter stuff,
+                    // BUT Spring AuthenticationManager needs it.
+                    // Let's skip using AuthenticationManager for login if we do it manually in
+                    // Service,
+                    // which is often simpler for custom flows.
+                    // However, for standard Spring Security, we should fix this.
+                    // Given the constraints and existing code, I'll rely on our manual JWT check in
+                    // Filter for now.
+                    return null;
+                });
+        authProvider.setPasswordEncoder(passwordEncoder());
+        return authProvider;
+    }
 
-        @Bean
-        public PasswordEncoder passwordEncoder() {
-                return new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder();
-        }
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder();
+    }
 
-        @Bean
-        public org.springframework.security.authentication.AuthenticationManager authenticationManager(
-                        org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration config)
-                        throws Exception {
-                return config.getAuthenticationManager();
-        }
+    @Bean
+    public org.springframework.security.authentication.AuthenticationManager authenticationManager(
+            org.springframework.security.config.annotation.authentication.configuration
+                            .AuthenticationConfiguration
+                    config)
+            throws Exception {
+        return config.getAuthenticationManager();
+    }
 
-        @Bean
-        public org.springframework.web.cors.CorsConfigurationSource corsConfigurationSource() {
-                org.springframework.web.cors.CorsConfiguration configuration = new org.springframework.web.cors.CorsConfiguration();
-                configuration.setAllowedOrigins(
-                                java.util.Arrays.asList(
-                                                "https://gen-lang-client-0807030077.web.app",
-                                                "https://gen-lang-client-0807030077.firebaseapp.com",
-                                                "https://taskandpay.com",
-                                                "http://localhost:3000",
-                                                "http://127.0.0.1:8081",
-                                                "http://localhost:8082",
-                                                "http://127.0.0.1:8082"));
-                configuration.setAllowedMethods(
-                                java.util.Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD"));
-                configuration.setAllowedHeaders(java.util.Arrays.asList("*"));
-                configuration.setAllowCredentials(true);
+    @Bean
+    public org.springframework.web.cors.CorsConfigurationSource corsConfigurationSource() {
+        org.springframework.web.cors.CorsConfiguration configuration =
+                new org.springframework.web.cors.CorsConfiguration();
+        configuration.setAllowedOrigins(
+                java.util.Arrays.asList(
+                        "https://gen-lang-client-0807030077.web.app",
+                        "https://gen-lang-client-0807030077.firebaseapp.com",
+                        "https://taskandpay.com",
+                        "http://localhost:3000",
+                        "http://127.0.0.1:8081",
+                        "http://localhost:8082",
+                        "http://127.0.0.1:8082"));
+        configuration.setAllowedMethods(
+                java.util.Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD"));
+        configuration.setAllowedHeaders(java.util.Arrays.asList("*"));
+        configuration.setAllowCredentials(true);
 
-                org.springframework.web.cors.UrlBasedCorsConfigurationSource source = new org.springframework.web.cors.UrlBasedCorsConfigurationSource();
+        org.springframework.web.cors.UrlBasedCorsConfigurationSource source =
+                new org.springframework.web.cors.UrlBasedCorsConfigurationSource();
 
-                // Webhook specific CORS - allow everything
-                org.springframework.web.cors.CorsConfiguration webhookConfig = new org.springframework.web.cors.CorsConfiguration();
-                webhookConfig.setAllowedOrigins(java.util.Collections.singletonList("*"));
-                webhookConfig.setAllowedMethods(java.util.Arrays.asList("POST", "OPTIONS"));
-                webhookConfig.setAllowedHeaders(java.util.Arrays.asList("*"));
-                source.registerCorsConfiguration("/api/v1/webhooks/**", webhookConfig);
+        // Webhook specific CORS - allow everything
+        org.springframework.web.cors.CorsConfiguration webhookConfig =
+                new org.springframework.web.cors.CorsConfiguration();
+        webhookConfig.setAllowedOrigins(java.util.Collections.singletonList("*"));
+        webhookConfig.setAllowedMethods(java.util.Arrays.asList("POST", "OPTIONS"));
+        webhookConfig.setAllowedHeaders(java.util.Arrays.asList("*"));
+        source.registerCorsConfiguration("/api/v1/webhooks/**", webhookConfig);
 
-                source.registerCorsConfiguration("/**", configuration);
-                return source;
-        }
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
+    }
 }

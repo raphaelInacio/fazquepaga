@@ -144,4 +144,29 @@ class GlobalExceptionHandlerTest {
                         .getTimestamp()
                         .isAfter(java.time.LocalDateTime.now().minusMinutes(1)));
     }
+
+    @Test
+    void shouldHandleAsaasIntegrationException() {
+        // Given
+        com.fazquepaga.taskandpay.payment.AsaasIntegrationException exception =
+                new com.fazquepaga.taskandpay.payment.AsaasIntegrationException(
+                        "Failed to cancel Asaas subscription",
+                        org.springframework.http.HttpStatus.UNAUTHORIZED,
+                        "{\"errors\":[{\"code\":\"invalid_access_token\",\"description\":\"A chave de API fornecida é inválida\"}]}");
+        when(request.getRequestURI()).thenReturn("/api/v1/subscription/cancel");
+
+        // When
+        ResponseEntity<ApiError> response =
+                exceptionHandler.handleAsaasIntegrationException(exception, request);
+
+        // Then
+        assertNotNull(response);
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals(500, response.getBody().getStatus());
+        assertEquals(
+                "An internal error occurred. Please try again later.",
+                response.getBody().getMessage());
+        assertEquals("/api/v1/subscription/cancel", response.getBody().getPath());
+    }
 }
