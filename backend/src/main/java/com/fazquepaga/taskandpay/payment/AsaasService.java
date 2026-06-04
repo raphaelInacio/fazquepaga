@@ -31,6 +31,9 @@ public class AsaasService {
     @Value("${asaas.subscription.cancel-url}")
     private String cancelUrl;
 
+    @Value("${asaas.url:https://sandbox.asaas.com/api/v3}")
+    private String baseUrl;
+
     private final RestTemplate restTemplate;
     private final UserRepository userRepository;
 
@@ -78,21 +81,25 @@ public class AsaasService {
         try {
             AsaasCheckoutResponse response =
                     restTemplate.postForObject("/checkouts", request, AsaasCheckoutResponse.class);
-            if (response != null && response.getLink() != null) {
+            if (response != null && response.getId() != null) {
                 log.info("Checkout Session created: {}", response.getId());
                 // Save the checkout session ID to the user for correlation
                 user.setLastCheckoutSessionId(response.getId());
                 userRepository.save(user);
 
-                return response.getLink();
+                String checkoutDomain =
+                        baseUrl.contains("sandbox")
+                                ? "https://sandbox.asaas.com"
+                                : "https://asaas.com";
+                return checkoutDomain + "/checkoutSession/show?id=" + response.getId();
             } else {
                 throw new RuntimeException(
-                        "Failed to create Checkout Session: Empty response or missing link");
+                        "Failed to create Checkout Session: Empty response or missing id");
             }
         } catch (Exception e) {
             log.error("Error creating Checkout Session", e);
             throw new RuntimeException(
-                    "Failed to create Checkout Session: Empty response or missing link");
+                    "Failed to create Checkout Session: Empty response or missing id");
         }
     }
 

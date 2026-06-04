@@ -33,6 +33,7 @@ class AsaasServiceIntegrationTest {
         ReflectionTestUtils.setField(asaasService, "subscriptionCycle", "MONTHLY");
         ReflectionTestUtils.setField(asaasService, "successUrl", "http://success");
         ReflectionTestUtils.setField(asaasService, "cancelUrl", "http://cancel");
+        ReflectionTestUtils.setField(asaasService, "baseUrl", "https://sandbox.asaas.com/api/v3");
     }
 
     @Test
@@ -47,7 +48,6 @@ class AsaasServiceIntegrationTest {
 
         AsaasCheckoutResponse mockResponse = new AsaasCheckoutResponse();
         mockResponse.setId("sess_12345");
-        mockResponse.setLink("https://sandbox.asaas.com/checkout/sess_12345");
 
         when(restTemplate.postForObject(
                         eq("/checkouts"),
@@ -59,7 +59,7 @@ class AsaasServiceIntegrationTest {
         String checkoutUrl = asaasService.createCheckoutSession(user);
 
         // Assert
-        assertEquals("https://sandbox.asaas.com/checkout/sess_12345", checkoutUrl);
+        assertEquals("https://sandbox.asaas.com/checkoutSession/show?id=sess_12345", checkoutUrl);
 
         // Verify user was updated with session ID
         assertEquals("sess_12345", user.getLastCheckoutSessionId());
