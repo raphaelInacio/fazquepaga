@@ -1,6 +1,9 @@
 /// <reference types="node" />
 import { defineConfig, devices } from '@playwright/test';
 
+const baseURL = process.env.BASE_URL || 'http://localhost:8082';
+const isLocal = baseURL.includes('localhost') || baseURL.includes('127.0.0.1');
+
 export default defineConfig({
     testDir: './e2e',
     fullyParallel: true,
@@ -11,7 +14,7 @@ export default defineConfig({
     timeout: 60000,
 
     use: {
-        baseURL: 'http://localhost:8082',
+        baseURL,
         trace: 'on-first-retry',
         screenshot: 'only-on-failure',
         locale: 'pt-BR',
@@ -24,13 +27,10 @@ export default defineConfig({
         },
     ],
 
-    webServer: {
+    webServer: isLocal ? {
         command: 'npm run dev',
-        url: 'http://localhost:8082',
+        url: baseURL,
         reuseExistingServer: true,
         timeout: 120 * 1000,
-        // Add a waitOn option to ensure the server is ready
-        // You might need to adjust the pattern based on Vite's actual output
-        // stdout: 'ready',
-    },
+    } : undefined,
 });

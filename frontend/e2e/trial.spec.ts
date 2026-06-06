@@ -7,8 +7,17 @@ test.describe('Free Trial Flow', () => {
         await page.goto('/register');
         await page.fill('input[name="name"]', name);
         await page.fill('input[name="email"]', email);
+        await page.fill('input[name="phoneNumber"]', '11999999994');
+        await page.fill('input[name="password"]', 'password123');
+        await page.fill('input[name="confirmPassword"]', 'password123');
         await page.click('[data-testid="register-submit-button"]');
-        await page.waitForURL('**/dashboard', { timeout: 10000 });
+        await page.waitForURL('**/login', { timeout: 15000 });
+
+        // Login
+        await page.fill('input[type="email"]', email);
+        await page.fill('input[type="password"]', 'password123');
+        await page.click('button[type="submit"]');
+        await page.waitForURL('**/dashboard', { timeout: 15000 });
     };
 
     test.describe('Trial Active Tests', () => {

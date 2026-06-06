@@ -3,11 +3,21 @@ import { test, expect } from '@playwright/test';
 test.describe('Premium User Flow', () => {
     test.beforeEach(async ({ page, context }) => {
         // Register a user first
+        const email = `premium-${Date.now()}@test.com`;
         await page.goto('/register');
         await page.fill('input[name="name"]', 'Pai Premium');
-        await page.fill('input[name="email"]', 'premium@test.com');
+        await page.fill('input[name="email"]', email);
+        await page.fill('input[name="phoneNumber"]', '11999999996');
+        await page.fill('input[name="password"]', 'password123');
+        await page.fill('input[name="confirmPassword"]', 'password123');
         await page.click('button:has-text("Registrar")');
-        await page.waitForURL('**/dashboard');
+        await page.waitForURL('**/login', { timeout: 15000 });
+
+        // Login
+        await page.fill('input[type="email"]', email);
+        await page.fill('input[type="password"]', 'password123');
+        await page.click('button[type="submit"]');
+        await page.waitForURL('**/dashboard', { timeout: 15000 });
 
         // Simulate upgrade to Premium by modifying localStorage
         await page.evaluate(() => {

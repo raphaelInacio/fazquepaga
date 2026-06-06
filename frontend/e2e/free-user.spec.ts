@@ -10,14 +10,26 @@ test.describe('Free User Flow', () => {
         await page.click('text=Começar gratuitamente');
 
         // Fill registration form
+        const email = `free-e2e-${Date.now()}@test.com`;
         await page.fill('input[name="name"]', 'Pai Free E2E');
-        await page.fill('input[name="email"]', 'free-e2e@test.com');
+        await page.fill('input[name="email"]', email);
+        await page.fill('input[name="phoneNumber"]', '11999999999');
+        await page.fill('input[name="password"]', 'password123');
+        await page.fill('input[name="confirmPassword"]', 'password123');
 
         // Submit form
         await page.click('button:has-text("Registrar")');
 
+        // Wait for redirect to login
+        await page.waitForURL('**/login', { timeout: 15000 });
+
+        // Login
+        await page.fill('input[type="email"]', email);
+        await page.fill('input[type="password"]', 'password123');
+        await page.click('button[type="submit"]');
+
         // Wait for redirect to dashboard
-        await page.waitForURL('**/dashboard');
+        await page.waitForURL('**/dashboard', { timeout: 15000 });
 
         // Verify dashboard loaded
         await expect(page.locator('h1')).toContainText('Dashboard');
@@ -35,11 +47,21 @@ test.describe('Free User Flow', () => {
 
     test('should enforce 5 task limit for free users', async ({ page, context }) => {
         // Setup: Register and add child
+        const email = `free-limit-${Date.now()}@test.com`;
         await page.goto('/register');
         await page.fill('input[name="name"]', 'Pai Free Limit');
-        await page.fill('input[name="email"]', 'free-limit@test.com');
+        await page.fill('input[name="email"]', email);
+        await page.fill('input[name="phoneNumber"]', '11999999998');
+        await page.fill('input[name="password"]', 'password123');
+        await page.fill('input[name="confirmPassword"]', 'password123');
         await page.click('button:has-text("Registrar")');
-        await page.waitForURL('**/dashboard');
+        await page.waitForURL('**/login', { timeout: 15000 });
+
+        // Login
+        await page.fill('input[type="email"]', email);
+        await page.fill('input[type="password"]', 'password123');
+        await page.click('button[type="submit"]');
+        await page.waitForURL('**/dashboard', { timeout: 15000 });
 
         // Add child
         await page.click('text=Adicionar Criança');
@@ -75,11 +97,21 @@ test.describe('Free User Flow', () => {
 
     test('should block access to gift card store for free users', async ({ page }) => {
         // Setup: Register user
+        const email = `free-store-${Date.now()}@test.com`;
         await page.goto('/register');
         await page.fill('input[name="name"]', 'Pai Free Store');
-        await page.fill('input[name="email"]', 'free-store@test.com');
+        await page.fill('input[name="email"]', email);
+        await page.fill('input[name="phoneNumber"]', '11999999997');
+        await page.fill('input[name="password"]', 'password123');
+        await page.fill('input[name="confirmPassword"]', 'password123');
         await page.click('button:has-text("Registrar")');
-        await page.waitForURL('**/dashboard');
+        await page.waitForURL('**/login', { timeout: 15000 });
+
+        // Login
+        await page.fill('input[type="email"]', email);
+        await page.fill('input[type="password"]', 'password123');
+        await page.click('button[type="submit"]');
+        await page.waitForURL('**/dashboard', { timeout: 15000 });
 
         // Try to access gift card store
         await page.click('text=Loja de Recompensas');

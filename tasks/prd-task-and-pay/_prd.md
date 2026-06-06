@@ -28,6 +28,8 @@ Este documento serve como uma baseline, refletindo o estado atual da implementa�
     - ✅ Ver uma foto enviada pelo meu filho via WhatsApp na interface web.
     - ✅ Criar um login simples para meu filho (código de onboarding para WhatsApp).
     - 🆕 **(Assinatura)** Quero assinar o plano Premium pagando via Asaas (cartão/boleto/pix) para liberar recursos exclusivos.
+    - ✅ **(Cancelamento de Assinatura)** Quero cancelar minha assinatura de forma autônoma via interface web, sendo informado das perdas de recursos Premium e fornecendo o motivo para ajudar a melhorar o produto.
+    - ✅ **(Cancelamento de Assinatura)** Quero receber confirmação do cancelamento via WhatsApp para ter registro da ação.
     - 🆕 **(IA)** Quero definir um perfil comportamental (Bio) do meu filho para que a IA sugira tarefas mais adequadas.
     - 🆕 **(Saque)** Quero receber uma notificação no WhatsApp quando meu filho solicitar um saque.
     - 🆕 **(Saque)** Quero aprovar um saque e marcar como "Pago" manualmente após transferir o dinheiro.
@@ -62,6 +64,7 @@ Este documento serve como uma baseline, refletindo o estado atual da implementa�
 | **9. Controle de Saque** | **Planejado** | Fluxo: Solicitação (Filho) -> Notificação (Pai) -> Pagamento Externo -> Baixa manual no sistema (Pai). |
 | **10. AI Context** | **Planejado** | Cadastro de "Bio/Interesses" da criança para personalizar sugestões de tarefas. |
 | **11. Segurança e Proteção** | **Implementado** | **Rate Limiting**: In-memory (Caffeine) global e por endpoint. **Bot Protection**: reCAPTCHA v3 no login/registro. **Hardening**: Secrets no GCP Secret Manager e Refresh Tokens implementados. |
+| **12. Cancelamento de Assinatura** | **Implementado** | Fluxo self-service de cancelamento Premium via interface web com pesquisa de churn e notificação no WhatsApp. |
 
 
 ## Fluxo de Notificações (WhatsApp)
@@ -73,6 +76,7 @@ Este documento serve como uma baseline, refletindo o estado atual da implementa�
 | **Tarefa Rejeitada** | Filho | "Sua tarefa precisa de revisão: 'Faltou secar'." |
 | **Solicitação de Saque** | Pai/Mãe | "João quer sacar R$ 50,00." |
 | **Saque Pago** | Filho | "Seu saque de R$ 50,00 foi pago!" |
+| **Assinatura Cancelada** | Pai/Mãe | Confirmação de cancelamento e data até quando o Premium é mantido |
 
 ## AI Roadmap & Funcionalidades Futuras
 
@@ -102,3 +106,62 @@ Para aprofundar nosso diferencial como uma plataforma nativa de IA, as seguintes
 
 ## Riscos e Mitigações e Questões em Aberto
 *(Seções mantidas como na versão anterior)*
+
+---
+
+## Detalhamento: Cancelamento de Assinatura (Premium)
+
+### Funcionalidades do Cancelamento
+
+#### FR-1: Interface de Cancelamento
+* **Descrição**: Adiciona o botão "Cancelar Assinatura" na página de configurações (Settings) para usuários Premium.
+* **Requisitos**:
+  1. Exibir botão apenas para usuários Premium ativos.
+  2. Botão deve abrir modal com fluxo de cancelamento.
+  3. Estilo visual de ação destrutiva (vermelho).
+
+#### FR-2: Coleta de Motivo (Churn Survey)
+* **Descrição**: Apresenta opções de motivo para cancelamento.
+* **Requisitos**:
+  1. Opções pré-definidas: "Muito caro", "Não uso os recursos Premium", "Encontrei alternativa melhor", "Vou voltar depois", "Outro" (habilita campo de texto livre).
+  2. Seleção de motivo obrigatória para prosseguir.
+  3. Armazenar motivo no Firestore para análise de churn.
+
+#### FR-3: Tela de Confirmação com Impacto
+* **Descrição**: Exibe resumo das perdas decorrentes do cancelamento antes da confirmação final.
+* **Requisitos**:
+  1. Exibir recursos a serem perdidos (limite de filhos: ilimitado → 1, tarefas recorrentes: ilimitado → 5, acesso à IA perdido, loja de Gift Cards perdida).
+  2. Exibir a data até quando o acesso Premium será mantido.
+  3. Botões de "Confirmar Cancelamento" e de cancelamento da ação (voltar).
+
+#### FR-4: Processamento do Cancelamento
+* **Descrição**: Processa o cancelamento na API Asaas e atualiza estado local.
+* **Requisitos**:
+  1. Chamar `DELETE /v3/subscriptions/{id}` do Asaas com o subscriptionId do usuário.
+  2. Atualizar status local para `PENDING_CANCELLATION` (manter tier PREMIUM até fim do período pago).
+  3. Registrar data e motivo no Firestore.
+  4. Tratar erros de API com feedback amigável ao usuário.
+
+#### FR-5: Notificação de Confirmação
+* **Descrição**: Envia notificação via WhatsApp confirmando o cancelamento.
+* **Requisitos**:
+  1. Enviar mensagem para o número cadastrado do pai/mãe.
+  2. Mensagem com confirmação e data até quando o acesso Premium será mantido.
+
+### Experiência do Usuário (UX)
+* **Fluxo**: Settings → Botão "Cancelar Assinatura" → Modal: Motivo → Modal: Confirmação → Sucesso.
+* **Estilo**: Modal de motivo neutro; modal de confirmação com aviso de warning (laranja/amarelo) e botão final em vermelho.
+* **Acessibilidade**: Modais navegáveis por teclado e aria-labels corretos.
+
+### Restrições Técnicas
+* **API Asaas**: DELETE na rota `/v3/subscriptions/{id}`.
+* **Notificação**: Twilio WhatsApp (infraestrutura existente).
+* **Persistência**: Firestore para armazenar campos `cancellationDate` e `cancellationReason` na coleção de usuários.
+* **Webhook**: Sincronização via webhook Asaas para atualizar status de cancelamento efetivo.
+
+### Non-Goals (Fora de Escopo)
+* Reembolso proporcional do período não utilizado.
+* Opção de pausar assinatura temporariamente.
+* Ofertas de retenção personalizadas no fluxo.
+* Cancelamento via interface do WhatsApp.
+* Reativação automática da assinatura cancelada.

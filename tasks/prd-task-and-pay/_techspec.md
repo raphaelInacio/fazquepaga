@@ -47,10 +47,13 @@ A estrutura no Firestore segue o design original, com a adição de um campo par
 -   **Coleção:** `users`
     -   **Campos Adicionais:**
         -   `subscriptionTier`: STRING ('FREE' ou 'PREMIUM')
-        -   `subscriptionStatus`: STRING ('ACTIVE', 'OVERDUE', 'CANCELED')
+        -   `subscriptionStatus`: STRING ('ACTIVE', 'OVERDUE', 'CANCELED', 'PENDING_CANCELLATION')
         -   `asaasCustomerId`: STRING
         -   `subscriptionId`: STRING (ID da assinatura no Asaas)
         -   `trialStartDate`: TIMESTAMP (Data de início do trial, UTC - setada automaticamente no registro)
+        -   `cancellationDate`: TIMESTAMP (Data em que o cancelamento foi solicitado)
+        -   `cancellationReason`: STRING (Motivo selecionado para o cancelamento)
+        -   `cancellationReasonDetails`: STRING (Detalhes em texto livre se o motivo for 'OTHER')
 
 -   **Coleção:** `children`
     -   **Campos Adicionais:**
@@ -102,6 +105,7 @@ A lista a seguir representa os endpoints que estão de fato implementados e send
 -   **Novos Endpoints (Assinatura):**
     -   `POST /api/v1/subscription/subscribe` - Cria uma `Checkout Session` no Asaas e retorna a URL segura. **(Zero Data: Não recebe dados sensíveis do frontend)**.
     -   `GET /api/v1/subscription/status` - Consulta status atual da assinatura.
+    -   `POST /api/v1/subscription/cancel` - Cancela a assinatura do usuário Premium.
     -   `POST /api/v1/webhooks/asaas` - Recebe atualizações de pagamento do Asaas.
 -   **Novos Endpoints (Saque):**
     -   `POST /api/v1/children/{childId}/withdraw` - Solicita saque (Criança).
@@ -142,3 +146,81 @@ A lista a seguir representa os endpoints que estão de fato implementados e send
 ### Conformidade com Padrões
 
 -   A arquitetura e a implementação seguem os padrões definidos e documentados em `AGENTS.MD`.
+
+---
+
+## Detalhamento Técnico: Cancelamento de Assinatura
+
+### Interfaces Principais
+```java
+// SubscriptionService.java - Método de cancelamento
+public CancelSubscriptionResponse cancelSubscription(String userId, CancellationReason reason);
+
+// AsaasService.java - Método de integração de cancelamento
+public boolean cancelSubscription(String subscriptionId);
+
+// NotificationService.java - Método para enviar notificação
+public void sendSubscriptionCanceled(User user, Instant premiumExpirationDate);
+```
+
+### Modelos de Dados
+```java
+// subscription/CancellationReason.java
+public enum CancellationReason {
+    TOO_EXPENSIVE,
+    NOT_USING_FEATURES,
+    FOUND_ALTERNATIVE,
+    WILL_RETURN_LATER,
+    OTHER
+}
+
+// identity/User.java - SubscriptionStatus
+public enum SubscriptionStatus {
+    ACTIVE,
+    CANCELED,
+    PAST_DUE,
+    PENDING_CANCELLATION
+}
+```
+
+#### Request/Response DTOs
+```java
+// subscription/dto/CancelSubscriptionRequest.java
+@Data
+@Builder
+public class CancelSubscriptionRequest {
+    @NotNull
+    private CancellationReason reason;
+    private String details; // Opcional, usado quando reason = OTHER
+}
+
+// subscription/dto/CancelSubscriptionResponse.java
+@Data
+@Builder
+public class CancelSubscriptionResponse {
+    private boolean success;
+    private Instant premiumExpiresAt; // Data até quando o Premium será mantido
+    private String message;
+}
+```
+
+### Integração Asaas API e Webhooks
+
+* **API Asaas**: Chamada `DELETE /v3/subscriptions/{id}` com o header `access_token: ${asaas.api-key}`.
+  * Erros `404` são tratados como sucesso localmente (pois a assinatura não existe no gateway).
+  * Erros `400`/`500` interrompem o fluxo e lançam uma exceção de integração.
+* **Webhook Asaas**: Tratamento do evento `SUBSCRIPTION_DELETED` no `AsaasWebhookController` para rebaixar o tier do usuário localmente ao fim do ciclo cobrado.
+
+### Estratégia de Testes
+
+#### Testes Unitários
+* **SubscriptionServiceTest**: Validação do fluxo de cancelamento com sucesso, lançamento de erro ao tentar cancelar sem assinatura ativa e comportamento de falhas do Asaas.
+* **AsaasServiceTest**: Mock do RestTemplate validando o comportamento de sucesso e resposta `404`.
+
+#### Testes de Integração
+* `POST /api/v1/subscription/cancel` - E2E simulando chamadas mockadas e verificando a correta escrita no Firestore e publicação da notificação no Pub/Sub.
+
+### Monitoramento e Observabilidade
+* Logs de nível `INFO` registrando o início e a conclusão do cancelamento.
+* Logs de nível `WARN` para erros `404` da API Asaas.
+* Logs de nível `ERROR` detalhando falhas catastróficas ao se comunicar com o gateway Asaas.
