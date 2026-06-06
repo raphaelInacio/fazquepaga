@@ -152,7 +152,8 @@ class GlobalExceptionHandlerTest {
                 new com.fazquepaga.taskandpay.payment.AsaasIntegrationException(
                         "Failed to cancel Asaas subscription",
                         org.springframework.http.HttpStatus.UNAUTHORIZED,
-                        "{\"errors\":[{\"code\":\"invalid_access_token\",\"description\":\"A chave de API fornecida é inválida\"}]}");
+                        "{\"errors\":[{\"code\":\"invalid_access_token\",\"description\":\"A chave"
+                                + " de API fornecida é inválida\"}]}");
         when(request.getRequestURI()).thenReturn("/api/v1/subscription/cancel");
 
         // When
