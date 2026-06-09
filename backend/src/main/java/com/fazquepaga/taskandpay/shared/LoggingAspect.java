@@ -45,6 +45,7 @@ public class LoggingAspect {
         log.error(
                 "Exception in {}() with cause = {}",
                 joinPoint.getSignature().getName(),
-                error.getCause() != null ? error.getCause() : "NULL");
+                error.getCause() != null ? error.getCause() : "NULL",
+                error);
     }
 }

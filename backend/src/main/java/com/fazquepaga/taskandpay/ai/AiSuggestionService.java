@@ -3,12 +3,15 @@ package com.fazquepaga.taskandpay.ai;
 import com.fazquepaga.taskandpay.ai.dto.AdventureTask;
 import com.fazquepaga.taskandpay.identity.User;
 import com.fazquepaga.taskandpay.identity.UserRepository;
+import com.fazquepaga.taskandpay.shared.stats.StatsService;
 import com.fazquepaga.taskandpay.tasks.Task;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.prompt.Prompt;
@@ -18,12 +21,17 @@ import org.springframework.stereotype.Service;
 @Service
 public class AiSuggestionService {
 
+    private static final Logger log = LoggerFactory.getLogger(AiSuggestionService.class);
+
     private final ChatModel chatModel;
     private final UserRepository userRepository;
+    private final StatsService statsService;
 
-    public AiSuggestionService(ChatModel chatModel, UserRepository userRepository) {
+    public AiSuggestionService(
+            ChatModel chatModel, UserRepository userRepository, StatsService statsService) {
         this.chatModel = chatModel;
         this.userRepository = userRepository;
+        this.statsService = statsService;
     }
 
     public List<String> getSuggestions(int age, String language, String childId) {
@@ -64,6 +72,19 @@ public class AiSuggestionService {
         ChatResponse response = chatModel.call(prompt);
 
         String content = response.getResult().getOutput().getText();
+
+        // Incrementa contador analítico de forma assíncrona (fire-and-forget)
+        if (childId != null && !childId.isBlank()) {
+            try {
+                User child = userRepository.findByIdSync(childId);
+                if (child != null && child.getParentId() != null) {
+                    statsService.incrementFamilyStat(child.getParentId(), "aiSuggestionsUsed", 1);
+                }
+            } catch (Exception e) {
+                log.warn("Could not increment aiSuggestionsUsed stat: {}", e.getMessage());
+            }
+        }
+
         return List.of(content.split(","));
     }
 

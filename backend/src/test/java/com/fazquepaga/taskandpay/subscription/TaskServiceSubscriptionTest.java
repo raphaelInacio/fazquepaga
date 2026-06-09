@@ -41,6 +41,8 @@ class TaskServiceSubscriptionTest {
     private jakarta.inject.Provider<com.fazquepaga.taskandpay.allowance.AllowanceService>
             allowanceServiceProvider;
 
+    @Mock private com.fazquepaga.taskandpay.shared.stats.StatsService statsService;
+
     private TaskService taskService;
 
     @BeforeEach
@@ -57,7 +59,8 @@ class TaskServiceSubscriptionTest {
                                         .class), // NotificationService
                         // mock
                         ledgerService,
-                        allowanceServiceProvider);
+                        allowanceServiceProvider,
+                        statsService);
     }
 
     @Test

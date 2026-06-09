@@ -160,6 +160,13 @@
             "deleteConfirm": "Tem certeza que deseja excluir {{name}}?",
             "deleteSuccess": "Criança excluída com sucesso",
             "deleteError": "Erro ao excluir criança"
+        },
+        "stats": {
+            "title": "Visão Geral da Família",
+            "pendingTasks": "Tarefas Pendentes de Aprovação",
+            "totalEarned": "Total Ganho",
+            "aiUsed": "Sugestões de IA Usadas",
+            "loading": "Carregando estatísticas..."
         }
     },
     "tasks": {

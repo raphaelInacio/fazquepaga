@@ -25,6 +25,7 @@ public class CaffeineRateLimitService implements RateLimitService {
     private final Cache<String, Bucket> globalBuckets;
     private final Cache<String, Bucket> authBuckets;
     private final Cache<String, Bucket> aiBuckets;
+    private final Cache<String, Bucket> clientLogBuckets;
 
     public CaffeineRateLimitService(RateLimitConfig config) {
         this.config = config;
@@ -48,14 +49,24 @@ public class CaffeineRateLimitService implements RateLimitService {
                         .maximumSize(10000)
                         .build();
 
+        this.clientLogBuckets =
+                Caffeine.newBuilder()
+                        .expireAfterAccess(
+                                config.getClientLogDurationSeconds() * 2, TimeUnit.SECONDS)
+                        .maximumSize(10000)
+                        .build();
+
         log.info(
-                "Rate limiter initialized with limits: global={}/{}s, auth={}/{}s, ai={}/{}s",
+                "Rate limiter initialized with limits: global={}/{}s, auth={}/{}s, ai={}/{}s,"
+                        + " clientLog={}/{}s",
                 config.getGlobalLimit(),
                 config.getGlobalDurationSeconds(),
                 config.getAuthLimit(),
                 config.getAuthDurationSeconds(),
                 config.getAiLimit(),
-                config.getAiDurationSeconds());
+                config.getAiDurationSeconds(),
+                config.getClientLogLimit(),
+                config.getClientLogDurationSeconds());
     }
 
     @Override
@@ -98,6 +109,7 @@ public class CaffeineRateLimitService implements RateLimitService {
             case GLOBAL -> config.getGlobalDurationSeconds();
             case AUTH -> config.getAuthDurationSeconds();
             case AI -> config.getAiDurationSeconds();
+            case CLIENT_LOG -> config.getClientLogDurationSeconds();
         };
     }
 
@@ -113,6 +125,7 @@ public class CaffeineRateLimitService implements RateLimitService {
             case GLOBAL -> globalBuckets;
             case AUTH -> authBuckets;
             case AI -> aiBuckets;
+            case CLIENT_LOG -> clientLogBuckets;
         };
     }
 
@@ -137,6 +150,13 @@ public class CaffeineRateLimitService implements RateLimitService {
                                     Refill.intervally(
                                             config.getAiLimit(),
                                             Duration.ofSeconds(config.getAiDurationSeconds())));
+                    case CLIENT_LOG ->
+                            Bandwidth.classic(
+                                    config.getClientLogLimit(),
+                                    Refill.intervally(
+                                            config.getClientLogLimit(),
+                                            Duration.ofSeconds(
+                                                    config.getClientLogDurationSeconds())));
                 };
 
         return Bucket.builder().addLimit(bandwidth).build();

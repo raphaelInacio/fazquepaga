@@ -23,13 +23,14 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler({
+        Exception.class,
         ExecutionException.class,
         InterruptedException.class,
         RuntimeException.class
     })
     public ResponseEntity<ApiError> handleInternalServerErrors(
             Exception ex, HttpServletRequest request) {
-        log.error("Uncaught exception: ", ex);
+        log.error("Erro interno no path: {}", request.getRequestURI(), ex);
         Locale locale = LocaleContextHolder.getLocale();
         String message = messageSource.getMessage("error.internal", null, locale);
         ApiError apiError =
@@ -46,7 +47,8 @@ public class GlobalExceptionHandler {
                 request.getRequestURI(),
                 ex.getMessage(),
                 ex.getStatusCode(),
-                ex.getResponseBody());
+                ex.getResponseBody(),
+                ex);
         Locale locale = LocaleContextHolder.getLocale();
         String message = messageSource.getMessage("error.internal", null, locale);
         ApiError apiError =

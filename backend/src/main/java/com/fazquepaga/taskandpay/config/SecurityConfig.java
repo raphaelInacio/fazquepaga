@@ -7,6 +7,7 @@ import com.fazquepaga.taskandpay.security.RateLimitFilter;
 import com.fazquepaga.taskandpay.security.RecaptchaConfig;
 import com.fazquepaga.taskandpay.security.RecaptchaService;
 import com.fazquepaga.taskandpay.security.RecaptchaServiceImpl;
+import com.fazquepaga.taskandpay.shared.logging.LoggingContextFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -22,14 +23,17 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthFilter;
     private final RateLimitFilter rateLimitFilter;
     private final RecaptchaConfig recaptchaConfig;
+    private final LoggingContextFilter loggingContextFilter;
 
     public SecurityConfig(
             JwtAuthenticationFilter jwtAuthFilter,
             RateLimitFilter rateLimitFilter,
-            RecaptchaConfig recaptchaConfig) {
+            RecaptchaConfig recaptchaConfig,
+            LoggingContextFilter loggingContextFilter) {
         this.jwtAuthFilter = jwtAuthFilter;
         this.rateLimitFilter = rateLimitFilter;
         this.recaptchaConfig = recaptchaConfig;
+        this.loggingContextFilter = loggingContextFilter;
     }
 
     @Bean
@@ -54,6 +58,7 @@ public class SecurityConfig {
                                                 "/api/v1/auth/**",
                                                 "/api/v1/webhooks/**",
                                                 "/api/v1/children/login",
+                                                "/api/v1/logs/client",
                                                 "/v3/api-docs/**",
                                                 "/swagger-ui/**",
                                                 "/swagger-ui.html",
@@ -92,6 +97,9 @@ public class SecurityConfig {
                                 .UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(
                         rateLimitFilter,
+                        com.fazquepaga.taskandpay.security.JwtAuthenticationFilter.class)
+                .addFilterAfter(
+                        loggingContextFilter,
                         com.fazquepaga.taskandpay.security.JwtAuthenticationFilter.class);
 
         return http.build();

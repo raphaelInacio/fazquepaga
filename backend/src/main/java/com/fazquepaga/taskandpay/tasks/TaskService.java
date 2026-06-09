@@ -2,6 +2,7 @@ package com.fazquepaga.taskandpay.tasks;
 
 import com.fazquepaga.taskandpay.identity.User;
 import com.fazquepaga.taskandpay.identity.UserRepository;
+import com.fazquepaga.taskandpay.shared.stats.StatsService;
 import com.fazquepaga.taskandpay.subscription.SubscriptionLimitReachedException;
 import com.fazquepaga.taskandpay.subscription.SubscriptionService;
 import com.fazquepaga.taskandpay.tasks.dto.CreateTaskRequest;
@@ -16,6 +17,9 @@ import org.springframework.stereotype.Service;
 @Service
 public class TaskService {
 
+    private static final org.slf4j.Logger log =
+            org.slf4j.LoggerFactory.getLogger(TaskService.class);
+
     private final TaskRepository taskRepository;
 
     private final UserRepository userRepository;
@@ -26,6 +30,7 @@ public class TaskService {
     private final com.fazquepaga.taskandpay.allowance.LedgerService ledgerService;
     private final Provider<com.fazquepaga.taskandpay.allowance.AllowanceService>
             allowanceServiceProvider;
+    private final StatsService statsService;
 
     public TaskService(
             TaskRepository taskRepository,
@@ -33,8 +38,8 @@ public class TaskService {
             SubscriptionService subscriptionService,
             com.fazquepaga.taskandpay.notification.NotificationService notificationService,
             com.fazquepaga.taskandpay.allowance.LedgerService ledgerService,
-            Provider<com.fazquepaga.taskandpay.allowance.AllowanceService>
-                    allowanceServiceProvider) {
+            Provider<com.fazquepaga.taskandpay.allowance.AllowanceService> allowanceServiceProvider,
+            StatsService statsService) {
 
         this.taskRepository = taskRepository;
         this.userRepository = userRepository;
@@ -42,6 +47,7 @@ public class TaskService {
         this.notificationService = notificationService;
         this.ledgerService = ledgerService;
         this.allowanceServiceProvider = allowanceServiceProvider;
+        this.statsService = statsService;
     }
 
     public Task createTask(String userId, CreateTaskRequest request)
@@ -87,6 +93,9 @@ public class TaskService {
 
         // Automatically recalculate all task values based on allowance distribution
         allowanceServiceProvider.get().recalculateTaskValues(userId);
+
+        // Incrementa contador analítico de forma assíncrona (fire-and-forget)
+        statsService.incrementFamilyStat(parent.getId(), "totalTasksCreated", 1);
 
         // Return updated task with calculated value
         List<Task> updatedTasks = getTasksByUserId(userId);
@@ -152,7 +161,7 @@ public class TaskService {
         try {
             notificationService.sendTaskApproved(task, child);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Failed to send task approved notification", e);
         }
 
         // Add transaction
@@ -161,6 +170,11 @@ public class TaskService {
                 value,
                 "Task approved: " + task.getDescription(),
                 com.fazquepaga.taskandpay.allowance.Transaction.TransactionType.CREDIT);
+
+        // Incrementa contadores analíticos de forma assíncrona (fire-and-forget)
+        statsService.incrementFamilyStat(parentId, "totalTasksApproved", 1);
+        double valueAsDouble = value != null ? value.doubleValue() : 0.0;
+        statsService.incrementFamilyStat(parentId, "totalAllowancePaid", valueAsDouble);
 
         return task;
     }
@@ -209,14 +223,18 @@ public class TaskService {
 
         taskRepository.save(childId, task).get();
 
+        // Incrementa contador analítico de forma assíncrona (fire-and-forget)
+        String familyId = child.getParentId();
+        statsService.incrementFamilyStat(familyId, "totalTasksCompleted", 1);
+
         // Send notification to parent
         try {
-            User parent = userRepository.findByIdSync(child.getParentId());
+            User parent = userRepository.findByIdSync(familyId);
             if (parent != null) {
                 notificationService.sendTaskCompleted(task, child, parent);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Failed to send task completed notification", e);
         }
 
         return task;

@@ -432,61 +432,106 @@ export default function ChildTasks() {
                                         </Button>
                                     </div>
                                 ) : (
-                                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                        {filteredTasks.map((task) => (
-                                            <div
-                                                key={task.id}
-                                                className={`
-                                                    group relative overflow-hidden bg-card p-5 rounded-2xl border transition-all duration-300 hover:scale-[1.02] cursor-pointer
-                                                    ${task.status === 'PENDING_APPROVAL'
-                                                        ? 'border-yellow-400 shadow-glow shadow-yellow-500/20'
-                                                        : 'border-border/50 hover:border-primary/50 hover:shadow-soft'}
-                                                `}
-                                                onClick={() => handleReviewClick(task)}
-                                            >
-                                                <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-primary to-purple-600 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                     <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                         {filteredTasks.map((task) => {
+                                             const isApproved = task.status === 'APPROVED';
+                                             const isPendingApproval = task.status === 'PENDING_APPROVAL';
+                                             const isCompleted = task.status === 'COMPLETED';
+                                             const isPending = task.status === 'PENDING' || !task.status;
 
-                                                <div className="flex justify-between items-start mb-4">
-                                                    <Badge variant={getWeightVariant(task.weight)} className="rounded-lg px-2 py-0.5 text-xs font-semibold uppercase tracking-wider">
-                                                        {task.weight} Quest
-                                                    </Badge>
-                                                    <div className={`h-2.5 w-2.5 rounded-full ${getStatusColor(task.status)} shadow-sm ring-2 ring-white dark:ring-gray-900`} />
-                                                </div>
+                                             // Estilização do Card baseada no status para alta distinção visual
+                                             let cardClasses = "border-border/50 hover:border-primary/50 hover:shadow-soft bg-card";
+                                             if (isApproved) {
+                                                 cardClasses = "border-green-200/80 dark:border-green-900/30 bg-green-50/10 dark:bg-green-950/5 opacity-75 hover:opacity-90";
+                                             } else if (isPendingApproval) {
+                                                 cardClasses = "border-yellow-400 shadow-glow shadow-yellow-500/10 bg-yellow-50/10 dark:bg-yellow-950/5";
+                                             } else if (isCompleted) {
+                                                 cardClasses = "border-emerald-300 bg-emerald-50/15 dark:bg-emerald-950/10";
+                                             }
 
-                                                <h3 className="font-bold text-lg mb-3 line-clamp-2 text-foreground group-hover:text-primary transition-colors">
-                                                    {task.description}
-                                                </h3>
+                                             return (
+                                                 <div
+                                                     key={task.id}
+                                                     className={`
+                                                         group relative overflow-hidden p-5 rounded-2xl border transition-all duration-300 hover:scale-[1.02] cursor-pointer
+                                                         ${cardClasses}
+                                                     `}
+                                                     onClick={() => handleReviewClick(task)}
+                                                 >
+                                                     <div className={`
+                                                         absolute top-0 left-0 w-1.5 h-full opacity-70 group-hover:opacity-100 transition-opacity
+                                                         ${isApproved ? 'bg-green-500' : isPendingApproval ? 'bg-yellow-500' : 'bg-primary'}
+                                                     `} />
 
-                                                <div className="flex flex-col gap-2 text-sm text-muted-foreground">
-                                                    <div className="flex items-center gap-2">
-                                                        <Calendar className="w-4 h-4 text-primary/70" />
-                                                        <span className="font-medium bg-blue-100 px-2 py-0.5 rounded text-xs text-blue-700 border border-blue-200/50">{task.type}</span>
-                                                    </div>
+                                                     <div className="flex justify-between items-center mb-4 gap-2">
+                                                         <Badge variant={getWeightVariant(task.weight)} className="rounded-lg px-2 py-0.5 text-xs font-semibold uppercase tracking-wider">
+                                                             {task.weight} Quest
+                                                         </Badge>
+                                                         
+                                                         {/* Badges textuais premium com ícone e cores fortes para diferenciação clara */}
+                                                         {isApproved && (
+                                                             <Badge className="bg-green-100 hover:bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300 border border-green-200 dark:border-green-800 gap-1 rounded-full px-2 py-0.5 text-xs font-bold">
+                                                                 <Check className="h-3 w-3" />
+                                                                 {t("dashboard.list.status.approved") || "Aprovada"}
+                                                             </Badge>
+                                                         )}
+                                                         {isPendingApproval && (
+                                                             <Badge className="bg-yellow-100 hover:bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300 border border-yellow-200 dark:border-yellow-800 gap-1 rounded-full px-2 py-0.5 text-xs font-bold animate-pulse">
+                                                                 <Clock className="h-3 w-3" />
+                                                                 {t("childTasks.filter.pendingApproval") || "Aguardando Aprovação"}
+                                                             </Badge>
+                                                         )}
+                                                         {isCompleted && (
+                                                             <Badge className="bg-emerald-100 hover:bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 gap-1 rounded-full px-2 py-0.5 text-xs font-bold">
+                                                                 <CheckCircle2 className="h-3 w-3" />
+                                                                 {t("dashboard.list.status.completed") || "Concluída"}
+                                                             </Badge>
+                                                         )}
+                                                         {isPending && (
+                                                             <Badge variant="secondary" className="gap-1 rounded-full px-2 py-0.5 text-xs font-bold">
+                                                                 <Clock className="h-3 w-3 text-muted-foreground" />
+                                                                 {t("dashboard.list.status.pending") || "Pendente"}
+                                                             </Badge>
+                                                         )}
+                                                     </div>
 
-                                                    {task.requiresProof && (
-                                                        <div className="flex items-center gap-2 text-purple-600 dark:text-purple-400">
-                                                            <CheckCircle2 className="w-4 h-4" />
-                                                            <span className="text-xs font-medium">{t("childTasks.proofRequired")}</span>
-                                                        </div>
-                                                    )}
+                                                     <h3 className={`
+                                                         font-bold text-lg mb-3 line-clamp-2 transition-colors
+                                                         ${isApproved ? 'text-muted-foreground line-through decoration-muted-foreground/40' : 'text-foreground group-hover:text-primary'}
+                                                     `}>
+                                                         {task.description}
+                                                     </h3>
 
-                                                    {task.aiValidated && (
-                                                        <div className="flex items-center gap-2 text-green-600 dark:text-green-400">
-                                                            <Sparkles className="w-4 h-4" />
-                                                            <span className="text-xs font-medium">{t("childTasks.aiValidated")}</span>
-                                                        </div>
-                                                    )}
-                                                </div>
+                                                     <div className="flex flex-col gap-2 text-sm text-muted-foreground">
+                                                         <div className="flex items-center gap-2">
+                                                             <Calendar className="w-4 h-4 text-primary/70" />
+                                                             <span className="font-medium bg-blue-100 px-2 py-0.5 rounded text-xs text-blue-700 border border-blue-200/50">{task.type}</span>
+                                                         </div>
 
-                                                {task.createdAt && (
-                                                    <div className="mt-4 pt-4 border-t border-border/30 flex items-center gap-1.5 text-xs text-muted-foreground/60">
-                                                        <Clock className="w-3 h-3" />
-                                                        {new Date(task.createdAt).toLocaleDateString()}
-                                                    </div>
-                                                )}
-                                            </div>
-                                        ))}
-                                    </div>
+                                                         {task.requiresProof && (
+                                                             <div className="flex items-center gap-2 text-purple-600 dark:text-purple-400">
+                                                                 <CheckCircle2 className="w-4 h-4" />
+                                                                 <span className="text-xs font-medium">{t("childTasks.proofRequired")}</span>
+                                                             </div>
+                                                         )}
+
+                                                         {task.aiValidated && (
+                                                             <div className="flex items-center gap-2 text-green-600 dark:text-green-400">
+                                                                 <Sparkles className="w-4 h-4" />
+                                                                 <span className="text-xs font-medium">{t("childTasks.aiValidated")}</span>
+                                                             </div>
+                                                         )}
+                                                     </div>
+
+                                                     {task.createdAt && (
+                                                         <div className="mt-4 pt-4 border-t border-border/30 flex items-center gap-1.5 text-xs text-muted-foreground/60">
+                                                             <Clock className="w-3 h-3" />
+                                                             {new Date(task.createdAt).toLocaleDateString()}
+                                                         </div>
+                                                     )}
+                                                 </div>
+                                             );
+                                         })}</div>
                                 )}
                             </Card>
                         </TabsContent>
@@ -645,6 +690,8 @@ export default function ChildTasks() {
                                 <Label htmlFor="desc">{t("childTasks.create.label.description")}</Label>
                                 <Input
                                     id="desc"
+                                    name="description"
+                                    data-testid="create-task-description-input"
                                     value={newTask.description}
                                     onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
                                     placeholder={t("childTasks.create.placeholder.description")}
@@ -708,7 +755,7 @@ export default function ChildTasks() {
                         </div>
                         <DialogFooter>
                             <Button variant="ghost" onClick={() => setIsCreateTaskDialogOpen(false)} className="rounded-xl">{t("common.cancel")}</Button>
-                            <Button onClick={handleCreateTask} className="rounded-xl shadow-lg shadow-primary/20">{t("childTasks.create.submit")}</Button>
+                            <Button onClick={handleCreateTask} data-testid="create-task-submit-button" className="rounded-xl shadow-lg shadow-primary/20">{t("childTasks.create.submit")}</Button>
                         </DialogFooter>
                     </DialogContent>
                 </Dialog>

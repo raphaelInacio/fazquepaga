@@ -41,6 +41,9 @@ public class RateLimitFilter extends OncePerRequestFilter {
         "/api/v1/ai/tasks/suggestions", "/api/v1/ai/goal-coach", "/api/v1/ai/adventure-mode/tasks"
     };
 
+    // Client log endpoint patterns (specific rate limits)
+    private static final String[] CLIENT_LOG_PATTERNS = {"/api/v1/logs/client"};
+
     public RateLimitFilter(
             RateLimitService rateLimitService, RateLimitConfig config, ObjectMapper objectMapper) {
         this.rateLimitService = rateLimitService;
@@ -96,6 +99,13 @@ public class RateLimitFilter extends OncePerRequestFilter {
         for (String pattern : AI_PATTERNS) {
             if (pathMatcher.match(pattern, path)) {
                 return RateLimitService.BucketType.AI;
+            }
+        }
+
+        // Check if it's a client log endpoint
+        for (String pattern : CLIENT_LOG_PATTERNS) {
+            if (pathMatcher.match(pattern, path)) {
+                return RateLimitService.BucketType.CLIENT_LOG;
             }
         }
 
@@ -161,6 +171,7 @@ public class RateLimitFilter extends OncePerRequestFilter {
             case GLOBAL -> config.getGlobalLimit();
             case AUTH -> config.getAuthLimit();
             case AI -> config.getAiLimit();
+            case CLIENT_LOG -> config.getClientLogLimit();
         };
     }
 

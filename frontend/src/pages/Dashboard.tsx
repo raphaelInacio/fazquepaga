@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { User as UserIcon, Gift, Loader2, QrCode, Plus, Sparkles, LogOut, Edit, Trash2, Settings } from "lucide-react";
-import { User, Task } from "@/types";
+import { User as UserIcon, Gift, Loader2, QrCode, Plus, Sparkles, LogOut, Edit, Trash2, Settings, Cpu } from "lucide-react";
+import { User, Task, FamilyStats } from "@/types";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,6 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { childService } from "@/services/childService";
 import { taskService } from "@/services/taskService";
+import { statsService } from "@/services/statsService";
 import { AiContextInput } from "@/components/AiContextInput";
 import { getLedger, approveWithdrawal, Transaction } from "@/services/ledgerService";
 import { toast } from "sonner";
@@ -29,6 +30,9 @@ export default function Dashboard() {
     const [selectedChildId, setSelectedChildId] = useState<string | null>(null);
     const [allowanceAmount, setAllowanceAmount] = useState("");
     const [isLoading, setIsLoading] = useState(true);
+    const [stats, setStats] = useState<FamilyStats | null>(null);
+    const [isStatsLoading, setIsStatsLoading] = useState(true);
+    const [isPendingLoading, setIsPendingLoading] = useState(true);
     const [onboardingCode, setOnboardingCode] = useState<string | null>(null);
     const [selectedChildForCode, setSelectedChildForCode] = useState<string | null>(null);
     const [editingChild, setEditingChild] = useState<User | null>(null);
@@ -37,6 +41,15 @@ export default function Dashboard() {
 
     const [pendingTasks, setPendingTasks] = useState<{ childId: string, childName: string, task: Task }[]>([]);
     const [pendingWithdrawals, setPendingWithdrawals] = useState<{ childId: string, childName: string, transaction: Transaction }[]>([]);
+
+    const refreshStats = async (parentId: string) => {
+        try {
+            const statsData = await statsService.getFamilyStats(parentId);
+            setStats(statsData);
+        } catch (err) {
+            console.error("Failed to refresh family stats", err);
+        }
+    };
 
     useEffect(() => {
         const parentId = localStorage.getItem("parentId");
@@ -50,38 +63,72 @@ export default function Dashboard() {
 
         const fetchChildren = async () => {
             try {
+                // Fetch family stats in parallel
+                statsService.getFamilyStats(parentId)
+                    .then(statsData => {
+                        setStats(statsData);
+                    })
+                    .catch(err => {
+                        console.error("Failed to fetch family stats", err);
+                        setStats({
+                            totalTasksCreated: 0,
+                            totalTasksCompleted: 0,
+                            totalTasksApproved: 0,
+                            totalAllowancePaid: 0,
+                            aiSuggestionsUsed: 0
+                        });
+                    })
+                    .finally(() => {
+                        setIsStatsLoading(false);
+                    });
+
                 const childrenData = await childService.getChildren(parentId);
                 setChildren(childrenData);
+                setIsLoading(false);
 
-                // Fetch pending tasks for all children
-                const allPendingTasks: { childId: string, childName: string, task: Task }[] = [];
-                const allPendingWithdrawals: { childId: string, childName: string, transaction: Transaction }[] = [];
-                for (const child of childrenData) {
-                    if (child.id) {
-                        const tasks = await taskService.getTasks(child.id);
-                        const pending = tasks.filter(t => t.status === 'PENDING_APPROVAL');
-                        pending.forEach(task => {
-                            allPendingTasks.push({
+                if (childrenData.length === 0) {
+                    setIsPendingLoading(false);
+                    return;
+                }
+
+                // Fetch pending tasks and withdrawals in parallel (non-blocking)
+                setIsPendingLoading(true);
+                const pendingPromises = childrenData.map(async (child) => {
+                    if (!child.id) return { pendingTasks: [], pendingWithdrawals: [] };
+                    
+                    try {
+                        const [tasks, ledger] = await Promise.all([
+                            taskService.getTasks(child.id),
+                            getLedger(child.id, parentId)
+                        ]);
+                        
+                        const childPendingTasks = tasks
+                            .filter(t => t.status === 'PENDING_APPROVAL')
+                            .map(task => ({
                                 childId: child.id!,
                                 childName: child.name,
                                 task
-                            });
-                        });
-
-                        // Fetch pending withdrawals
-                        const ledger = await getLedger(child.id, parentId);
-                        const withdrawals = ledger.transactions.filter(
-                            (tx: any) => tx.type === 'WITHDRAWAL' && tx.status === 'PENDING_APPROVAL'
-                        );
-                        withdrawals.forEach((tx: any) => {
-                            allPendingWithdrawals.push({
+                            }));
+                            
+                        const childPendingWithdrawals = ledger.transactions
+                            .filter((tx: any) => tx.type === 'WITHDRAWAL' && tx.status === 'PENDING_APPROVAL')
+                            .map((tx: any) => ({
                                 childId: child.id!,
                                 childName: child.name,
                                 transaction: tx
-                            });
-                        });
+                            }));
+                            
+                        return { pendingTasks: childPendingTasks, pendingWithdrawals: childPendingWithdrawals };
+                    } catch (err) {
+                        console.error(`Failed to fetch data for child ${child.name}`, err);
+                        return { pendingTasks: [], pendingWithdrawals: [] };
                     }
-                }
+                });
+
+                const results = await Promise.all(pendingPromises);
+                const allPendingTasks = results.flatMap(r => r.pendingTasks);
+                const allPendingWithdrawals = results.flatMap(r => r.pendingWithdrawals);
+                
                 setPendingTasks(allPendingTasks);
                 setPendingWithdrawals(allPendingWithdrawals);
 
@@ -89,7 +136,7 @@ export default function Dashboard() {
                 console.error("Failed to fetch children", error);
                 toast.error("Failed to load your children's data.");
             } finally {
-                setIsLoading(false);
+                setIsPendingLoading(false);
             }
         };
 
@@ -181,6 +228,7 @@ export default function Dashboard() {
 
             const childrenData = await childService.getChildren(parentId);
             setChildren(childrenData);
+            refreshStats(parentId);
 
         } catch (error) {
             toast.error(t("dashboard.pendingApprovals.error"));
@@ -198,6 +246,7 @@ export default function Dashboard() {
             setPendingTasks(prev => prev.filter(item => item.task.id !== taskId));
             const childrenData = await childService.getChildren(parentId);
             setChildren(childrenData);
+            refreshStats(parentId);
         } catch (error) {
             toast.error("Failed to reject task");
         }
@@ -359,14 +408,99 @@ export default function Dashboard() {
                         </div>
                     </div>
 
+                    {/* Family Stats Overview Section */}
+                    <div className="grid gap-6 md:grid-cols-3">
+                        {isStatsLoading ? (
+                            Array.from({ length: 3 }).map((_, idx) => (
+                                <Card key={idx} className="border-none bg-card/50 shadow-soft animate-pulse border border-border/50">
+                                    <CardContent className="p-6 flex items-center gap-4">
+                                        <div className="h-12 w-12 rounded-xl bg-muted" />
+                                        <div className="space-y-2 flex-1">
+                                            <div className="h-4 bg-muted rounded w-2/3" />
+                                            <div className="h-6 bg-muted rounded w-1/3" />
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            ))
+                        ) : (
+                            <>
+                                {/* Card: Pending Tasks */}
+                                <Card className="border-none bg-gradient-to-br from-amber-500/10 to-orange-500/10 dark:from-amber-950/20 dark:to-orange-950/20 shadow-soft border border-amber-500/20 hover:scale-[1.02] transition-all duration-300">
+                                    <CardContent className="p-6 flex items-center gap-4">
+                                        <div className="h-12 w-12 rounded-xl bg-amber-500/10 flex items-center justify-center border border-amber-500/20">
+                                            <Sparkles className="h-6 w-6 text-amber-600 dark:text-amber-400" />
+                                        </div>
+                                        <div>
+                                            <p className="text-sm font-medium text-muted-foreground">
+                                                {t("dashboard.stats.pendingTasks")}
+                                            </p>
+                                            <h3 className="text-2xl font-bold text-amber-700 dark:text-amber-400 mt-0.5" data-testid="stats-pending-tasks">
+                                                {Math.max(0, (stats?.totalTasksCompleted || 0) - (stats?.totalTasksApproved || 0))}
+                                            </h3>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+
+                                {/* Card: Total Earned */}
+                                <Card className="border-none bg-gradient-to-br from-green-500/10 to-emerald-500/10 dark:from-green-950/20 dark:to-emerald-950/20 shadow-soft border border-green-500/20 hover:scale-[1.02] transition-all duration-300">
+                                    <CardContent className="p-6 flex items-center gap-4">
+                                        <div className="h-12 w-12 rounded-xl bg-green-500/10 flex items-center justify-center border border-green-500/20">
+                                            <Banknote className="h-6 w-6 text-green-600 dark:text-green-400" />
+                                        </div>
+                                        <div>
+                                            <p className="text-sm font-medium text-muted-foreground">
+                                                {t("dashboard.stats.totalEarned")}
+                                            </p>
+                                            <h3 className="text-2xl font-bold text-green-700 dark:text-green-400 mt-0.5" data-testid="stats-total-earned">
+                                                {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(stats?.totalAllowancePaid || 0)}
+                                            </h3>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+
+                                {/* Card: AI Suggestions Used */}
+                                <Card className="border-none bg-gradient-to-br from-purple-500/10 to-indigo-500/10 dark:from-purple-950/20 dark:to-indigo-950/20 shadow-soft border border-purple-500/20 hover:scale-[1.02] transition-all duration-300">
+                                    <CardContent className="p-6 flex items-center gap-4">
+                                        <div className="h-12 w-12 rounded-xl bg-purple-500/10 flex items-center justify-center border border-purple-500/20">
+                                            <Cpu className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+                                        </div>
+                                        <div>
+                                            <p className="text-sm font-medium text-muted-foreground">
+                                                {t("dashboard.stats.aiUsed")}
+                                            </p>
+                                            <h3 className="text-2xl font-bold text-purple-700 dark:text-purple-400 mt-0.5" data-testid="stats-ai-used">
+                                                {stats?.aiSuggestionsUsed || 0}
+                                            </h3>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            </>
+                        )}
+                    </div>
+
                     {isLoading ? (
                         <div className="flex justify-center items-center py-20">
                             <Loader2 className="h-12 w-12 animate-spin text-primary" />
                         </div>
                     ) : (
                         <div className="space-y-10">
+                            {/* Loading skeleton for pending approvals and withdrawals */}
+                            {isPendingLoading && (
+                                <div className="space-y-6">
+                                    <Card className="border-none bg-card/50 shadow-soft animate-pulse border border-border/50 p-6 space-y-4">
+                                        <div className="flex items-center gap-3">
+                                            <div className="h-10 w-10 rounded-lg bg-muted" />
+                                            <div className="h-6 bg-muted rounded w-48" />
+                                        </div>
+                                        <div className="space-y-3">
+                                            <div className="h-16 bg-muted rounded-xl w-full" />
+                                        </div>
+                                    </Card>
+                                </div>
+                            )}
+
                             {/* Pending Withdrawals Section */}
-                            {pendingWithdrawals.length > 0 && (
+                            {!isPendingLoading && pendingWithdrawals.length > 0 && (
                                 <Card className="border-none bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 shadow-glow relative overflow-hidden group mb-8">
                                     <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
                                         <Banknote className="h-24 w-24 text-green-500" />
@@ -405,7 +539,7 @@ export default function Dashboard() {
                             )}
 
                             {/* Pending Approvals Section */}
-                            {pendingTasks.length > 0 && (
+                            {!isPendingLoading && pendingTasks.length > 0 && (
                                 <Card className="border-none bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30 shadow-glow relative overflow-hidden group">
                                     <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
                                         <Sparkles className="h-24 w-24 text-amber-500" />

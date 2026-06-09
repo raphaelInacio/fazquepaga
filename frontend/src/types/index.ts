@@ -68,3 +68,12 @@ export interface GiftCard {
     description: string;
 }
 
+export interface FamilyStats {
+    totalTasksCreated?: number;
+    totalTasksCompleted?: number;
+    totalTasksApproved?: number;
+    totalAllowancePaid?: number;
+    aiSuggestionsUsed?: number;
+    lastActivityTimestamp?: any;
+}
+

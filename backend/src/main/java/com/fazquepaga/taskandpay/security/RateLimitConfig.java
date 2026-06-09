@@ -24,6 +24,10 @@ public class RateLimitConfig {
     private int aiLimit = 5;
     private int aiDurationSeconds = 60;
 
+    // Client log endpoints rate limit (per IP)
+    private int clientLogLimit = 5;
+    private int clientLogDurationSeconds = 60;
+
     // Getters and setters
 
     public boolean isEnabled() {
@@ -80,5 +84,21 @@ public class RateLimitConfig {
 
     public void setAiDurationSeconds(int aiDurationSeconds) {
         this.aiDurationSeconds = aiDurationSeconds;
+    }
+
+    public int getClientLogLimit() {
+        return clientLogLimit;
+    }
+
+    public void setClientLogLimit(int clientLogLimit) {
+        this.clientLogLimit = clientLogLimit;
+    }
+
+    public int getClientLogDurationSeconds() {
+        return clientLogDurationSeconds;
+    }
+
+    public void setClientLogDurationSeconds(int clientLogDurationSeconds) {
+        this.clientLogDurationSeconds = clientLogDurationSeconds;
     }
 }

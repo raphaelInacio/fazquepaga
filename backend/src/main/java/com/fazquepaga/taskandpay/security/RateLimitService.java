@@ -37,6 +37,7 @@ public interface RateLimitService {
     enum BucketType {
         GLOBAL,
         AUTH,
-        AI
+        AI,
+        CLIENT_LOG
     }
 }

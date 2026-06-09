@@ -90,6 +90,27 @@ class GlobalExceptionHandlerTest {
     }
 
     @Test
+    void shouldHandleGenericException() {
+        // Given
+        Exception exception = new Exception("Generic checked exception");
+        when(request.getRequestURI()).thenReturn("/api/v1/some-path");
+
+        // When
+        ResponseEntity<ApiError> response =
+                exceptionHandler.handleInternalServerErrors(exception, request);
+
+        // Then
+        assertNotNull(response);
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals(500, response.getBody().getStatus());
+        assertEquals(
+                "An internal error occurred. Please try again later.",
+                response.getBody().getMessage());
+        assertEquals("/api/v1/some-path", response.getBody().getPath());
+    }
+
+    @Test
     void shouldHandleIllegalArgumentException() {
         // Given
         IllegalArgumentException exception = new IllegalArgumentException("Invalid parameter");

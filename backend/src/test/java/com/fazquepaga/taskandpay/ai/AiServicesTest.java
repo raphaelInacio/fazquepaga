@@ -21,6 +21,7 @@ class AiServicesTest {
 
     @Mock private ChatModel chatModel;
     @Mock private UserRepository userRepository;
+    @Mock private com.fazquepaga.taskandpay.shared.stats.StatsService statsService;
 
     private AiSuggestionService suggestionService;
     private AiValidatorImpl aiValidator;
@@ -28,7 +29,7 @@ class AiServicesTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        suggestionService = new AiSuggestionService(chatModel, userRepository);
+        suggestionService = new AiSuggestionService(chatModel, userRepository, statsService);
         aiValidator = new AiValidatorImpl(chatModel);
     }
 

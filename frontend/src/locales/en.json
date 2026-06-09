@@ -157,6 +157,13 @@
             "deleteConfirm": "Are you sure you want to delete {{name}}?",
             "deleteSuccess": "Child deleted successfully",
             "deleteError": "Error deleting child"
+        },
+        "stats": {
+            "title": "Family Overview",
+            "pendingTasks": "Tasks Pending Approval",
+            "totalEarned": "Total Earned",
+            "aiUsed": "AI Suggestions Used",
+            "loading": "Loading statistics..."
         }
     },
     "tasks": {
