@@ -354,7 +354,10 @@
             },
             "confirmCancel": "Confirmar Cancelamento",
             "cancelSuccess": "Assinatura cancelada com sucesso",
-            "cancelError": "Falha ao cancelar assinatura. Tente novamente mais tarde."
+            "cancelError": "Falha ao cancelar assinatura. Tente novamente mais tarde.",
+            "pendingCancellationTitle": "Cancelamento Pendente",
+            "pendingCancellationDescription": "Sua assinatura continuará ativa como Premium até o final do período de faturamento.",
+            "resubscribeButton": "Reassinar Agora"
         }
     }
 }

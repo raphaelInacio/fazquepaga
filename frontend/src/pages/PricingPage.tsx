@@ -12,7 +12,7 @@ import { navigateTo } from "@/lib/utils";
 
 export default function PricingPage() {
     const { t } = useTranslation();
-    const { isPremium, isTrialActive, trialDaysRemaining } = useSubscription();
+    const { isPremium, isTrialActive, trialDaysRemaining, subscriptionStatus } = useSubscription();
     const navigate = useNavigate();
     const [isLoading, setIsLoading] = useState(false);
 
@@ -93,14 +93,14 @@ export default function PricingPage() {
                         </ul>
                     </CardContent>
                     <CardFooter>
-                        {isPremium() ? (
+                        {isPremium() && subscriptionStatus === "ACTIVE" ? (
                             <Button className="w-full" variant="secondary" disabled>
                                 ✓ Plano Ativo
                             </Button>
                         ) : (
                             <Button className="w-full bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600" onClick={handleSubscribe} disabled={isLoading}>
                                 {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                                {isTrialActive() ? "Assinar Agora" : "Começar Trial Grátis"}
+                                {isPremium() && subscriptionStatus === "PENDING_CANCELLATION" ? "Assinar Novamente" : "Assinar Agora"}
                             </Button>
                         )}
                     </CardFooter>

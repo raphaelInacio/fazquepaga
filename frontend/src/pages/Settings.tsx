@@ -143,7 +143,7 @@ export default function Settings() {
                 </Card>
 
                 {/* Subscription Section */}
-                {user?.subscriptionTier === 'PREMIUM' && user?.subscriptionStatus === 'ACTIVE' && (
+                {user?.subscriptionTier === 'PREMIUM' && (user?.subscriptionStatus === 'ACTIVE' || user?.subscriptionStatus === 'PENDING_CANCELLATION') && (
                     <Card className="border-none shadow-soft mt-8 border-destructive/20">
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2 text-destructive">
@@ -155,30 +155,57 @@ export default function Settings() {
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-4">
-                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 bg-destructive/5 rounded-xl border border-destructive/10 hover:bg-destructive/10 transition-all duration-300">
-                                <div className="flex items-start gap-4">
-                                    <div className="p-2.5 bg-destructive/10 rounded-xl flex-shrink-0 animate-pulse">
-                                        <AlertTriangle className="h-5 w-5 text-destructive" />
+                            {user?.subscriptionStatus === 'ACTIVE' ? (
+                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 bg-destructive/5 rounded-xl border border-destructive/10 hover:bg-destructive/10 transition-all duration-300">
+                                    <div className="flex items-start gap-4">
+                                        <div className="p-2.5 bg-destructive/10 rounded-xl flex-shrink-0 animate-pulse">
+                                            <AlertTriangle className="h-5 w-5 text-destructive" />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <p className="font-semibold text-destructive">
+                                                {t("settings.subscription.cancelTitle") || "Cancel Subscription"}
+                                            </p>
+                                            <p className="text-sm text-muted-foreground leading-relaxed">
+                                                {t("settings.subscription.cancelDescription") || "You will lose access to Premium features at the end of your billing cycle"}
+                                            </p>
+                                        </div>
                                     </div>
-                                    <div className="space-y-1">
-                                        <p className="font-semibold text-destructive">
-                                            {t("settings.subscription.cancelTitle") || "Cancel Subscription"}
-                                        </p>
-                                        <p className="text-sm text-muted-foreground leading-relaxed">
-                                            {t("settings.subscription.cancelDescription") || "You will lose access to Premium features at the end of your billing cycle"}
-                                        </p>
-                                    </div>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => setIsCancelModalOpen(true)}
+                                        data-testid="cancel-subscription-button"
+                                        className="border-destructive/30 text-destructive hover:bg-destructive hover:text-destructive-foreground flex-shrink-0 shadow-sm transition-all duration-300 font-medium self-end sm:self-center"
+                                    >
+                                        {t("settings.subscription.cancelButton") || "Cancel Subscription"}
+                                    </Button>
                                 </div>
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => setIsCancelModalOpen(true)}
-                                    data-testid="cancel-subscription-button"
-                                    className="border-destructive/30 text-destructive hover:bg-destructive hover:text-destructive-foreground flex-shrink-0 shadow-sm transition-all duration-300 font-medium self-end sm:self-center"
-                                >
-                                    {t("settings.subscription.cancelButton") || "Cancel Subscription"}
-                                </Button>
-                            </div>
+                            ) : (
+                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 bg-yellow-50 dark:bg-yellow-950/20 rounded-xl border border-yellow-200 dark:border-yellow-900/50 hover:bg-yellow-100/50 dark:hover:bg-yellow-950/30 transition-all duration-300">
+                                    <div className="flex items-start gap-4">
+                                        <div className="p-2.5 bg-yellow-100 dark:bg-yellow-900/30 rounded-xl flex-shrink-0">
+                                            <AlertTriangle className="h-5 w-5 text-yellow-600 dark:text-yellow-500" />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <p className="font-semibold text-yellow-800 dark:text-yellow-400">
+                                                {t("settings.subscription.pendingCancellationTitle") || "Cancellation Pending"}
+                                            </p>
+                                            <p className="text-sm text-yellow-700/80 dark:text-yellow-400/80 leading-relaxed">
+                                                {t("settings.subscription.pendingCancellationDescription") || "Your subscription will remain active as Premium until the end of the billing period."}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <Button
+                                        variant="default"
+                                        size="sm"
+                                        onClick={() => navigate("/pricing")}
+                                        data-testid="resubscribe-button"
+                                        className="bg-yellow-600 hover:bg-yellow-700 text-white dark:bg-yellow-500 dark:hover:bg-yellow-600 flex-shrink-0 shadow-sm transition-all duration-300 font-medium self-end sm:self-center"
+                                    >
+                                        {t("settings.subscription.resubscribeButton") || "Resubscribe"}
+                                    </Button>
+                                </div>
+                            )}
                         </CardContent>
                     </Card>
                 )}

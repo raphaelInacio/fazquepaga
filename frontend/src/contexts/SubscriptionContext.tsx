@@ -14,6 +14,7 @@ interface SubscriptionContextType {
     isTrialActive: () => boolean;
     isTrialExpired: () => boolean;
     trialDaysRemaining: number | null;
+    subscriptionStatus: "ACTIVE" | "CANCELED" | "PAST_DUE" | "NONE" | "PENDING_CANCELLATION" | undefined;
 }
 
 const SubscriptionContext = createContext<SubscriptionContextType | undefined>(undefined);
@@ -107,6 +108,7 @@ export const SubscriptionProvider: React.FC<{ children: ReactNode }> = ({ childr
                 isTrialActive,
                 isTrialExpired,
                 trialDaysRemaining,
+                subscriptionStatus: user?.subscriptionStatus,
             }}
         >
             {children}

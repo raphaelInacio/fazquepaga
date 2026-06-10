@@ -39,6 +39,7 @@ describe('PricingPage', () => {
             isPremium: () => false,
             isTrialActive: () => false,
             trialDaysRemaining: null,
+            subscriptionStatus: 'NONE',
         });
 
         render(
@@ -49,7 +50,7 @@ describe('PricingPage', () => {
 
         expect(screen.getByText('Assine o Premium')).toBeInTheDocument();
         expect(screen.getByText('Premium')).toBeInTheDocument();
-        expect(screen.getByText('Começar Trial Grátis')).toBeInTheDocument();
+        expect(screen.getByText('Assinar Agora')).toBeInTheDocument();
     });
 
     test('renders pricing plans correctly when trial is active', () => {
@@ -57,6 +58,7 @@ describe('PricingPage', () => {
             isPremium: () => false,
             isTrialActive: () => true,
             trialDaysRemaining: 3,
+            subscriptionStatus: 'NONE',
         });
 
         render(
@@ -71,11 +73,12 @@ describe('PricingPage', () => {
         expect(screen.getByText('🎁 Seu trial está ativo! Experimente tudo grátis.')).toBeInTheDocument();
     });
 
-    test('shows "✓ Plano Ativo" button when user is premium', () => {
+    test('shows "✓ Plano Ativo" button when user is premium and active', () => {
         mockUseSubscription.mockReturnValue({
             isPremium: () => true,
             isTrialActive: () => false,
             trialDaysRemaining: null,
+            subscriptionStatus: 'ACTIVE',
         });
 
         render(
@@ -89,11 +92,12 @@ describe('PricingPage', () => {
         expect(activeButton).toBeDisabled();
     });
 
-    test('calls subscribe service and redirects on upgrade click', async () => {
+    test('shows "Assinar Novamente" button and allows resubscribing when user is premium but pending cancellation', async () => {
         mockUseSubscription.mockReturnValue({
-            isPremium: () => false,
+            isPremium: () => true,
             isTrialActive: () => false,
             trialDaysRemaining: null,
+            subscriptionStatus: 'PENDING_CANCELLATION',
         });
         mockSubscribe.mockResolvedValue({ checkoutUrl: 'https://asaas.com/checkout' });
 
@@ -103,7 +107,35 @@ describe('PricingPage', () => {
             </BrowserRouter>
         );
 
-        const upgradeButton = screen.getByText('Começar Trial Grátis');
+        const resubscribeButton = screen.getByText('Assinar Novamente');
+        expect(resubscribeButton).toBeInTheDocument();
+        expect(resubscribeButton).not.toBeDisabled();
+
+        fireEvent.click(resubscribeButton);
+
+        expect(mockSubscribe).toHaveBeenCalledTimes(1);
+
+        await waitFor(() => {
+            expect(mockNavigateTo).toHaveBeenCalledWith('https://asaas.com/checkout');
+        });
+    });
+
+    test('calls subscribe service and redirects on upgrade click', async () => {
+        mockUseSubscription.mockReturnValue({
+            isPremium: () => false,
+            isTrialActive: () => false,
+            trialDaysRemaining: null,
+            subscriptionStatus: 'NONE',
+        });
+        mockSubscribe.mockResolvedValue({ checkoutUrl: 'https://asaas.com/checkout' });
+
+        render(
+            <BrowserRouter>
+                <PricingPage />
+            </BrowserRouter>
+        );
+
+        const upgradeButton = screen.getByText('Assinar Agora');
         fireEvent.click(upgradeButton);
 
         expect(mockSubscribe).toHaveBeenCalledTimes(1);
@@ -118,6 +150,7 @@ describe('PricingPage', () => {
             isPremium: () => false,
             isTrialActive: () => true,
             trialDaysRemaining: 3,
+            subscriptionStatus: 'NONE',
         });
         mockSubscribe.mockResolvedValue({ checkoutUrl: 'https://asaas.com/checkout' });
 
