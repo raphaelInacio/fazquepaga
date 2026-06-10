@@ -134,4 +134,33 @@ class FamilyStatsControllerTest {
                 .andExpect(jsonPath("$.totalAllowancePaid").value(10.0))
                 .andExpect(jsonPath("$.aiSuggestionsUsed").value(1));
     }
+
+    @Test
+    void getFamilyStats_whenSyncIsTrue_shouldRecalculateStatsFirst() throws Exception {
+        String familyId = "family-123";
+        currentUser = User.builder().id(familyId).role(User.Role.PARENT).build();
+
+        Map<String, Object> mockStats =
+                Map.of(
+                        "totalTasksCreated", 5L,
+                        "totalTasksCompleted", 3L,
+                        "totalTasksApproved", 2L,
+                        "totalAllowancePaid", 10.0,
+                        "aiSuggestionsUsed", 1L);
+
+        when(statsService.recalculateFamilyStats(familyId))
+                .thenReturn(CompletableFuture.completedFuture(null));
+        when(statsService.getFamilyStats(familyId))
+                .thenReturn(CompletableFuture.completedFuture(mockStats));
+
+        mockMvc.perform(get("/api/v1/families/" + familyId + "/stats").param("sync", "true"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalTasksCreated").value(5))
+                .andExpect(jsonPath("$.totalTasksCompleted").value(3))
+                .andExpect(jsonPath("$.totalTasksApproved").value(2))
+                .andExpect(jsonPath("$.totalAllowancePaid").value(10.0))
+                .andExpect(jsonPath("$.aiSuggestionsUsed").value(1));
+
+        verify(statsService).recalculateFamilyStats(familyId);
+    }
 }

@@ -23,7 +23,9 @@ public class FamilyStatsController {
 
     @GetMapping("/{familyId}/stats")
     public ResponseEntity<Map<String, Object>> getFamilyStats(
-            @PathVariable String familyId, @AuthenticationPrincipal User authenticatedUser)
+            @PathVariable String familyId,
+            @org.springframework.web.bind.annotation.RequestParam(required = false, defaultValue = "false") boolean sync,
+            @AuthenticationPrincipal User authenticatedUser)
             throws ExecutionException, InterruptedException {
 
         if (authenticatedUser == null) {
@@ -41,6 +43,10 @@ public class FamilyStatsController {
 
         if (!isParentOfFamily && !isChildOfFamily) {
             return ResponseEntity.status(403).build();
+        }
+
+        if (sync) {
+            statsService.recalculateFamilyStats(familyId).get();
         }
 
         Map<String, Object> stats = statsService.getFamilyStats(familyId).get();

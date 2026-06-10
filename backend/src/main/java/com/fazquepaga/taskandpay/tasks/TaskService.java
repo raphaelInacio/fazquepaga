@@ -188,6 +188,8 @@ public class TaskService {
             throw new IllegalArgumentException("Child not found");
         }
 
+        String familyId = child.getParentId();
+
         // Find task
         List<Task> tasks = getAllTasksRaw(childId);
         Task task =
@@ -219,12 +221,16 @@ public class TaskService {
                     value,
                     "Task completed: " + task.getDescription(),
                     com.fazquepaga.taskandpay.allowance.Transaction.TransactionType.CREDIT);
+
+            // Incrementa estatísticas analíticas de aprovação automática
+            statsService.incrementFamilyStat(familyId, "totalTasksApproved", 1);
+            double valueAsDouble = value != null ? value.doubleValue() : 0.0;
+            statsService.incrementFamilyStat(familyId, "totalAllowancePaid", valueAsDouble);
         }
 
         taskRepository.save(childId, task).get();
 
         // Incrementa contador analítico de forma assíncrona (fire-and-forget)
-        String familyId = child.getParentId();
         statsService.incrementFamilyStat(familyId, "totalTasksCompleted", 1);
 
         // Send notification to parent
@@ -296,6 +302,13 @@ public class TaskService {
         task.setAcknowledged(true); // Logic: Parent acted on it.
 
         taskRepository.save(childId, task).get();
+
+        // Decrementa contadores analíticos correspondentes à rejeição da tarefa aprovada
+        statsService.incrementFamilyStat(parentId, "totalTasksCompleted", -1);
+        statsService.incrementFamilyStat(parentId, "totalTasksApproved", -1);
+        double valueAsDouble = value != null ? value.doubleValue() : 0.0;
+        statsService.incrementFamilyStat(parentId, "totalAllowancePaid", -valueAsDouble);
+
         return task;
     }
 
