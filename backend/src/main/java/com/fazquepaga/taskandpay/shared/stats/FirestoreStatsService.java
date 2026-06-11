@@ -164,76 +164,84 @@ public class FirestoreStatsService implements StatsService {
 
         CompletableFuture<Void> completableFuture = new CompletableFuture<>();
 
-        CompletableFuture.runAsync(() -> {
-            try {
-                // 1. Buscar os filhos da família na coleção "users"
-                var childrenDocs = firestore.collection("users")
-                        .whereEqualTo("parentId", familyId)
-                        .whereEqualTo("role", "CHILD")
-                        .get()
-                        .get()
-                        .getDocuments();
+        CompletableFuture.runAsync(
+                () -> {
+                    try {
+                        // 1. Buscar os filhos da família na coleção "users"
+                        var childrenDocs =
+                                firestore
+                                        .collection("users")
+                                        .whereEqualTo("parentId", familyId)
+                                        .whereEqualTo("role", "CHILD")
+                                        .get()
+                                        .get()
+                                        .getDocuments();
 
-                long totalCreated = 0;
-                long totalCompleted = 0;
-                long totalApproved = 0;
-                double totalAllowance = 0.0;
+                        long totalCreated = 0;
+                        long totalCompleted = 0;
+                        long totalApproved = 0;
+                        double totalAllowance = 0.0;
 
-                for (var childDoc : childrenDocs) {
-                    String childId = childDoc.getId();
-                    // 2. Buscar tarefas do filho na subcoleção "tasks"
-                    var tasksDocs = firestore.collection("users")
-                            .document(childId)
-                            .collection("tasks")
-                            .get()
-                            .get()
-                            .getDocuments();
+                        for (var childDoc : childrenDocs) {
+                            String childId = childDoc.getId();
+                            // 2. Buscar tarefas do filho na subcoleção "tasks"
+                            var tasksDocs =
+                                    firestore
+                                            .collection("users")
+                                            .document(childId)
+                                            .collection("tasks")
+                                            .get()
+                                            .get()
+                                            .getDocuments();
 
-                    for (var taskDoc : tasksDocs) {
-                        Boolean archived = taskDoc.getBoolean("archived");
-                        if (Boolean.TRUE.equals(archived)) {
-                            continue;
-                        }
-
-                        totalCreated++;
-                        String statusStr = taskDoc.getString("status");
-                        if (statusStr != null) {
-                            if (statusStr.equals("APPROVED")) {
-                                totalApproved++;
-                                totalCompleted++;
-                                Double val = taskDoc.getDouble("value");
-                                if (val != null) {
-                                    totalAllowance += val;
+                            for (var taskDoc : tasksDocs) {
+                                Boolean archived = taskDoc.getBoolean("archived");
+                                if (Boolean.TRUE.equals(archived)) {
+                                    continue;
                                 }
-                            } else if (statusStr.equals("COMPLETED") || statusStr.equals("PENDING_APPROVAL")) {
-                                totalCompleted++;
+
+                                totalCreated++;
+                                String statusStr = taskDoc.getString("status");
+                                if (statusStr != null) {
+                                    if (statusStr.equals("APPROVED")) {
+                                        totalApproved++;
+                                        totalCompleted++;
+                                        Double val = taskDoc.getDouble("value");
+                                        if (val != null) {
+                                            totalAllowance += val;
+                                        }
+                                    } else if (statusStr.equals("COMPLETED")
+                                            || statusStr.equals("PENDING_APPROVAL")) {
+                                        totalCompleted++;
+                                    }
+                                }
                             }
                         }
+
+                        // 3. Salvar de volta no documento de estatísticas da família
+                        DocumentReference statsRef =
+                                firestore
+                                        .collection(FAMILIES_COLLECTION)
+                                        .document(familyId)
+                                        .collection(METADATA_COLLECTION)
+                                        .document(STATS_DOCUMENT);
+
+                        Map<String, Object> updates = new HashMap<>();
+                        updates.put("totalTasksCreated", totalCreated);
+                        updates.put("totalTasksCompleted", totalCompleted);
+                        updates.put("totalTasksApproved", totalApproved);
+                        updates.put("totalAllowancePaid", totalAllowance);
+                        updates.put("lastActivityTimestamp", FieldValue.serverTimestamp());
+
+                        statsRef.set(updates, com.google.cloud.firestore.SetOptions.merge()).get();
+                        completableFuture.complete(null);
+
+                    } catch (Exception e) {
+                        log.error(
+                                "Failed to recalculate family stats for familyId={}", familyId, e);
+                        completableFuture.completeExceptionally(e);
                     }
-                }
-
-                // 3. Salvar de volta no documento de estatísticas da família
-                DocumentReference statsRef = firestore
-                        .collection(FAMILIES_COLLECTION)
-                        .document(familyId)
-                        .collection(METADATA_COLLECTION)
-                        .document(STATS_DOCUMENT);
-
-                Map<String, Object> updates = new HashMap<>();
-                updates.put("totalTasksCreated", totalCreated);
-                updates.put("totalTasksCompleted", totalCompleted);
-                updates.put("totalTasksApproved", totalApproved);
-                updates.put("totalAllowancePaid", totalAllowance);
-                updates.put("lastActivityTimestamp", FieldValue.serverTimestamp());
-
-                statsRef.set(updates, com.google.cloud.firestore.SetOptions.merge()).get();
-                completableFuture.complete(null);
-
-            } catch (Exception e) {
-                log.error("Failed to recalculate family stats for familyId={}", familyId, e);
-                completableFuture.completeExceptionally(e);
-            }
-        });
+                });
 
         return completableFuture;
     }

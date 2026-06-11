@@ -24,7 +24,10 @@ public class FamilyStatsController {
     @GetMapping("/{familyId}/stats")
     public ResponseEntity<Map<String, Object>> getFamilyStats(
             @PathVariable String familyId,
-            @org.springframework.web.bind.annotation.RequestParam(required = false, defaultValue = "false") boolean sync,
+            @org.springframework.web.bind.annotation.RequestParam(
+                            required = false,
+                            defaultValue = "false")
+                    boolean sync,
             @AuthenticationPrincipal User authenticatedUser)
             throws ExecutionException, InterruptedException {
 

@@ -36,8 +36,8 @@ public interface StatsService {
     CompletableFuture<java.util.Map<String, Object>> getFamilyStats(String familyId);
 
     /**
-     * Recalcula e sincroniza as estatísticas analíticas de uma família a partir das tarefas
-     * reais salvas no banco.
+     * Recalcula e sincroniza as estatísticas analíticas de uma família a partir das tarefas reais
+     * salvas no banco.
      *
      * @param familyId ID da família (parentId)
      */
