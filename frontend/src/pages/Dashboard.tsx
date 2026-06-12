@@ -435,7 +435,7 @@ export default function Dashboard() {
                                                 {t("dashboard.stats.pendingTasks")}
                                             </p>
                                             <h3 className="text-2xl font-bold text-amber-700 dark:text-amber-400 mt-0.5" data-testid="stats-pending-tasks">
-                                                {Math.max(0, (stats?.totalTasksCompleted || 0) - (stats?.totalTasksApproved || 0))}
+                                                {isPendingLoading ? "..." : pendingTasks.length}
                                             </h3>
                                         </div>
                                     </CardContent>

@@ -3,6 +3,7 @@ package com.fazquepaga.taskandpay.identity;
 import com.fazquepaga.taskandpay.identity.dto.CreateChildRequest;
 import com.fazquepaga.taskandpay.identity.dto.CreateParentRequest;
 import com.fazquepaga.taskandpay.identity.dto.UpdateChildRequest;
+import com.fazquepaga.taskandpay.shared.stats.StatsService;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -15,14 +16,17 @@ public class IdentityService {
 
     private final UserRepository userRepository;
     private final org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
+    private final StatsService statsService;
     // In-memory storage for onboarding codes: code -> childId
     private final ConcurrentHashMap<String, String> onboardingCodes = new ConcurrentHashMap<>();
 
     public IdentityService(
             UserRepository userRepository,
-            org.springframework.security.crypto.password.PasswordEncoder passwordEncoder) {
+            org.springframework.security.crypto.password.PasswordEncoder passwordEncoder,
+            StatsService statsService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.statsService = statsService;
     }
 
     public String generateOnboardingCode(String childId)
@@ -248,6 +252,9 @@ public class IdentityService {
 
         // Delete the child from database
         userRepository.delete(childId).get();
+
+        // Recalculate family stats so dashboard totals update
+        statsService.recalculateFamilyStats(parentId);
 
         // Note: Tasks associated with this child will remain in the database
         // In a production app, you would want to either:

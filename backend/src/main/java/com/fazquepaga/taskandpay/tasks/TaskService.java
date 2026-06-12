@@ -281,33 +281,38 @@ public class TaskService {
                         .findFirst()
                         .orElseThrow(() -> new IllegalArgumentException("Task not found"));
 
-        // Only allow rejecting APPROVED tasks (that were auto-approved or manually
-        // approved)
-        if (task.getStatus() != Task.TaskStatus.APPROVED) {
-            throw new IllegalStateException("Can only reject approved tasks");
+        // Allow rejecting APPROVED and PENDING_APPROVAL tasks
+        if (task.getStatus() != Task.TaskStatus.APPROVED
+                && task.getStatus() != Task.TaskStatus.PENDING_APPROVAL) {
+            throw new IllegalStateException("Can only reject approved or pending tasks");
         }
 
-        // Calculate value to reverse
-        java.math.BigDecimal value =
-                allowanceServiceProvider.get().calculateValueForTask(childId, taskId);
+        // If it was APPROVED, we must reverse the financial transaction and the approved stat
+        if (task.getStatus() == Task.TaskStatus.APPROVED) {
+            // Calculate value to reverse
+            java.math.BigDecimal value =
+                    allowanceServiceProvider.get().calculateValueForTask(childId, taskId);
 
-        // Reverse transaction (Debit)
-        ledgerService.addTransaction(
-                childId,
-                value,
-                "Task rejected by parent: " + task.getDescription(),
-                com.fazquepaga.taskandpay.allowance.Transaction.TransactionType.DEBIT);
+            // Reverse transaction (Debit)
+            ledgerService.addTransaction(
+                    childId,
+                    value,
+                    "Task rejected by parent: " + task.getDescription(),
+                    com.fazquepaga.taskandpay.allowance.Transaction.TransactionType.DEBIT);
+
+            statsService.incrementFamilyStat(parentId, "totalTasksApproved", -1);
+            double valueAsDouble = value != null ? value.doubleValue() : 0.0;
+            statsService.incrementFamilyStat(parentId, "totalAllowancePaid", -valueAsDouble);
+        }
 
         task.setStatus(Task.TaskStatus.PENDING);
         task.setAcknowledged(true); // Logic: Parent acted on it.
 
         taskRepository.save(childId, task).get();
 
-        // Decrementa contadores analíticos correspondentes à rejeição da tarefa aprovada
+        // Decrement totalTasksCompleted because it went from PENDING_APPROVAL or APPROVED back to
+        // PENDING
         statsService.incrementFamilyStat(parentId, "totalTasksCompleted", -1);
-        statsService.incrementFamilyStat(parentId, "totalTasksApproved", -1);
-        double valueAsDouble = value != null ? value.doubleValue() : 0.0;
-        statsService.incrementFamilyStat(parentId, "totalAllowancePaid", -valueAsDouble);
 
         return task;
     }
