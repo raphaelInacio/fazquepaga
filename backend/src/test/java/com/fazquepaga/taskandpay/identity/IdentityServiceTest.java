@@ -20,6 +20,8 @@ class IdentityServiceTest {
 
     @Mock private org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
 
+    @Mock private com.fazquepaga.taskandpay.shared.stats.StatsService statsService;
+
     @InjectMocks private IdentityService identityService;
 
     @BeforeEach
