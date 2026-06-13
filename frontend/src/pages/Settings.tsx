@@ -198,7 +198,7 @@ export default function Settings() {
                                     <Button
                                         variant="default"
                                         size="sm"
-                                        onClick={() => navigate("/pricing")}
+                                        onClick={() => navigate("/subscription")}
                                         data-testid="resubscribe-button"
                                         className="bg-yellow-600 hover:bg-yellow-700 text-white dark:bg-yellow-500 dark:hover:bg-yellow-600 flex-shrink-0 shadow-sm transition-all duration-300 font-medium self-end sm:self-center"
                                     >
