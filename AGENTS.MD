@@ -66,6 +66,18 @@ The backend will be available at `http://localhost:8080`. The Spring Boot applic
 *   End-to-end tests are written with Playwright.
 
 
+## 📊 Produção e Monitoramento (Production & Monitoring)
+
+Para acesso rápido às métricas e logs em ambiente de produção (GCP), utilize os links abaixo:
+
+- [Google Cloud Console - Cloud Run (Serviço Backend)](https://console.cloud.google.com/run?project=gen-lang-client-0807030077)
+- [Google Cloud Console - Firestore (Banco de Dados)](https://console.cloud.google.com/firestore/databases/-default-/data/panel?project=gen-lang-client-0807030077)
+- [Google Cloud Console - Logs Explorer](https://console.cloud.google.com/logs/query?project=gen-lang-client-0807030077)
+- [Google Cloud Console - Pub/Sub](https://console.cloud.google.com/cloudpubsub/topic/list?project=gen-lang-client-0807030077)
+- [Google Cloud Console - Secret Manager](https://console.cloud.google.com/security/secret-manager?project=gen-lang-client-0807030077)
+- [Asaas - Painel de Produção](https://www.asaas.com/)
+- [Firebase Hosting (Frontend)](https://console.firebase.google.com/project/gen-lang-client-0807030077/hosting/sites)
+
 ## 📂 Project Structure
 
 The project is a monorepo with two main parts:
