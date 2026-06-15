@@ -50,14 +50,24 @@ const articles = [
   }))
 ];
 
-articles.forEach(article => {
+articles.forEach((article, index) => {
   let html = templateHtml;
   html = html.replace(/{{TITLE}}/g, article.title);
   html = html.replace(/{{DESCRIPTION}}/g, article.description);
   html = html.replace(/{{SLUG}}/g, article.slug);
   html = html.replace(/{{DATE}}/g, article.date);
   html = html.replace(/{{CONTENT}}/g, article.content);
-  html = html.replace(/{{IMAGE_URL}}/g, '/og-image.png');
+
+  const images = [
+    'https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?auto=format&fit=crop&q=80&w=800',
+    'https://images.unsplash.com/photo-1611505907380-459f42fb79cd?auto=format&fit=crop&q=80&w=800',
+    'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?auto=format&fit=crop&q=80&w=800',
+    'https://images.unsplash.com/photo-1502920514313-52581002a659?auto=format&fit=crop&q=80&w=800',
+    'https://images.unsplash.com/photo-1580514801127-b50e4179339e?auto=format&fit=crop&q=80&w=800'
+  ];
+  const imageUrl = images[index % images.length];
+
+  html = html.replace(/{{IMAGE_URL}}/g, imageUrl);
 
   const filePath = path.join(process.cwd(), 'public', 'blog', `${article.slug}.html`);
   fs.writeFileSync(filePath, html, 'utf-8');

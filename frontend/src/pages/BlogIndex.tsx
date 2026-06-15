@@ -10,35 +10,35 @@ const articles = [
     slug: "como-ensinar-educacao-financeira-para-criancas",
     date: "14 Jun 2026",
     excerpt: "Descubra os desafios e as melhores estratégias para introduzir conceitos financeiros para crianças que já nasceram conectadas.",
-    imageUrl: "/og-image.png"
+    imageUrl: "https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?auto=format&fit=crop&q=80&w=800"
   },
   {
     title: "Qual a idade ideal para começar a dar mesada?",
     slug: "qual-a-idade-ideal-para-comecar-a-dar-mesada",
     date: "14 Jun 2026",
     excerpt: "Existe um momento certo para começar? Veja o que os especialistas dizem sobre a introdução da mesada infantil.",
-    imageUrl: "/og-image.png"
+    imageUrl: "https://images.unsplash.com/photo-1611505907380-459f42fb79cd?auto=format&fit=crop&q=80&w=800"
   },
   {
     title: "Mesada vs. Pagamento por Tarefas: Qual o melhor método?",
     slug: "mesada-vs-pagamento-por-tarefas",
     date: "14 Jun 2026",
     excerpt: "Entenda as diferenças, prós e contras de dar uma mesada fixa versus pagar apenas por tarefas concluídas.",
-    imageUrl: "/og-image.png"
+    imageUrl: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?auto=format&fit=crop&q=80&w=800"
   },
   {
     title: "Tabela de tarefas domésticas por idade (Guia Completo)",
     slug: "tabela-de-tarefas-domesticas-por-idade",
     date: "14 Jun 2026",
     excerpt: "Saiba o que esperar do seu filho em cada fase do desenvolvimento e quais tarefas são adequadas para cada idade.",
-    imageUrl: "/og-image.png"
+    imageUrl: "https://images.unsplash.com/photo-1502920514313-52581002a659?auto=format&fit=crop&q=80&w=800"
   },
   {
     title: "Como o aplicativo TaskAndPay ensina responsabilidade financeira",
     slug: "como-o-aplicativo-taskandpay-ensina-responsabilidade-financeira",
     date: "14 Jun 2026",
     excerpt: "Conheça as ferramentas e a tecnologia por trás do TaskAndPay que ajudam pais e filhos na jornada da educação financeira.",
-    imageUrl: "/og-image.png"
+    imageUrl: "https://images.unsplash.com/photo-1580514801127-b50e4179339e?auto=format&fit=crop&q=80&w=800"
   }
 ];
 
