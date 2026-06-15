@@ -1,6 +1,7 @@
 import { Check, Gift } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { trackEvent } from "@/lib/analytics";
 
 export const Pricing = () => {
     const navigate = useNavigate();
@@ -68,7 +69,10 @@ export const Pricing = () => {
                         </ul>
 
                         <Button
-                            onClick={() => navigate("/register")}
+                            onClick={() => {
+                                trackEvent('begin_checkout', { value: 9.90, currency: 'BRL' });
+                                navigate("/register");
+                            }}
                             className="w-full bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white py-6 text-lg font-semibold"
                             size="lg"
                         >

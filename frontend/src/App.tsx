@@ -1,5 +1,6 @@
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
+import { HelmetProvider } from "react-helmet-async";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
@@ -17,6 +18,7 @@ import { AuthProvider } from "./context/AuthContext";
 import { GiftCardStorePage } from "./pages/GiftCardStorePage";
 import PricingPage from "./pages/PricingPage";
 import Settings from "./pages/Settings";
+import BlogIndex from "./pages/BlogIndex";
 import { LanguageSwitcher } from "./components/LanguageSwitcher";
 import { SubscriptionProvider } from "./contexts/SubscriptionContext";
 
@@ -27,6 +29,7 @@ const RECAPTCHA_SITE_KEY = import.meta.env.VITE_RECAPTCHA_SITE_KEY || "";
 const queryClient = new QueryClient();
 
 const AppContent = () => (
+  <HelmetProvider>
   <TooltipProvider>
     <Toaster />
     <Sonner />
@@ -46,11 +49,13 @@ const AppContent = () => (
         <Route path="/child-portal" element={<ChildPortal />} />
         <Route path="/subscription" element={<PricingPage />} />
         <Route path="/settings" element={<Settings />} />
+        <Route path="/blog" element={<BlogIndex />} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
   </TooltipProvider>
+  </HelmetProvider>
 );
 
 const App = () => (

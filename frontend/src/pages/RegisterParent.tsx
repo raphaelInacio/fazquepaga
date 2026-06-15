@@ -7,6 +7,7 @@ import { useTranslation } from "react-i18next";
 import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 import { parentService } from "@/services/parentService";
 import { useSubscription } from "@/contexts/SubscriptionContext";
+import { trackEvent } from "@/lib/analytics";
 import { Button } from "@/components/ui/button";
 import {
     Form,
@@ -64,6 +65,10 @@ export default function RegisterParent() {
             };
             const parent = await parentService.registerParent(parentData);
             toast.success(t("auth.register.success"));
+            
+            // Track lead conversion
+            trackEvent('generate_lead', { method: 'email' });
+
             // Store parent data for demo purposes and sync with SubscriptionContext
             if (parent && parent.id) {
                 localStorage.setItem("parentId", parent.id);
