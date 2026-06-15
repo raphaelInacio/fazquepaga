@@ -39,6 +39,9 @@ export const Header = () => {
             <a href="#precos" className="text-muted-foreground hover:text-foreground transition-smooth">
               {t("header.pricing")}
             </a>
+            <a href="/blog" className="text-muted-foreground hover:text-foreground transition-smooth">
+              Blog
+            </a>
           </nav>
 
           <div className="hidden md:flex items-center gap-4">
@@ -69,6 +72,9 @@ export const Header = () => {
               </a>
               <a href="#precos" className="text-muted-foreground hover:text-foreground transition-smooth">
                 {t("header.pricing")}
+              </a>
+              <a href="/blog" className="text-muted-foreground hover:text-foreground transition-smooth">
+                Blog
               </a>
               <div className="flex flex-col gap-2 pt-2">
                 <Button variant="ghost" className="w-full" onClick={() => setIsLoginModalOpen(true)}>
