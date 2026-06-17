@@ -57,7 +57,7 @@ class TaskControllerTest {
         request.setWeight(Task.TaskWeight.MEDIUM);
         request.setRequiresProof(false);
 
-        setAuthentication("parent-id", User.Role.PARENT);
+        setAuthentication("parent-id", com.fazquepaga.taskandpay.identity.User.Role.PARENT);
 
         Task createdTask =
                 Task.builder()
@@ -98,7 +98,7 @@ class TaskControllerTest {
         request.setWeight(Task.TaskWeight.HIGH);
         request.setRequiresProof(true);
 
-        setAuthentication("parent-id", User.Role.PARENT);
+        setAuthentication("parent-id", com.fazquepaga.taskandpay.identity.User.Role.PARENT);
 
         Task createdTask =
                 Task.builder()
@@ -129,7 +129,7 @@ class TaskControllerTest {
     void shouldGetTasksForChild() throws Exception {
         // Given
         String childId = "child-id";
-        setAuthentication(childId, User.Role.CHILD);
+        setAuthentication(childId, com.fazquepaga.taskandpay.identity.User.Role.CHILD);
         List<Task> tasks =
                 Arrays.asList(
                         Task.builder()
@@ -163,7 +163,7 @@ class TaskControllerTest {
     void shouldReturnEmptyListWhenNoTasks() throws Exception {
         // Given
         String childId = "child-with-no-tasks";
-        setAuthentication(childId, User.Role.CHILD);
+        setAuthentication(childId, com.fazquepaga.taskandpay.identity.User.Role.CHILD);
         when(taskService.getTasksByUserId(childId)).thenReturn(List.of());
 
         // When & Then
@@ -219,7 +219,7 @@ class TaskControllerTest {
         String taskId = "task-id";
         String childId = "child-id";
         String parentId = "parent@example.com";
-        setAuthentication(parentId, User.Role.PARENT);
+        setAuthentication(parentId, com.fazquepaga.taskandpay.identity.User.Role.PARENT);
 
         Task approvedTask =
                 Task.builder()
@@ -245,7 +245,7 @@ class TaskControllerTest {
         String taskId = "task-id";
         String childId = "child-id";
         String parentId = "parent@example.com";
-        setAuthentication(parentId, User.Role.PARENT);
+        setAuthentication(parentId, com.fazquepaga.taskandpay.identity.User.Role.PARENT);
 
         // When & Then
         mockMvc.perform(
