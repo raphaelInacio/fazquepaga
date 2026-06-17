@@ -114,44 +114,87 @@ public class IdentityController {
         return ResponseEntity.ok(Map.of("message", "All sessions logged out"));
     }
 
+    private User getAuthenticatedUser() {
+        org.springframework.security.core.Authentication auth =
+                org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.getPrincipal() instanceof User) {
+            return (User) auth.getPrincipal();
+        }
+        return null;
+    }
+
     @PostMapping("/children")
     public ResponseEntity<User> createChild(
-            @RequestBody CreateChildRequest request, @RequestParam("parent_id") String parentId)
+            @RequestBody CreateChildRequest request)
             throws ExecutionException, InterruptedException {
+        User parent = getAuthenticatedUser();
+        if (parent == null || parent.getRole() != User.Role.PARENT) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
         // Enforce that the child is created for the authenticated parent
-        request.setParentId(parentId);
+        request.setParentId(parent.getId());
         User child = identityService.createChild(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(child);
     }
 
     @GetMapping("/children")
-    public ResponseEntity<List<User>> getChildren(@RequestParam("parent_id") String parentId)
+    public ResponseEntity<List<User>> getChildren()
             throws ExecutionException, InterruptedException {
-        List<User> children = identityService.getChildren(parentId);
+        User parent = getAuthenticatedUser();
+        if (parent == null || parent.getRole() != User.Role.PARENT) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        List<User> children = identityService.getChildren(parent.getId());
         return ResponseEntity.ok(children);
     }
 
     @GetMapping("/children/{childId}")
     public ResponseEntity<User> getChild(
-            @PathVariable String childId, @RequestParam("parent_id") String parentId)
+            @PathVariable String childId)
             throws ExecutionException, InterruptedException {
-        User child = identityService.getChild(childId, parentId);
+        User parent = getAuthenticatedUser();
+        if (parent == null || parent.getRole() != User.Role.PARENT) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        User child = identityService.getChild(childId, parent.getId());
         return ResponseEntity.ok(child);
     }
 
     @GetMapping("/users/{userId}")
     public ResponseEntity<User> getUser(@PathVariable String userId)
             throws ExecutionException, InterruptedException {
+        User currentUser = getAuthenticatedUser();
+        if (currentUser == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        // Security check: only allow if it's the user themselves OR their child
+        if (!currentUser.getId().equals(userId)) {
+            try {
+                identityService.getChild(userId, currentUser.getId());
+            } catch (Exception e) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
+        }
+
         User user = identityService.getUserById(userId);
         return ResponseEntity.ok(user);
     }
 
     @PostMapping("/children/{childId}/onboarding-code")
     public ResponseEntity<Map<String, String>> generateOnboardingCode(
-            @PathVariable String childId, @RequestParam("parent_id") String parentId)
+            @PathVariable String childId)
             throws ExecutionException, InterruptedException {
+        User parent = getAuthenticatedUser();
+        if (parent == null || parent.getRole() != User.Role.PARENT) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
         // Validate ownership
-        identityService.getChild(childId, parentId);
+        identityService.getChild(childId, parent.getId());
 
         String code = identityService.generateOnboardingCode(childId);
         return ResponseEntity.ok(Map.of("code", code));
@@ -160,11 +203,15 @@ public class IdentityController {
     @PostMapping("/children/{childId}/allowance")
     public ResponseEntity<User> updateChildAllowance(
             @PathVariable String childId,
-            @RequestBody Map<String, java.math.BigDecimal> request,
-            @RequestParam("parent_id") String parentId)
+            @RequestBody Map<String, java.math.BigDecimal> request)
             throws ExecutionException, InterruptedException {
+        User parent = getAuthenticatedUser();
+        if (parent == null || parent.getRole() != User.Role.PARENT) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
         // Validate ownership
-        identityService.getChild(childId, parentId);
+        identityService.getChild(childId, parent.getId());
 
         User updatedChild = identityService.updateChildAllowance(childId, request.get("allowance"));
         return ResponseEntity.ok(updatedChild);
@@ -173,29 +220,42 @@ public class IdentityController {
     @PutMapping("/children/{childId}")
     public ResponseEntity<User> updateChild(
             @PathVariable String childId,
-            @RequestBody UpdateChildRequest request,
-            @RequestParam("parent_id") String parentId)
+            @RequestBody UpdateChildRequest request)
             throws ExecutionException, InterruptedException {
-        User updatedChild = identityService.updateChild(childId, request, parentId);
+        User parent = getAuthenticatedUser();
+        if (parent == null || parent.getRole() != User.Role.PARENT) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        User updatedChild = identityService.updateChild(childId, request, parent.getId());
         return ResponseEntity.ok(updatedChild);
     }
 
     @DeleteMapping("/children/{childId}")
     public ResponseEntity<Void> deleteChild(
-            @PathVariable String childId, @RequestParam("parent_id") String parentId)
+            @PathVariable String childId)
             throws ExecutionException, InterruptedException {
-        identityService.deleteChild(childId, parentId);
+        User parent = getAuthenticatedUser();
+        if (parent == null || parent.getRole() != User.Role.PARENT) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        identityService.deleteChild(childId, parent.getId());
         return ResponseEntity.noContent().build();
     }
 
     @PatchMapping("/children/{childId}/context")
     public ResponseEntity<User> updateAiContext(
             @PathVariable String childId,
-            @RequestBody com.fazquepaga.taskandpay.identity.dto.UpdateAiContextRequest request,
-            @RequestParam("parent_id") String parentId)
+            @RequestBody com.fazquepaga.taskandpay.identity.dto.UpdateAiContextRequest request)
             throws ExecutionException, InterruptedException {
+        User parent = getAuthenticatedUser();
+        if (parent == null || parent.getRole() != User.Role.PARENT) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
         User updatedChild =
-                identityService.updateAiContext(childId, request.getContext(), parentId);
+                identityService.updateAiContext(childId, request.getContext(), parent.getId());
         return ResponseEntity.ok(updatedChild);
     }
 }

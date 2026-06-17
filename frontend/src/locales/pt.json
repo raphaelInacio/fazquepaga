@@ -286,7 +286,13 @@
             "invalidAmount": "Por favor insira um valor válido",
             "insufficientFunds": "Saldo insuficiente",
             "success": "Pedido de saque enviado!",
-            "error": "Erro ao solicitar saque"
+            "error": "Erro ao solicitar saque",
+            "giftCards": {
+                "button": "Gift Cards",
+                "title": "Loja de Recompensas 🛍️",
+                "desc": "Que tal trocar as moedas que você ganhou completando tarefas por Gift Cards de Roblox, iFood e PlayStation?",
+                "explore": "Explorar Loja de Prêmios"
+            }
         }
     },
     "notFound": {
@@ -358,6 +364,36 @@
             "pendingCancellationTitle": "Cancelamento Pendente",
             "pendingCancellationDescription": "Sua assinatura continuará ativa como Premium até o final do período de faturamento.",
             "resubscribeButton": "Reassinar Agora"
+        },
+        "giftCardStore": {
+            "title": "Loja de Recompensas",
+            "subtitle": "Troque seu saldo por Gift Cards de verdade!",
+            "back": "Voltar",
+            "balance": "Seu Saldo Fictício",
+            "gamesCategory": "Jogos 🎮",
+            "foodCategory": "Alimentação & Delivery 🍕",
+            "othersCategory": "Outros 🎁",
+            "requestsSection": "Meus Pedidos 🛍️",
+            "noRequests": "Você ainda não pediu nenhum Gift Card. Faça tarefas para ganhar saldo!",
+            "noGiftCards": "Nenhum Gift Card disponível no momento.",
+            "requestDialogTitle": "Confirmar Pedido",
+            "requestDialogDesc": "Você está prestes a pedir este Gift Card para seu responsável.",
+            "currentBalance": "Seu saldo atual:",
+            "price": "Valor do prêmio:",
+            "remainingBalance": "Saldo restante:",
+            "warningDescription": "Atenção: Seu responsável receberá um pedido no aplicativo dele e deverá aprovar e pagar o valor real. O saldo do aplicativo é apenas educativo.",
+            "insufficientFunds": "Saldo Insuficiente!",
+            "insufficientDesc": "Você precisa de mais R$ {{amount}} para pedir este prêmio. Faça mais tarefas!",
+            "requestBtn": "Pedir ao Responsável",
+            "requestSuccess": "Pedido enviado para aprovação! 🎉",
+            "requestError": "Erro ao solicitar Gift Card",
+            "copyPin": "Copiar Código",
+            "pinCopied": "Código copiado com sucesso! 🎉",
+            "statusPending": "Aguardando aprovação",
+            "statusApproved": "Aprovado! Gerando código",
+            "statusCompleted": "Resgatado! Código liberado",
+            "statusFailed": "Recusado / Erro no pagamento",
+            "premiumError": "A loja de Gift Cards está disponível apenas para usuários Premium. Peça ao seu responsável para assinar!"
         }
     }
 }

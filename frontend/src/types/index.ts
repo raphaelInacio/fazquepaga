@@ -77,3 +77,23 @@ export interface FamilyStats {
     lastActivityTimestamp?: any;
 }
 
+export interface GiftCardTransaction {
+    id: string;
+    childId: string;
+    parentId: string;
+    productId: string;
+    amount: number;
+    status: 'PENDING' | 'APPROVED' | 'FAILED' | 'COMPLETED';
+    asaasPaymentId?: string;
+    rvhubTransactionId?: string;
+    pinCode?: string;
+    createdAt: string;
+    idempotencyKey: string;
+}
+
+export interface CreateGiftCardRequest {
+    productId: string;
+    amount: number;
+}
+
+

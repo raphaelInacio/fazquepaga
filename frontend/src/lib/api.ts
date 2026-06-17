@@ -19,19 +19,6 @@ api.interceptors.request.use((config) => {
         config.headers.Authorization = `Bearer ${token}`;
     }
 
-    // Dev auth bypass: Inject user email from localStorage (Legacy/Fallback)
-    const parentStr = localStorage.getItem("parent");
-    if (parentStr && !token) {
-        try {
-            const parent = JSON.parse(parentStr);
-            if (parent.email) {
-                config.headers['X-User-Email'] = parent.email;
-            }
-        } catch (e) {
-            console.error("Failed to parse parent from localStorage", e);
-        }
-    }
-
     return config;
 });
 

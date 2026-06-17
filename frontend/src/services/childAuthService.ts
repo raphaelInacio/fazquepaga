@@ -45,6 +45,8 @@ export const childAuthService = {
 
     logout: () => {
         localStorage.removeItem(CHILD_STORAGE_KEY);
+        localStorage.removeItem('token');
+        localStorage.removeItem('refreshToken');
     },
 
     isAuthenticated: (): boolean => {

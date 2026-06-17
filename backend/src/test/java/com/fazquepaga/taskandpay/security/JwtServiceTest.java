@@ -117,7 +117,7 @@ class JwtServiceTest {
     }
 
     private Claims parseToken(String token) {
-        byte[] keyBytes = Decoders.BASE64.decode(TEST_SECRET);
+        byte[] keyBytes = java.util.HexFormat.of().parseHex(TEST_SECRET);
         Key key = Keys.hmacShaKeyFor(keyBytes);
 
         return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();

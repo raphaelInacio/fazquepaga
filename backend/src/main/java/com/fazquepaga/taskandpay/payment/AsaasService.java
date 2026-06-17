@@ -140,4 +140,71 @@ public class AsaasService {
                     e.getMessage());
         }
     }
+
+    public String createAdHocCharge(
+            User parent, java.math.BigDecimal amount, String transactionId) {
+        log.info("Creating ad-hoc charge for parent: {} of value: {}", parent.getEmail(), amount);
+
+        com.fazquepaga.taskandpay.payment.dto.AsaasAdHocChargeRequest request =
+                com.fazquepaga.taskandpay.payment.dto.AsaasAdHocChargeRequest.builder()
+                        .customer(parent.getAsaasCustomerId())
+                        .billingType("CREDIT_CARD")
+                        .value(amount)
+                        .dueDate(LocalDate.now().format(DateTimeFormatter.ISO_DATE))
+                        .description("Recarga de Gift Card - Transacao ID: " + transactionId)
+                        .externalReference(transactionId)
+                        .build();
+
+        try {
+            com.fazquepaga.taskandpay.payment.dto.AsaasAdHocChargeResponse response =
+                    restTemplate.postForObject(
+                            "/payments",
+                            request,
+                            com.fazquepaga.taskandpay.payment.dto.AsaasAdHocChargeResponse.class);
+            if (response != null && response.getId() != null) {
+                log.info("Ad-hoc charge created successfully: {}", response.getId());
+                return response.getId();
+            } else {
+                throw new RuntimeException(
+                        "Failed to create ad-hoc charge: Empty response or missing id");
+            }
+        } catch (org.springframework.web.client.HttpClientErrorException e) {
+            log.error(
+                    "Failed to create ad-hoc charge in Asaas. Status: {}, Response: {}",
+                    e.getStatusCode(),
+                    e.getResponseBodyAsString());
+            throw new AsaasIntegrationException(
+                    "Failed to create ad-hoc charge",
+                    e.getStatusCode(),
+                    e.getResponseBodyAsString());
+        } catch (Exception e) {
+            log.error("Error creating ad-hoc charge (unexpected)", e);
+            throw new AsaasIntegrationException(
+                    "Failed to create ad-hoc charge (unexpected)",
+                    org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR,
+                    e.getMessage());
+        }
+    }
+
+    public void refundCharge(String paymentId) {
+        log.info("Refunding charge: {}", paymentId);
+        try {
+            restTemplate.postForLocation("/payments/" + paymentId + "/refund", null);
+            log.info("Refund initiated successfully for payment: {}", paymentId);
+        } catch (org.springframework.web.client.HttpClientErrorException e) {
+            log.error(
+                    "Failed to refund charge {} in Asaas. Status: {}, Response: {}",
+                    paymentId,
+                    e.getStatusCode(),
+                    e.getResponseBodyAsString());
+            throw new AsaasIntegrationException(
+                    "Failed to refund charge", e.getStatusCode(), e.getResponseBodyAsString());
+        } catch (Exception e) {
+            log.error("Error refunding charge {} (unexpected)", paymentId, e);
+            throw new AsaasIntegrationException(
+                    "Failed to refund charge (unexpected)",
+                    org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR,
+                    e.getMessage());
+        }
+    }
 }

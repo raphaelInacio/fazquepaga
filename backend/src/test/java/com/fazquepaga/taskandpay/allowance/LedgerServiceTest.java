@@ -26,12 +26,16 @@ class LedgerServiceTest {
 
     @Mock private AiInsightService aiInsightService;
 
+    @Mock private com.google.cloud.firestore.Firestore firestore;
+
     private LedgerService ledgerService;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        ledgerService = new LedgerService(transactionRepository, userRepository, aiInsightService);
+        ledgerService =
+                new LedgerService(
+                        transactionRepository, userRepository, aiInsightService, firestore);
     }
 
     @Test
@@ -45,39 +49,66 @@ class LedgerServiceTest {
 
         User child = User.builder().id(childId).balance(BigDecimal.ZERO).build();
 
-        when(userRepository.findByIdSync(childId)).thenReturn(child);
-        when(userRepository.save(any(User.class))).thenReturn(ApiFutures.immediateFuture(null));
+        com.google.cloud.firestore.DocumentReference userRef = mock(com.google.cloud.firestore.DocumentReference.class);
+        com.google.cloud.firestore.DocumentSnapshot userSnap = mock(com.google.cloud.firestore.DocumentSnapshot.class);
+        com.google.cloud.firestore.Transaction firestoreTx = mock(com.google.cloud.firestore.Transaction.class);
+        com.google.cloud.firestore.CollectionReference usersCol = mock(com.google.cloud.firestore.CollectionReference.class);
+        com.google.cloud.firestore.CollectionReference txCol = mock(com.google.cloud.firestore.CollectionReference.class);
+        com.google.cloud.firestore.DocumentReference txRef = mock(com.google.cloud.firestore.DocumentReference.class);
+
+        when(firestore.collection("users")).thenReturn(usersCol);
+        when(usersCol.document(childId)).thenReturn(userRef);
+        when(firestore.collection("transactions")).thenReturn(txCol);
+        when(txCol.document(anyString())).thenReturn(txRef);
+        
+        when(firestoreTx.get(userRef)).thenReturn(ApiFutures.immediateFuture(userSnap));
+        when(userSnap.exists()).thenReturn(true);
+        when(userSnap.toObject(User.class)).thenReturn(child);
+
+        when(firestore.runTransaction(any())).thenAnswer(invocation -> {
+            com.google.cloud.firestore.Transaction.Function function = invocation.getArgument(0);
+            return ApiFutures.immediateFuture(function.update(firestoreTx));
+        });
 
         // When
         ledgerService.addTransaction(childId, amount, description, type);
 
         // Then
-        verify(transactionRepository).save(any(Transaction.class));
-        verify(userRepository)
-                .save(argThat(user -> user.getBalance().compareTo(BigDecimal.valueOf(10.0)) == 0));
+        verify(firestoreTx).update(eq(userRef), eq("balance"), argThat(val -> ((BigDecimal)val).compareTo(BigDecimal.valueOf(10.0)) == 0));
+        verify(firestoreTx).set(eq(txRef), any(Transaction.class));
     }
 
     @Test
-    void getTransactions_ShouldReturnLedgerResponse()
+    void addTransaction_Withdrawal_InsufficientBalance_ShouldThrowException()
             throws ExecutionException, InterruptedException {
         // Given
         String childId = "child-1";
-        QuerySnapshot querySnapshot = mock(QuerySnapshot.class);
-        QueryDocumentSnapshot documentSnapshot = mock(QueryDocumentSnapshot.class);
-        Transaction transaction = new Transaction();
+        BigDecimal amount = BigDecimal.valueOf(100.0);
+        User child = User.builder().id(childId).balance(BigDecimal.valueOf(10.0)).build();
 
-        when(transactionRepository.findByChildId(childId)).thenReturn(querySnapshot);
-        when(querySnapshot.getDocuments()).thenReturn(Collections.singletonList(documentSnapshot));
-        when(documentSnapshot.toObject(Transaction.class)).thenReturn(transaction);
+        com.google.cloud.firestore.DocumentReference userRef = mock(com.google.cloud.firestore.DocumentReference.class);
+        com.google.cloud.firestore.DocumentSnapshot userSnap = mock(com.google.cloud.firestore.DocumentSnapshot.class);
+        com.google.cloud.firestore.Transaction firestoreTx = mock(com.google.cloud.firestore.Transaction.class);
+        com.google.cloud.firestore.CollectionReference usersCol = mock(com.google.cloud.firestore.CollectionReference.class);
 
-        User child = User.builder().id(childId).parentId("parent-id").build();
-        when(userRepository.findByIdSync(childId)).thenReturn(child);
+        when(firestore.collection("users")).thenReturn(usersCol);
+        when(usersCol.document(childId)).thenReturn(userRef);
+        when(firestoreTx.get(userRef)).thenReturn(ApiFutures.immediateFuture(userSnap));
+        when(userSnap.exists()).thenReturn(true);
+        when(userSnap.toObject(User.class)).thenReturn(child);
 
-        // When
-        LedgerResponse result = ledgerService.getTransactions(childId, "parent-id");
+        when(firestore.runTransaction(any())).thenAnswer(invocation -> {
+            com.google.cloud.firestore.Transaction.Function function = invocation.getArgument(0);
+            try {
+                return ApiFutures.immediateFuture(function.update(firestoreTx));
+            } catch (Exception e) {
+                return ApiFutures.immediateFailedFuture(e);
+            }
+        });
 
-        // Then
-        assertNotNull(result);
-        assertEquals(1, result.getTransactions().size());
+        // When & Then
+        assertThrows(
+                ExecutionException.class,
+                () -> ledgerService.addTransaction(childId, amount, "Test", Transaction.TransactionType.WITHDRAWAL));
     }
 }

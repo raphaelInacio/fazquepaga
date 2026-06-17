@@ -217,8 +217,27 @@ public class SubscriptionService {
     }
 
     private boolean isPremium(User user) {
-        return user != null
-                && user.getSubscriptionTier() == User.SubscriptionTier.PREMIUM
+        if (user == null) {
+            return false;
+        }
+
+        // Se for dependente (criança), verifica a assinatura do responsável (pai)
+        if (user.getRole() == User.Role.CHILD
+                && user.getParentId() != null
+                && !user.getParentId().isEmpty()) {
+            try {
+                User parent = userRepository.findByIdSync(user.getParentId());
+                return isPremium(parent);
+            } catch (Exception e) {
+                log.error(
+                        "Error fetching parent user for child premium verification: {}",
+                        user.getParentId(),
+                        e);
+                return false;
+            }
+        }
+
+        return user.getSubscriptionTier() == User.SubscriptionTier.PREMIUM
                 && (user.getSubscriptionStatus() == User.SubscriptionStatus.ACTIVE
                         || user.getSubscriptionStatus()
                                 == User.SubscriptionStatus.PENDING_CANCELLATION);

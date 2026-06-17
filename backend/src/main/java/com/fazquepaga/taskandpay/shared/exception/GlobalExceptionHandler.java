@@ -56,6 +56,24 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(apiError, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
+    @ExceptionHandler(com.fazquepaga.taskandpay.giftcard.RVHubIntegrationException.class)
+    public ResponseEntity<ApiError> handleRVHubIntegrationException(
+            com.fazquepaga.taskandpay.giftcard.RVHubIntegrationException ex,
+            HttpServletRequest request) {
+        log.error(
+                "RV Hub Integration Error - Path: {} - Message: {} - Status: {} - Body: {}",
+                request.getRequestURI(),
+                ex.getMessage(),
+                ex.getStatusCode(),
+                ex.getResponseBody(),
+                ex);
+        Locale locale = LocaleContextHolder.getLocale();
+        String message = messageSource.getMessage("error.internal", null, locale);
+        ApiError apiError =
+                new ApiError(HttpStatus.INTERNAL_SERVER_ERROR, message, request.getRequestURI());
+        return new ResponseEntity<>(apiError, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ApiError> handleIllegalArgumentException(
             IllegalArgumentException ex, HttpServletRequest request) {

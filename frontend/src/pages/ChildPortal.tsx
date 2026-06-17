@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { Sparkles, Trophy, LogOut, Rocket, Gamepad2, Target, Sword, CheckCircle2, Coins, PiggyBank } from "lucide-react";
+import { Sparkles, Trophy, LogOut, Rocket, Gamepad2, Target, Sword, CheckCircle2, Coins, PiggyBank, Gift } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
@@ -302,6 +302,15 @@ export default function ChildPortal() {
                                                 </DialogFooter>
                                             </DialogContent>
                                         </Dialog>
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => navigate("/gift-cards")}
+                                            className="h-7 rounded-full border-purple-200 text-purple-700 hover:bg-purple-50 dark:border-purple-800 dark:text-purple-400 dark:hover:bg-purple-900/30 font-bold px-3 ml-2"
+                                        >
+                                            <Gift className="w-3.5 h-3.5 mr-1.5" />
+                                            {t("childPortal.giftCards.button") || "Gift Cards"}
+                                        </Button>
                                     </div>
                                 </div>
                             </div>
@@ -506,6 +515,31 @@ export default function ChildPortal() {
                                 </span>
                             </div>
                         </div>
+                    </CardContent>
+                </Card>
+
+                {/* Gift Cards Banner */}
+                <Card className="md:col-span-2 shadow-lg border-2 border-purple-400/20 bg-gradient-to-r from-slate-900 via-purple-950 to-slate-950 backdrop-blur-md rounded-3xl overflow-hidden group hover:shadow-xl transition-all duration-300 relative">
+                    <div className="absolute top-0 right-0 p-8 opacity-15 group-hover:scale-110 transition-transform duration-300">
+                        <Gift className="w-32 h-32 text-pink-400" />
+                    </div>
+                    <CardHeader className="p-6 md:p-8">
+                        <CardTitle className="text-2xl md:text-3xl font-black text-white flex items-center gap-2">
+                            <Gift className="w-7 h-7 text-pink-400 animate-bounce" />
+                            {t("childPortal.giftCards.title") || "Loja de Recompensas 🛍️"}
+                        </CardTitle>
+                        <CardDescription className="text-purple-200 text-sm md:text-base font-medium max-w-xl">
+                            {t("childPortal.giftCards.desc") || "Que tal trocar as moedas que você ganhou completando tarefas por Gift Cards de Roblox, iFood e PlayStation?"}
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent className="px-6 md:px-8 pb-6 md:pb-8">
+                        <Button
+                            onClick={() => navigate("/gift-cards")}
+                            className="w-full sm:w-auto px-8 h-12 text-lg font-bold bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-xl shadow-lg shadow-purple-500/25 transition-all duration-300 hover:scale-105 active:scale-95"
+                        >
+                            <Sparkles className="w-5 h-5 mr-2 animate-pulse" />
+                            {t("childPortal.giftCards.explore") || "Explorar Loja de Prêmios"}
+                        </Button>
                     </CardContent>
                 </Card>
             </div>

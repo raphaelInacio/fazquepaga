@@ -283,7 +283,13 @@
             "invalidAmount": "Please enter a valid amount",
             "insufficientFunds": "Insufficient funds",
             "success": "Withdrawal requested!",
-            "error": "Error requesting withdrawal"
+            "error": "Error requesting withdrawal",
+            "giftCards": {
+                "button": "Gift Cards",
+                "title": "Rewards Store 🛍️",
+                "desc": "How about trading the coins you earned by completing tasks for Roblox, iFood, and PlayStation Gift Cards?",
+                "explore": "Explore Rewards Store"
+            }
         }
     },
     "notFound": {
@@ -355,6 +361,36 @@
             "pendingCancellationTitle": "Cancellation Pending",
             "pendingCancellationDescription": "Your subscription will remain active as Premium until the end of the billing period.",
             "resubscribeButton": "Resubscribe Now"
+        },
+        "giftCardStore": {
+            "title": "Rewards Store",
+            "subtitle": "Trade your balance for real Gift Cards!",
+            "back": "Back",
+            "balance": "Your Fictional Balance",
+            "gamesCategory": "Games 🎮",
+            "foodCategory": "Food & Delivery 🍕",
+            "othersCategory": "Others 🎁",
+            "requestsSection": "My Orders 🛍️",
+            "noRequests": "You haven't requested any Gift Cards yet. Do tasks to earn coins!",
+            "noGiftCards": "No Gift Cards available at the moment.",
+            "requestDialogTitle": "Confirm Order",
+            "requestDialogDesc": "You are about to request this Gift Card from your parent/guardian.",
+            "currentBalance": "Your current balance:",
+            "price": "Reward price:",
+            "remainingBalance": "Remaining balance:",
+            "warningDescription": "Attention: Your guardian will receive a request in their app to approve and pay the real amount. The app balance is purely educational.",
+            "insufficientFunds": "Insufficient Funds!",
+            "insufficientDesc": "You need another R$ {{amount}} to request this reward. Keep doing tasks!",
+            "requestBtn": "Request from Guardian",
+            "requestSuccess": "Request sent for approval! 🎉",
+            "requestError": "Error requesting Gift Card",
+            "copyPin": "Copy Code",
+            "pinCopied": "Code successfully copied! 🎉",
+            "statusPending": "Awaiting approval",
+            "statusApproved": "Approved! Generating code",
+            "statusCompleted": "Redeemed! Code released",
+            "statusFailed": "Refused / Payment error",
+            "premiumError": "The Gift Card store is only available for Premium users. Ask your parent/guardian to upgrade!"
         }
     }
 }

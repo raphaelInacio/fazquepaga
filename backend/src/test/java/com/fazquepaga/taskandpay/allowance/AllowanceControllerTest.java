@@ -28,10 +28,28 @@ class AllowanceControllerTest {
 
     @MockitoBean private WithdrawalService withdrawalService;
 
+    @MockitoBean private com.fazquepaga.taskandpay.identity.IdentityService identityService;
+
     @MockitoBean private com.fazquepaga.taskandpay.identity.UserRepository userRepository;
     @MockitoBean private com.fazquepaga.taskandpay.security.JwtService jwtService;
     @MockitoBean private com.fazquepaga.taskandpay.security.RateLimitService rateLimitService;
     @MockitoBean private com.fazquepaga.taskandpay.security.RateLimitConfig rateLimitConfig;
+
+    @org.junit.jupiter.api.BeforeEach
+    void setup() {
+        org.springframework.security.core.context.SecurityContextHolder.clearContext();
+    }
+
+    private void setAuthentication(String id, com.fazquepaga.taskandpay.identity.User.Role role) {
+        setAuthentication(id, role, null);
+    }
+
+    private void setAuthentication(String id, com.fazquepaga.taskandpay.identity.User.Role role, String parentId) {
+        com.fazquepaga.taskandpay.identity.User user = com.fazquepaga.taskandpay.identity.User.builder().id(id).role(role).parentId(parentId).build();
+        org.springframework.security.core.context.SecurityContextHolder.getContext().setAuthentication(
+            new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(user, null, user.getAuthorities())
+        );
+    }
 
     @Test
     void shouldGetPredictedAllowance() throws Exception {
@@ -39,10 +57,13 @@ class AllowanceControllerTest {
         String childId = "child-id";
         BigDecimal predictedAllowance = BigDecimal.valueOf(100.0);
 
+        setAuthentication("parent-id", com.fazquepaga.taskandpay.identity.User.Role.PARENT);
+
         when(allowanceService.calculatePredictedAllowance(childId)).thenReturn(predictedAllowance);
 
         // When & Then
-        mockMvc.perform(get("/api/v1/allowance/predicted").param("child_id", childId))
+        mockMvc.perform(get("/api/v1/allowance/predicted")
+                        .param("child_id", childId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.predicted_allowance").value(100.0));
     }
@@ -67,6 +88,8 @@ class AllowanceControllerTest {
                         .build();
 
         when(ledgerService.getTransactions(childId, parentId)).thenReturn(response);
+
+        setAuthentication(parentId, com.fazquepaga.taskandpay.identity.User.Role.PARENT);
 
         // When & Then
         mockMvc.perform(
@@ -96,6 +119,8 @@ class AllowanceControllerTest {
         when(ledgerService.getTransactions(childId, parentId)).thenReturn(response);
         when(ledgerService.getInsights(childId)).thenReturn(aiInsight);
 
+        setAuthentication(parentId, com.fazquepaga.taskandpay.identity.User.Role.PARENT);
+
         // When & Then
         mockMvc.perform(
                         get("/api/v1/allowance/children/{childId}/ledger/insights", childId)
@@ -119,6 +144,8 @@ class AllowanceControllerTest {
                         .build();
 
         when(withdrawalService.requestWithdrawal(childId, amount)).thenReturn(transaction);
+
+        setAuthentication(childId, com.fazquepaga.taskandpay.identity.User.Role.CHILD);
 
         // When & Then
         mockMvc.perform(

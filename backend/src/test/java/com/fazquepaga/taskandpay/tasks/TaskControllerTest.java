@@ -29,10 +29,23 @@ class TaskControllerTest {
     @Autowired private ObjectMapper objectMapper;
 
     @MockBean private TaskService taskService;
+    @MockBean private com.fazquepaga.taskandpay.identity.IdentityService identityService;
     @MockBean private com.fazquepaga.taskandpay.identity.UserRepository userRepository;
     @MockBean private com.fazquepaga.taskandpay.security.JwtService jwtService;
     @MockBean private com.fazquepaga.taskandpay.security.RateLimitService rateLimitService;
     @MockBean private com.fazquepaga.taskandpay.security.RateLimitConfig rateLimitConfig;
+
+    @org.junit.jupiter.api.BeforeEach
+    void setup() {
+        org.springframework.security.core.context.SecurityContextHolder.clearContext();
+    }
+
+    private void setAuthentication(String id, User.Role role) {
+        User user = User.builder().id(id).role(role).build();
+        org.springframework.security.core.context.SecurityContextHolder.getContext().setAuthentication(
+            new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(user, null, user.getAuthorities())
+        );
+    }
 
     @Test
     void shouldCreateTaskSuccessfully() throws Exception {
@@ -43,6 +56,8 @@ class TaskControllerTest {
         request.setType(Task.TaskType.ONE_TIME);
         request.setWeight(Task.TaskWeight.MEDIUM);
         request.setRequiresProof(false);
+
+        setAuthentication("parent-id", User.Role.PARENT);
 
         Task createdTask =
                 Task.builder()
@@ -83,6 +98,8 @@ class TaskControllerTest {
         request.setWeight(Task.TaskWeight.HIGH);
         request.setRequiresProof(true);
 
+        setAuthentication("parent-id", User.Role.PARENT);
+
         Task createdTask =
                 Task.builder()
                         .id("task-id-2")
@@ -112,6 +129,7 @@ class TaskControllerTest {
     void shouldGetTasksForChild() throws Exception {
         // Given
         String childId = "child-id";
+        setAuthentication(childId, User.Role.CHILD);
         List<Task> tasks =
                 Arrays.asList(
                         Task.builder()
@@ -145,6 +163,7 @@ class TaskControllerTest {
     void shouldReturnEmptyListWhenNoTasks() throws Exception {
         // Given
         String childId = "child-with-no-tasks";
+        setAuthentication(childId, User.Role.CHILD);
         when(taskService.getTasksByUserId(childId)).thenReturn(List.of());
 
         // When & Then
@@ -200,6 +219,7 @@ class TaskControllerTest {
         String taskId = "task-id";
         String childId = "child-id";
         String parentId = "parent@example.com";
+        setAuthentication(parentId, User.Role.PARENT);
 
         Task approvedTask =
                 Task.builder()
@@ -213,8 +233,7 @@ class TaskControllerTest {
         // When & Then
         mockMvc.perform(
                         post("/api/v1/tasks/{taskId}/approve", taskId)
-                                .param("child_id", childId)
-                                .param("parent_id", parentId))
+                                .param("child_id", childId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(taskId))
                 .andExpect(jsonPath("$.status").value("APPROVED"));
@@ -226,13 +245,13 @@ class TaskControllerTest {
         String taskId = "task-id";
         String childId = "child-id";
         String parentId = "parent@example.com";
+        setAuthentication(parentId, User.Role.PARENT);
 
         // When & Then
         mockMvc.perform(
                         org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete(
                                         "/api/v1/tasks/{taskId}", taskId)
-                                .param("child_id", childId)
-                                .param("parent_id", parentId))
+                                .param("child_id", childId))
                 .andExpect(status().isNoContent());
 
         org.mockito.Mockito.verify(taskService).deleteTask(childId, taskId, parentId);

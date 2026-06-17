@@ -21,6 +21,7 @@ import Settings from "./pages/Settings";
 import BlogIndex from "./pages/BlogIndex";
 import { LanguageSwitcher } from "./components/LanguageSwitcher";
 import { SubscriptionProvider } from "./contexts/SubscriptionContext";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 import { MockGoogleReCaptchaProvider } from "@/components/MockGoogleReCaptchaProvider";
 
@@ -41,14 +42,19 @@ const AppContent = () => (
         <Route path="/" element={<Index />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<RegisterParent />} />
-        <Route path="/add-child" element={<AddChild />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/child/:childId/tasks" element={<ChildTasks />} />
-        <Route path="/gift-cards" element={<GiftCardStorePage />} />
         <Route path="/child-login" element={<ChildLogin />} />
-        <Route path="/child-portal" element={<ChildPortal />} />
+        
+        {/* Protected Parent Routes */}
+        <Route path="/add-child" element={<ProtectedRoute requiredRole="PARENT"><AddChild /></ProtectedRoute>} />
+        <Route path="/dashboard" element={<ProtectedRoute requiredRole="PARENT"><Dashboard /></ProtectedRoute>} />
+        <Route path="/settings" element={<ProtectedRoute requiredRole="PARENT"><Settings /></ProtectedRoute>} />
+        
+        {/* Protected Shared/Child Routes */}
+        <Route path="/child/:childId/tasks" element={<ProtectedRoute><ChildTasks /></ProtectedRoute>} />
+        <Route path="/gift-cards" element={<ProtectedRoute><GiftCardStorePage /></ProtectedRoute>} />
+        <Route path="/child-portal" element={<ProtectedRoute requiredRole="CHILD"><ChildPortal /></ProtectedRoute>} />
+        
         <Route path="/subscription" element={<PricingPage />} />
-        <Route path="/settings" element={<Settings />} />
         <Route path="/blog" element={<BlogIndex />} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />

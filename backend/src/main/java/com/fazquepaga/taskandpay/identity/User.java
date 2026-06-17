@@ -20,8 +20,13 @@ public class User implements UserDetails {
     private Role role;
     private String parentId; // Links a child to a parent
     private String phoneNumber; // Used for children (WhatsApp) AND Parents (Unique login/contact)
+    
+    @com.fasterxml.jackson.annotation.JsonIgnore
     private String password; // Hashed password for parents
+
+    @com.fasterxml.jackson.annotation.JsonIgnore
     private String accessCode; // Unique 6-character code for children
+    
     private java.math.BigDecimal monthlyAllowance;
     private java.math.BigDecimal balance; // Current balance for the child
     private Integer age; // Used for children
