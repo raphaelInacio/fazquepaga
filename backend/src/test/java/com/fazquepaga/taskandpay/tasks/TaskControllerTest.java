@@ -183,6 +183,8 @@ class TaskControllerTest {
         when(taskService.createTask(eq(childId), any(CreateTaskRequest.class)))
                 .thenThrow(new IllegalArgumentException("Child not found"));
 
+        setAuthentication("parent-id", com.fazquepaga.taskandpay.identity.User.Role.PARENT);
+
         // When & Then
         mockMvc.perform(
                         post("/api/v1/tasks")
@@ -204,6 +206,8 @@ class TaskControllerTest {
                 .thenThrow(
                         new IllegalArgumentException(
                                 "Child not found or does not belong to this parent"));
+
+        setAuthentication(unauthorizedParentId, com.fazquepaga.taskandpay.identity.User.Role.PARENT);
 
         // When & Then
         mockMvc.perform(

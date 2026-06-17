@@ -31,7 +31,18 @@ class IdentityControllerTest {
     @MockBean private com.fazquepaga.taskandpay.identity.UserRepository userRepository;
     @MockBean private com.fazquepaga.taskandpay.security.RefreshTokenService refreshTokenService;
     @MockBean private com.fazquepaga.taskandpay.security.RateLimitService rateLimitService;
-    @MockBean private com.fazquepaga.taskandpay.security.RateLimitConfig rateLimitConfig;
+    @MockitoBean private com.fazquepaga.taskandpay.security.RateLimitConfig rateLimitConfig;
+
+    @org.junit.jupiter.api.BeforeEach
+    void setup() {
+        org.springframework.security.core.context.SecurityContextHolder.clearContext();
+    }
+
+    private void setAuthentication(User user) {
+        org.springframework.security.core.context.SecurityContextHolder.getContext().setAuthentication(
+            new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(user, null, user.getAuthorities())
+        );
+    }
     @MockBean private com.fazquepaga.taskandpay.security.RecaptchaService recaptchaService;
 
     @Test
@@ -82,10 +93,11 @@ class IdentityControllerTest {
 
         when(identityService.createChild(any(CreateChildRequest.class))).thenReturn(child);
 
+        setAuthentication(com.fazquepaga.taskandpay.identity.User.builder().id(parentId).role(com.fazquepaga.taskandpay.identity.User.Role.PARENT).build());
+
         // When & Then
         mockMvc.perform(
                         post("/api/v1/children")
-                                .with(org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user(com.fazquepaga.taskandpay.identity.User.builder().id(parentId).role(com.fazquepaga.taskandpay.identity.User.Role.PARENT).build()))
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
@@ -102,9 +114,10 @@ class IdentityControllerTest {
 
         when(identityService.getChild(childId, parentId)).thenReturn(child);
 
+        setAuthentication(com.fazquepaga.taskandpay.identity.User.builder().id(parentId).role(com.fazquepaga.taskandpay.identity.User.Role.PARENT).build());
+
         // When & Then
-        mockMvc.perform(get("/api/v1/children/{childId}", childId)
-                        .with(org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user(com.fazquepaga.taskandpay.identity.User.builder().id(parentId).role(com.fazquepaga.taskandpay.identity.User.Role.PARENT).build())))
+        mockMvc.perform(get("/api/v1/children/{childId}", childId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(childId))
                 .andExpect(jsonPath("$.name").value("Jane Doe"));
@@ -119,10 +132,11 @@ class IdentityControllerTest {
 
         when(identityService.generateOnboardingCode(childId)).thenReturn(onboardingCode);
 
+        setAuthentication(com.fazquepaga.taskandpay.identity.User.builder().id(parentId).role(com.fazquepaga.taskandpay.identity.User.Role.PARENT).build());
+
         // When & Then
         mockMvc.perform(
-                        post("/api/v1/children/{childId}/onboarding-code", childId)
-                                .with(org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user(com.fazquepaga.taskandpay.identity.User.builder().id(parentId).role(com.fazquepaga.taskandpay.identity.User.Role.PARENT).build())))
+                        post("/api/v1/children/{childId}/onboarding-code", childId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(onboardingCode));
     }
@@ -148,10 +162,11 @@ class IdentityControllerTest {
         when(identityService.getChild(eq(childId), eq(parentId))).thenReturn(child);
         when(identityService.updateChildAllowance(childId, allowance)).thenReturn(updatedChild);
 
+        setAuthentication(com.fazquepaga.taskandpay.identity.User.builder().id(parentId).role(com.fazquepaga.taskandpay.identity.User.Role.PARENT).build());
+
         // When & Then
         mockMvc.perform(
                         post("/api/v1/children/{childId}/allowance", childId)
-                                .with(org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user(com.fazquepaga.taskandpay.identity.User.builder().id(parentId).role(com.fazquepaga.taskandpay.identity.User.Role.PARENT).build()))
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
