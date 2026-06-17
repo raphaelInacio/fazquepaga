@@ -42,6 +42,17 @@ class GiftCardControllerTest {
     @MockitoBean private com.fazquepaga.taskandpay.security.RateLimitService rateLimitService;
     @MockitoBean private com.fazquepaga.taskandpay.security.RateLimitConfig rateLimitConfig;
 
+    @org.junit.jupiter.api.BeforeEach
+    void setup() {
+        org.springframework.security.core.context.SecurityContextHolder.clearContext();
+    }
+
+    private void setAuthentication(User user) {
+        org.springframework.security.core.context.SecurityContextHolder.getContext().setAuthentication(
+            new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(user, null, user.getAuthorities())
+        );
+    }
+
     @Test
     void shouldGetAvailableGiftCardsWhenUserIsPremium() throws Exception {
         // Given
@@ -52,9 +63,10 @@ class GiftCardControllerTest {
         when(userRepository.findByIdSync(userId)).thenReturn(parent);
         when(subscriptionService.canAccessGiftCardStore(parent)).thenReturn(true);
 
+        setAuthentication(parent);
+
         // When & Then
-        mockMvc.perform(get("/api/v1/giftcards/catalog")
-                        .with(org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user(parent)))
+        mockMvc.perform(get("/api/v1/giftcards/catalog"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].brand").value("Roblox"))
                 .andExpect(jsonPath("$[0].value").value(50.00))
@@ -72,9 +84,10 @@ class GiftCardControllerTest {
         when(userRepository.findByIdSync(userId)).thenReturn(parent);
         when(subscriptionService.canAccessGiftCardStore(parent)).thenReturn(false);
 
+        setAuthentication(parent);
+
         // When & Then
-        mockMvc.perform(get("/api/v1/giftcards/catalog")
-                        .with(org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user(parent)))
+        mockMvc.perform(get("/api/v1/giftcards/catalog"))
                 .andExpect(status().isPaymentRequired());
     }
 
@@ -110,10 +123,11 @@ class GiftCardControllerTest {
                         eq(childId), eq(parentId), eq("prod-1"), eq(BigDecimal.valueOf(50.00))))
                 .thenReturn(tx);
 
+        setAuthentication(child);
+
         // When & Then
         mockMvc.perform(
                         post("/api/v1/giftcards/requests")
-                                .with(org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user(child))
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
@@ -139,9 +153,10 @@ class GiftCardControllerTest {
         when(userRepository.findByIdSync(childId)).thenReturn(child);
         when(giftCardService.getTransactionsByChildId(childId)).thenReturn(List.of(tx));
 
+        setAuthentication(child);
+
         // When & Then
-        mockMvc.perform(get("/api/v1/giftcards/requests")
-                        .with(org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user(child)))
+        mockMvc.perform(get("/api/v1/giftcards/requests"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value("tx-123"))
                 .andExpect(jsonPath("$[0].amount").value(50.00));
@@ -167,10 +182,11 @@ class GiftCardControllerTest {
         when(userRepository.findByIdSync(parentId)).thenReturn(parent);
         when(giftCardService.approveGiftCard(parentId, txId)).thenReturn(tx);
 
+        setAuthentication(parent);
+
         // When & Then
         mockMvc.perform(
-                        post("/api/v1/giftcards/requests/{id}/approve", txId)
-                                .with(org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user(parent)))
+                        post("/api/v1/giftcards/requests/{id}/approve", txId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(txId))
                 .andExpect(jsonPath("$.status").value("COMPLETED"))
