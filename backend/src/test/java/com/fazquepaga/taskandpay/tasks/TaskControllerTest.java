@@ -40,8 +40,8 @@ class TaskControllerTest {
         org.springframework.security.core.context.SecurityContextHolder.clearContext();
     }
 
-    private void setAuthentication(String id, User.Role role) {
-        User user = User.builder().id(id).role(role).build();
+    private void setAuthentication(String id, com.fazquepaga.taskandpay.identity.User.Role role) {
+        com.fazquepaga.taskandpay.identity.User user = com.fazquepaga.taskandpay.identity.User.builder().id(id).role(role).build();
         org.springframework.security.core.context.SecurityContextHolder.getContext().setAuthentication(
             new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(user, null, user.getAuthorities())
         );
