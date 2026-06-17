@@ -66,8 +66,8 @@ class LedgerServiceTest {
         when(userSnap.toObject(User.class)).thenReturn(child);
 
         when(firestore.runTransaction(any())).thenAnswer(invocation -> {
-            com.google.cloud.firestore.Transaction.Function function = invocation.getArgument(0);
-            return ApiFutures.immediateFuture(function.update(firestoreTx));
+            com.google.cloud.firestore.Transaction.Function<?> function = invocation.getArgument(0);
+            return ApiFutures.immediateFuture(function.updateCallback(firestoreTx));
         });
 
         // When
@@ -98,9 +98,9 @@ class LedgerServiceTest {
         when(userSnap.toObject(User.class)).thenReturn(child);
 
         when(firestore.runTransaction(any())).thenAnswer(invocation -> {
-            com.google.cloud.firestore.Transaction.Function function = invocation.getArgument(0);
+            com.google.cloud.firestore.Transaction.Function<?> function = invocation.getArgument(0);
             try {
-                return ApiFutures.immediateFuture(function.update(firestoreTx));
+                return ApiFutures.immediateFuture(function.updateCallback(firestoreTx));
             } catch (Exception e) {
                 return ApiFutures.immediateFailedFuture(e);
             }
