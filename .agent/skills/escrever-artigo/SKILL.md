@@ -94,8 +94,20 @@ Além do JSON-LD, insira uma **seção visual de FAQ** no final do corpo do arti
     python c:\Users\conta\developer\fazquepaga\scripts\update_blog_index.py
     ```
 
+## Passo 5: Publicar no LinkedIn (Automação de Mídias Sociais)
+Após criar e sincronizar o artigo no blog, você pode publicá-lo automaticamente no LinkedIn da plataforma:
+1.  Certifique-se de que as credenciais do LinkedIn no arquivo `.env` na raiz do projeto estão corretas:
+    - `LINKEDIN_CLIENT_ID`: ID da aplicação obtido no portal de desenvolvedores do LinkedIn.
+    - `LINKEDIN_ACCESS_TOKEN`: Token de acesso válido com permissões de publicação (ex: `w_member_social` ou `w_organization_social`).
+2.  Execute o script de publicação passando o `slug` do artigo recém-criado:
+    ```bash
+    python c:\Users\conta\developer\fazquepaga\scripts\publish_linkedin.py {{slug}}
+    ```
+3.  Se a publicação falhar devido a token inválido (Erro 401), oriente o usuário a renovar o Access Token no portal do desenvolvedor do LinkedIn e atualizar o arquivo `.env`.
+
 ## Princípios de Escrita
 - **Tom de Voz**: Empático, profissional, voltado a pais de crianças e adolescentes.
 - **Idioma**: Português do Brasil.
 - **Evite Clichês**: Evite encher linguiça; use dados, fatos científicos de psicologia ou exemplos cotidianos práticos.
 - **SEO & AEO First**: Facilite a leitura por agentes de IA e robôs do Google com termos limpos, headings claros e dados tabulados.
+
