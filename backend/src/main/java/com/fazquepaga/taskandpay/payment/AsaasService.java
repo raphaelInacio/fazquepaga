@@ -73,7 +73,7 @@ public class AsaasService {
                                         .successUrl(successUrl)
                                         .cancelUrl(cancelUrl)
                                         .build())
-                        .externalReference(user.getId())
+                        .externalReference("taskandpay:" + user.getId())
                         .notificationEnabled(true)
                         .customer(user.getAsaasCustomerId())
                         .build();
@@ -152,7 +152,7 @@ public class AsaasService {
                         .value(amount)
                         .dueDate(LocalDate.now().format(DateTimeFormatter.ISO_DATE))
                         .description("Recarga de Gift Card - Transacao ID: " + transactionId)
-                        .externalReference(transactionId)
+                        .externalReference("taskandpay:" + transactionId)
                         .build();
 
         try {
