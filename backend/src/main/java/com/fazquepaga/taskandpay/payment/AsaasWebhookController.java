@@ -42,10 +42,17 @@ public class AsaasWebhookController {
         String subscriptionId = null;
         String checkoutSessionId = null;
 
+        String externalReference = null;
         if (event.getPayment() != null) {
             asaasCustomerId = event.getPayment().getCustomer();
             subscriptionId = event.getPayment().getSubscription();
             checkoutSessionId = event.getPayment().getCheckoutSession();
+            externalReference = event.getPayment().getExternalReference();
+        }
+
+        if (externalReference != null && externalReference.startsWith("quickerspot:")) {
+            log.info("Ignoring webhook payment belonging to QuickerSpot. Ref: {}", externalReference);
+            return ResponseEntity.ok().build();
         }
 
         if (asaasCustomerId == null) {
