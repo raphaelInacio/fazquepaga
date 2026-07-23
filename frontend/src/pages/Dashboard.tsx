@@ -20,10 +20,14 @@ import confetti from "canvas-confetti";
 import { useSubscription } from "@/contexts/SubscriptionContext";
 import { TrialBadge } from "@/components/TrialBadge";
 import { TrialExpiredModal } from "@/components/TrialExpiredModal";
+import { giftCardService } from "@/services/giftCardService";
+import { GiftCardApprovalDialog } from "@/components/GiftCardApprovalDialog";
+import { useAuth } from "@/context/AuthContext";
 
 export default function Dashboard() {
     const { t } = useTranslation();
     const navigate = useNavigate();
+    const { logout } = useAuth();
     const { isPremium } = useSubscription();
     const [children, setChildren] = useState<User[]>([]);
     const [parentName, setParentName] = useState("");
@@ -41,6 +45,8 @@ export default function Dashboard() {
 
     const [pendingTasks, setPendingTasks] = useState<{ childId: string, childName: string, task: Task }[]>([]);
     const [pendingWithdrawals, setPendingWithdrawals] = useState<{ childId: string, childName: string, transaction: Transaction }[]>([]);
+    const [pendingGiftCards, setPendingGiftCards] = useState<{ childId: string, childName: string, transaction: any }[]>([]);
+    const [selectedGiftCardTx, setSelectedGiftCardTx] = useState<{ childName: string, transaction: any } | null>(null);
 
     const refreshStats = async (parentId: string) => {
         try {
@@ -131,6 +137,19 @@ export default function Dashboard() {
                 
                 setPendingTasks(allPendingTasks);
                 setPendingWithdrawals(allPendingWithdrawals);
+
+                // Fetch pending gift cards
+                giftCardService.getGiftCardRequests(parentId).then(txs => {
+                    const pending = txs.filter((t: any) => t.status === 'PENDING').map((t: any) => {
+                        const child = childrenData.find(c => c.id === t.childId);
+                        return {
+                            childId: t.childId,
+                            childName: child?.name || "Dependente",
+                            transaction: t
+                        };
+                    });
+                    setPendingGiftCards(pending);
+                }).catch(err => console.error("Failed to fetch gift cards", err));
 
             } catch (error) {
                 console.error("Failed to fetch children", error);
@@ -278,11 +297,28 @@ export default function Dashboard() {
         }
     };
 
+    const handleApproveGiftCard = async (transactionId: string) => {
+        const parentId = localStorage.getItem("parentId");
+        if (!parentId) return;
+        
+        await giftCardService.approveGiftCard(transactionId, parentId);
+        toast.success("Gift Card aprovado e pago com sucesso!");
+        
+        confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+        
+        setPendingGiftCards(prev => prev.filter(item => item.transaction.id !== transactionId));
+        
+        // Refresh children to update balance
+        const childrenData = await childService.getChildren(parentId);
+        setChildren(childrenData);
+    };
+
     const handleLogout = () => {
         // Clear all authentication data
         localStorage.removeItem("parentId");
         localStorage.removeItem("parentName");
         localStorage.removeItem("children");
+        logout();
 
         toast.success(t("dashboard.logout.success"));
         navigate("/");
@@ -530,6 +566,45 @@ export default function Dashboard() {
                                                         className="bg-green-600 hover:bg-green-700 text-white shadow-md hover:shadow-green-500/20 rounded-full px-6 font-bold"
                                                     >
                                                         {t("dashboard.withdrawals.pay") || "Marcar como Pago"}
+                                                    </Button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            )}
+
+                            {/* Pending Gift Cards Section */}
+                            {!isPendingLoading && pendingGiftCards.length > 0 && (
+                                <Card className="border-none bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 shadow-glow relative overflow-hidden group mb-8">
+                                    <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                                        <Gift className="h-24 w-24 text-purple-500" />
+                                    </div>
+                                    <CardHeader>
+                                        <CardTitle className="text-2xl font-bold text-purple-700 dark:text-purple-400 flex items-center gap-3">
+                                            <div className="p-2 bg-purple-100 dark:bg-purple-900/50 rounded-lg">
+                                                <Gift className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+                                            </div>
+                                            Aprovações de Gift Cards
+                                        </CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div className="space-y-4">
+                                            {pendingGiftCards.map((item) => (
+                                                <div key={item.transaction.id} className="flex items-center justify-between bg-card/80 backdrop-blur-sm p-4 rounded-xl shadow-sm border border-purple-200/50 dark:border-purple-800/50 hover:shadow-md transition-all">
+                                                    <div>
+                                                        <p className="font-bold text-lg text-foreground">
+                                                            Gift Card de R$ {item.transaction.amount.toFixed(2)}
+                                                        </p>
+                                                        <p className="text-sm text-muted-foreground mt-1">
+                                                            Solicitado por: <span className="font-semibold text-primary">{item.childName}</span>
+                                                        </p>
+                                                    </div>
+                                                    <Button
+                                                        onClick={() => setSelectedGiftCardTx({ childName: item.childName, transaction: item.transaction })}
+                                                        className="bg-purple-600 hover:bg-purple-700 text-white shadow-md hover:shadow-purple-500/20 rounded-full px-6 font-bold"
+                                                    >
+                                                        Analisar
                                                     </Button>
                                                 </div>
                                             ))}
@@ -817,6 +892,15 @@ export default function Dashboard() {
                             </div>
                         </DialogContent>
                     </Dialog>
+                    
+                    {/* Gift Card Approval Dialog */}
+                    <GiftCardApprovalDialog 
+                        open={!!selectedGiftCardTx} 
+                        onOpenChange={(open) => !open && setSelectedGiftCardTx(null)} 
+                        transaction={selectedGiftCardTx?.transaction || null}
+                        childName={selectedGiftCardTx?.childName || ""}
+                        onApprove={handleApproveGiftCard}
+                    />
                 </div>
             </div>
         </>

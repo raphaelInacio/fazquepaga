@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
+import { useAuth } from "@/context/AuthContext";
 import { childAuthService } from "@/services/childAuthService";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,6 +13,7 @@ import { Gamepad2, Loader2 } from "lucide-react";
 export default function ChildLogin() {
     const { t } = useTranslation();
     const navigate = useNavigate();
+    const { login } = useAuth();
     const { executeRecaptcha } = useGoogleReCaptcha();
     const [code, setCode] = useState("");
     const [isLoading, setIsLoading] = useState(false);
@@ -29,9 +31,15 @@ export default function ChildLogin() {
             // Generate reCAPTCHA token if available
             const recaptchaToken = executeRecaptcha ? await executeRecaptcha('child_login') : undefined;
 
-            await childAuthService.login(code.trim().toUpperCase(), recaptchaToken);
+            const data = await childAuthService.login(code.trim().toUpperCase(), recaptchaToken);
+            
+            // Update global auth state
+            if (data.token && data.child) {
+                login(data.token, { ...data.child, role: 'CHILD' }, data.refreshToken);
+            }
+
             toast.success(t("childLogin.welcome"));
-            navigate("/child-portal");
+            // The useEffect above will handle the navigation once the AuthContext state updates.
         } catch (error) {
             toast.error(t("childLogin.invalidCode"));
             console.error(error);
