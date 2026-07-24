@@ -1,6 +1,7 @@
 package com.fazquepaga.taskandpay.giftcard;
 
 import com.fazquepaga.taskandpay.giftcard.dto.RVHubCaptureResponse;
+import com.fazquepaga.taskandpay.giftcard.dto.RVHubProductResponse;
 import com.fazquepaga.taskandpay.giftcard.dto.RVHubTransactionResponse;
 import com.fazquepaga.taskandpay.identity.User;
 import com.fazquepaga.taskandpay.identity.UserRepository;
@@ -12,6 +13,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -26,6 +28,107 @@ public class GiftCardService {
     private final AsaasService asaasService;
     private final RVHubClient rvHubClient;
     private final Firestore firestore;
+
+    public List<GiftCard> getAvailableGiftCards() {
+        log.info("Fetching real gift cards catalog from RVHub");
+        try {
+            List<RVHubProductResponse> products = rvHubClient.getPortfolio("pin");
+            
+            if (products == null || products.isEmpty()) {
+                log.warn("RVHub returned empty portfolio, using complete mock catalog");
+                return getMockCatalog();
+            }
+
+            // Curadoria: Filtramos apenas provedores de interesse
+            List<String> approvedProviders =
+                    List.of(
+                            "ROBLOX",
+                            "PLAYSTATION",
+                            "SONY",
+                            "XBOX",
+                            "MICROSOFT",
+                            "NINTENDO",
+                            "STEAM",
+                            "VALVE",
+                            "RAZER",
+                            "GOOGLE",
+                            "IFOOD",
+                            "UBER");
+
+            List<GiftCard> filtered = products.stream()
+                    .filter(p -> p.getProvider() != null)
+                    .filter(p -> {
+                        String prov = p.getProvider().toUpperCase();
+                        return approvedProviders.stream().anyMatch(prov::contains);
+                    })
+                    .map(
+                            p ->
+                                    GiftCard.builder()
+                                            .id(p.getProductId())
+                                            .name(p.getName())
+                                            .brand(p.getProvider())
+                                            .value(p.getAmount())
+                                            .description(p.getDescription() != null ? p.getDescription() : p.getName())
+                                            .build())
+                    .collect(Collectors.toList());
+            
+            if (filtered.isEmpty()) {
+                log.warn("No approved products found in RVHub portfolio ({} items found total), using mock catalog", products.size());
+                return getMockCatalog();
+            }
+            
+            return filtered;
+        } catch (Exception e) {
+            log.error("CRITICAL: Failed to fetch portfolio from RVHub API. Reason: {}. StackTrace: ", e.getMessage(), e);
+            return getMockCatalog();
+        }
+    }
+
+    private List<GiftCard> getMockCatalog() {
+        return List.of(
+                GiftCard.builder()
+                        .id("roblox-50")
+                        .name("Roblox R$ 50")
+                        .brand("Roblox")
+                        .value(new BigDecimal("50.00"))
+                        .description("50 Robux para usar no Roblox")
+                        .build(),
+                GiftCard.builder()
+                        .id("playstation-100")
+                        .name("PlayStation Store R$ 100")
+                        .brand("PlayStation")
+                        .value(new BigDecimal("100.00"))
+                        .description("Créditos para PlayStation Store")
+                        .build(),
+                GiftCard.builder()
+                        .id("xbox-game-pass")
+                        .name("Xbox Game Pass Ultimate")
+                        .brand("Xbox")
+                        .value(new BigDecimal("50.00"))
+                        .description("Assinatura Xbox Game Pass")
+                        .build(),
+                GiftCard.builder()
+                        .id("nintendo-50")
+                        .name("Nintendo eShop R$ 50")
+                        .brand("Nintendo")
+                        .value(new BigDecimal("50.00"))
+                        .description("Créditos para Nintendo Switch")
+                        .build(),
+                GiftCard.builder()
+                        .id("steam-30")
+                        .name("Steam R$ 30")
+                        .brand("Steam")
+                        .value(new BigDecimal("30.00"))
+                        .description("Créditos para conta Steam")
+                        .build(),
+                GiftCard.builder()
+                        .id("ifood-30")
+                        .name("iFood R$ 30")
+                        .brand("iFood")
+                        .value(new BigDecimal("30.00"))
+                        .description("Vale de R$ 30 para pedir comida")
+                        .build());
+    }
 
     public GiftCardTransaction requestGiftCard(
             String childId, String parentId, String productId, BigDecimal amount)

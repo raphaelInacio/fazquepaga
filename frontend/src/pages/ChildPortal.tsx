@@ -7,7 +7,7 @@ import { taskService } from "@/services/taskService";
 import { aiService, AdventureTask } from "@/services/aiService";
 import { Task } from "@/types";
 import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { Sparkles, Trophy, LogOut, Rocket, Gamepad2, Target, Sword, CheckCircle2, Coins, PiggyBank, Gift } from "lucide-react";
@@ -309,7 +309,7 @@ export default function ChildPortal() {
                                             className="h-7 rounded-full border-purple-200 text-purple-700 hover:bg-purple-50 dark:border-purple-800 dark:text-purple-400 dark:hover:bg-purple-900/30 font-bold px-3 ml-2"
                                         >
                                             <Gift className="w-3.5 h-3.5 mr-1.5" />
-                                            {t("childPortal.giftCards.button") || "Gift Cards"}
+                                            {t("childPortal.giftCards.button")}
                                         </Button>
                                     </div>
                                 </div>
@@ -526,10 +526,10 @@ export default function ChildPortal() {
                     <CardHeader className="p-6 md:p-8">
                         <CardTitle className="text-2xl md:text-3xl font-black text-white flex items-center gap-2">
                             <Gift className="w-7 h-7 text-pink-400 animate-bounce" />
-                            {t("childPortal.giftCards.title") || "Loja de Recompensas 🛍️"}
+                            {t("childPortal.giftCards.title")}
                         </CardTitle>
                         <CardDescription className="text-purple-200 text-sm md:text-base font-medium max-w-xl">
-                            {t("childPortal.giftCards.desc") || "Que tal trocar as moedas que você ganhou completando tarefas por Gift Cards de Roblox, iFood e PlayStation?"}
+                            {t("childPortal.giftCards.desc")}
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="px-6 md:px-8 pb-6 md:pb-8">
@@ -538,7 +538,7 @@ export default function ChildPortal() {
                             className="w-full sm:w-auto px-8 h-12 text-lg font-bold bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-xl shadow-lg shadow-purple-500/25 transition-all duration-300 hover:scale-105 active:scale-95"
                         >
                             <Sparkles className="w-5 h-5 mr-2 animate-pulse" />
-                            {t("childPortal.giftCards.explore") || "Explorar Loja de Prêmios"}
+                            {t("childPortal.giftCards.explore")}
                         </Button>
                     </CardContent>
                 </Card>

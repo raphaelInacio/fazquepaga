@@ -23,6 +23,7 @@ description: Performs comprehensive code review by analyzing git diff, verifying
    a. Analyze changes line by line.
    b. Verify adherence to project standards.
    c. Identify potential issues.
+   d. **Orphan Code Check**: If a feature is being removed, verify that ALL associated code (UI components, Backend Controllers, Pub/Sub events, routing, and specific E2E tests) were also removed or updated.
 3. Read the full context of modified files, not just the diff.
 
 **Step 3: Rules Conformance Verification (Mandatory)**
@@ -33,6 +34,8 @@ description: Performs comprehensive code review by analyzing git diff, verifying
    - No unauthorized dependencies introduced.
    - Error handling patterns.
    - Language conventions (Portuguese/English as defined).
+   - **Security & CORS Check**: Verify if REST Controllers correctly manage CORS policies (no wildcard `*` allowed in production origins).
+   - **Asaas Integration Rules**: Verify if Asaas objects (Subscriptions, Charges) include the mandatory metadata (`externalReference`, `description`) as required by project rules.
 
 **Step 4: Tech Spec Adherence Verification (Mandatory)**
 1. Compare implementation against the Tech Spec:

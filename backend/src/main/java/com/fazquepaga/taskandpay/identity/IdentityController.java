@@ -154,13 +154,23 @@ public class IdentityController {
     public ResponseEntity<User> getChild(
             @PathVariable String childId)
             throws ExecutionException, InterruptedException {
-        User parent = getAuthenticatedUser();
-        if (parent == null || parent.getRole() != User.Role.PARENT) {
+        User authenticatedUser = getAuthenticatedUser();
+        if (authenticatedUser == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        User child = identityService.getChild(childId, parent.getId());
-        return ResponseEntity.ok(child);
+        // Allow child to see themselves
+        if (authenticatedUser.getRole() == User.Role.CHILD && authenticatedUser.getId().equals(childId)) {
+            return ResponseEntity.ok(authenticatedUser);
+        }
+
+        // Allow parent to see their children
+        if (authenticatedUser.getRole() == User.Role.PARENT) {
+            User child = identityService.getChild(childId, authenticatedUser.getId());
+            return ResponseEntity.ok(child);
+        }
+
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
 
     @GetMapping("/users/{userId}")

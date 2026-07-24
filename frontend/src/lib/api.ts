@@ -100,10 +100,12 @@ api.interceptors.response.use(
                 localStorage.removeItem('refreshToken');
                 localStorage.removeItem('user');
 
+                /* 
                 // Redirect to login
                 if (typeof window !== 'undefined' && !window.location.pathname.includes('/login')) {
                     window.location.href = '/login';
                 }
+                */
 
                 return Promise.reject(refreshError);
             } finally {

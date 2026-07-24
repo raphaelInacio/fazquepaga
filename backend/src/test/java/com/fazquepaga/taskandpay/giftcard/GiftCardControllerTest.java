@@ -60,8 +60,14 @@ class GiftCardControllerTest {
         User parent =
                 User.builder().id(userId).role(User.Role.PARENT).email("parent@test.com").build();
 
+        List<GiftCard> mockCards = List.of(
+            GiftCard.builder().id("1").brand("Roblox").value(new BigDecimal("50.00")).build(),
+            GiftCard.builder().id("2").brand("iFood").value(new BigDecimal("30.00")).build()
+        );
+
         when(userRepository.findByIdSync(userId)).thenReturn(parent);
         when(subscriptionService.canAccessGiftCardStore(parent)).thenReturn(true);
+        when(giftCardService.getAvailableGiftCards()).thenReturn(mockCards);
 
         setAuthentication(parent);
 

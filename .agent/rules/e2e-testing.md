@@ -27,3 +27,22 @@ trigger: model_decision
 ## Mocking
 
 - Use Playwright's network interception to mock backend calls (`page.route`) to ensure deterministic UI tests.
+- **Asaas Integration Mocks**: When writing tests for flows involving Asaas, ensure you intercept the API calls to avoid hitting external services during local E2E runs.
+  ```typescript
+  await page.route('**/v3/payments', async (route) => {
+    const request = route.request();
+    if (request.method() === 'POST') {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          id: "pay_123456",
+          invoiceUrl: "https://sandbox.asaas.com/i/123456",
+          status: "PENDING"
+        })
+      });
+    } else {
+      await route.continue();
+    }
+  });
+  ```

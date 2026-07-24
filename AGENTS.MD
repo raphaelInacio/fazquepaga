@@ -90,7 +90,7 @@ The project is a monorepo with two main parts:
 │   │   ├── allowance/    # Allowance calculation & Ledger
 │   │   ├── config/       # App configuration (Security, CORS)
 │   │   ├── controller/   # REST Controllers
-│   │   ├── giftcard/     # Gift Card Store logic
+│   │   ├── giftcard/     # [DEPRECATED] Gift Card Store logic
 │   │   ├── identity/     # User management (Parent/Child)
 │   │   ├── notification/ # Notification Hub (Pub/Sub events)
 │   │   ├── payment/      # Asaas integration (subscriptions)
@@ -98,7 +98,7 @@ The project is a monorepo with two main parts:
 │   │   ├── shared/       # Shared utilities & exceptions
 │   │   ├── subscription/ # Plan limits & logic
 │   │   ├── tasks/        # Task management domain
-│   │   └── whatsapp/     # Twilio/WhatsApp integration
+│   │   └── whatsapp/     # [DEPRECATED] Twilio/WhatsApp integration
 │   ├── pom.xml
 │   └── docker-compose.yml
 └── frontend/     # React web application

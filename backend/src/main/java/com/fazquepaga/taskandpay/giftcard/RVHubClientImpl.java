@@ -1,6 +1,7 @@
 package com.fazquepaga.taskandpay.giftcard;
 
 import com.fazquepaga.taskandpay.giftcard.dto.RVHubCaptureResponse;
+import com.fazquepaga.taskandpay.giftcard.dto.RVHubProductResponse;
 import com.fazquepaga.taskandpay.giftcard.dto.RVHubTokenResponse;
 import com.fazquepaga.taskandpay.giftcard.dto.RVHubTransactionRequest;
 import com.fazquepaga.taskandpay.giftcard.dto.RVHubTransactionResponse;
@@ -9,9 +10,11 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Base64;
+import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -114,6 +117,45 @@ public class RVHubClientImpl implements RVHubClient {
             return authenticate();
         }
         return cachedToken;
+    }
+
+    @Override
+    public List<RVHubProductResponse> getPortfolio(String kind) {
+        log.info("Fetching portfolio from RVHub for kind: {}", kind);
+        String url = apiUrl + "/portfolio?one_page=true";
+        if (kind != null) {
+            url += "&kinds=" + kind;
+        }
+
+        String token = getValidToken();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.set("Authorization", "Bearer " + token);
+
+        HttpEntity<String> entity = new HttpEntity<>(headers);
+
+        try {
+            ResponseEntity<List<RVHubProductResponse>> response =
+                    restTemplate.exchange(
+                            url,
+                            HttpMethod.GET,
+                            entity,
+                            new ParameterizedTypeReference<List<RVHubProductResponse>>() {});
+            return response.getBody();
+        } catch (HttpClientErrorException | HttpServerErrorException e) {
+            log.error(
+                    "Error fetching portfolio from RVHub. Status: {}, Response: {}",
+                    e.getStatusCode(),
+                    e.getResponseBodyAsString());
+            throw new RVHubIntegrationException(
+                    "Failed to fetch portfolio from RVHub",
+                    e.getStatusCode(),
+                    e.getResponseBodyAsString());
+        } catch (Exception e) {
+            log.error("Unexpected error fetching portfolio from RVHub", e);
+            throw new RuntimeException("Unexpected error fetching portfolio from RVHub", e);
+        }
     }
 
     @Override

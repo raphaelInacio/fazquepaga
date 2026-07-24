@@ -1,8 +1,8 @@
-# Documento de Requisitos do Produto (PRD): TaskAndPay (Baseline Novembro 2025)
+# Documento de Requisitos do Produto (PRD): TaskAndPay (Baseline MVP)
 
 ## Visão Geral
 
-O TaskAndPay é uma plataforma SaaS para pais e filhos gerenciarem tarefas e mesadas. A plataforma permite aos pais atribuir valor monetário às atividades, acompanhar sua conclusão e automatizar o cálculo da mesada. O sistema utiliza IA para sugestões de tarefas e uma interface web para os pais, com o WhatsApp servindo como o principal canal de interação para os filhos.
+O TaskAndPay é uma plataforma SaaS para pais e filhos gerenciarem tarefas e mesadas. A plataforma permite aos pais atribuir valor monetário às atividades, acompanhar sua conclusão e automatizar o cálculo da mesada. O sistema utiliza IA para sugestões de tarefas e uma interface web para pais e filhos.
 
 Este documento serve como uma baseline, refletindo o estado atual da implementação e identificando o que foi concluído versus o que ainda está pendente.
 
@@ -24,24 +24,18 @@ Este documento serve como uma baseline, refletindo o estado atual da implementa�
     - ✅ Criar tarefas de diferentes tipos (diárias, semanais, únicas) com pesos (Baixo, Médio, Alto) para cálculo automático de valor.
     - ✅ Receber sugestões de tarefas de uma IA com base na idade.
     - ✅ Ser notificado quando uma tarefa for marcada como concluída.
-    - ✅ Aprovar tarefas e ver provas enviadas pelo filho na interface web.
-    - ✅ Ver uma foto enviada pelo meu filho via WhatsApp na interface web.
-    - ✅ Criar um login simples para meu filho (código de onboarding para WhatsApp).
+    - ✅ Aprovar tarefas na interface web.
+    - ✅ Criar um login simples para meu filho (código de onboarding para acesso ao portal web).
     - 🆕 **(Assinatura)** Quero assinar o plano Premium pagando via Asaas (cartão/boleto/pix) para liberar recursos exclusivos.
     - ✅ **(Cancelamento de Assinatura)** Quero cancelar minha assinatura de forma autônoma via interface web, sendo informado das perdas de recursos Premium e fornecendo o motivo para ajudar a melhorar o produto.
-    - ✅ **(Cancelamento de Assinatura)** Quero receber confirmação do cancelamento via WhatsApp para ter registro da ação.
     - 🆕 **(IA)** Quero definir um perfil comportamental (Bio) do meu filho para que a IA sugira tarefas mais adequadas.
-    - 🆕 **(Saque)** Quero receber uma notificação no WhatsApp quando meu filho solicitar um saque.
     - 🆕 **(Saque)** Quero aprovar um saque e marcar como "Pago" manualmente após transferir o dinheiro.
 
 - **Como filho(a), eu quero...**
     - ✅ Acessar um portal web simples com meu login para ver minhas tarefas.
-    - ✅ Marcar uma tarefa como "concluída" via WhatsApp ou Portal Web.
-    - ✅ Enviar uma foto como prova via WhatsApp.
+    - ✅ Marcar uma tarefa como "concluída" via Portal Web.
     - ⚠️ Acompanhar quanto dinheiro ganhei com minhas tarefas. *(Disponível para pais, em breve para filhos com Coach Financeiro)*.
-    - ✅ Receber notificações sobre novas tarefas no WhatsApp.
-    - ✅ **(Plano Pago)** Trocar meu saldo acumulado por Gift Cards (Roblox, iFood, etc.) diretamente no app. *(Funcionalidade mockada disponível para pais Premium)*.
-    - 🆕 **(Saque)** Quero ser avisado no WhatsApp quando meu saque for aprovado/pago.
+    - 🆕 **(Saque)** Quero solicitar saque do meu saldo acumulado.
 
 - **Como operador/desenvolvedor da plataforma, eu quero...**
     - ✅ Limitar o número de requisições por usuário/IP para evitar abuso e controlar custos (Rate Limiting).
@@ -53,30 +47,59 @@ Este documento serve como uma baseline, refletindo o estado atual da implementa�
 
 | Funcionalidade | Status | Detalhes |
 | :--- | :--- | :--- |
-| **1. Gerenciamento de Usuários** | **Implementado** | Pais podem se registrar e adicionar filhos. A criança é integrada (onboarded) via WhatsApp. |
+| **1. Gerenciamento de Usuários** | **Implementado** | Pais podem se registrar e adicionar filhos. A criança acessa a plataforma via portal web com código de onboarding. |
 | **2. Gerenciamento de Tarefas** | **Parcialmente Implementado** | Pais podem criar e visualizar tarefas. A criação de tarefas respeita os limites do plano (Free/Premium). |
 | **3. Motor de Cálculo de Mesada** | **Implementado** | O backend calcula o valor previsto da mesada com base nas tarefas e pesos definidos. |
-| **4. Recursos com IA (Premium)** | **Implementado** | **Sugestão de Tarefas (Quota)**: Funcional com limite diário (5 Free / 50 Premium). **Validação de Imagem (Quota)**: Processamento assíncrono com limite de uso. |
-| **5. Fluxo de Conclusão** | **Implementado** | **Criança**: Submete via WhatsApp ou Portal. **Pais**: Aprovam via Dashboard Web. |
+| **4. Recursos com IA (Premium)** | **Implementado** | **Sugestão de Tarefas (Quota)**: Funcional com limite diário (5 Free / 50 Premium). |
+| **5. Fluxo de Conclusão** | **Implementado** | **Criança**: Submete via Portal Web. **Pais**: Aprovam via Dashboard Web. |
 | **6. Registro Financeiro** | **Implementado** | Extrato financeiro (Ledger) disponível para pais. |
 | **7. Planos e Monetização** | **Implementado** | Integração com **Asaas** para gestão de assinaturas. Controla acesso a funcionalidades Premium e Quotas de IA. |
-| **8. Loja de Gift Cards (Premium)** | **Implementado (Mock)** | Pais com plano Premium podem acessar uma loja de gift cards e "resgatar" itens. A funcionalidade é simulada. |
-| **9. Controle de Saque** | **Planejado** | Fluxo: Solicitação (Filho) -> Notificação (Pai) -> Pagamento Externo -> Baixa manual no sistema (Pai). |
-| **10. AI Context** | **Planejado** | Cadastro de "Bio/Interesses" da criança para personalizar sugestões de tarefas. |
-| **11. Segurança e Proteção** | **Implementado** | **Rate Limiting**: In-memory (Caffeine) global e por endpoint. **Bot Protection**: reCAPTCHA v3 no login/registro. **Hardening**: Secrets no GCP Secret Manager e Refresh Tokens implementados. |
-| **12. Cancelamento de Assinatura** | **Implementado** | Fluxo self-service de cancelamento Premium via interface web com pesquisa de churn e notificação no WhatsApp. |
+| **8. Controle de Saque** | **Planejado** | Fluxo: Solicitação (Filho) → Aprovação manual (Pai) → Baixa no sistema. |
+| **9. AI Context** | **Planejado** | Cadastro de "Bio/Interesses" da criança para personalizar sugestões de tarefas. |
+| **10. Segurança e Proteção** | **Implementado** | **Rate Limiting**: In-memory (Caffeine) global e por endpoint. **Bot Protection**: reCAPTCHA v3 no login/registro. **Hardening**: Secrets no GCP Secret Manager e Refresh Tokens implementados. |
+| **11. Cancelamento de Assinatura** | **Implementado** | Fluxo self-service de cancelamento Premium via interface web com pesquisa de churn. |
 
 
-## Fluxo de Notificações (WhatsApp)
+## Experiência do Usuário
 
-| Evento | Destinatário | Conteúdo |
-| :--- | :--- | :--- |
-| **Tarefa Concluída** | Pai/Mãe | "João terminou 'Lavar a louça'. Aprove agora!" + Link/Foto |
-| **Tarefa Aprovada** | Filho | "Parabéns! Você ganhou R$ 5,00." |
-| **Tarefa Rejeitada** | Filho | "Sua tarefa precisa de revisão: 'Faltou secar'." |
-| **Solicitação de Saque** | Pai/Mãe | "João quer sacar R$ 50,00." |
-| **Saque Pago** | Filho | "Seu saque de R$ 50,00 foi pago!" |
-| **Assinatura Cancelada** | Pai/Mãe | Confirmação de cancelamento e data até quando o Premium é mantido |
+### Fluxo Principal — Pai/Mãe
+
+1. Registro na plataforma web e configuração do perfil familiar.
+2. Criação de tarefas para os filhos (manual ou via sugestão de IA).
+3. Acompanhamento de conclusão de tarefas no dashboard.
+4. Aprovação ou rejeição de tarefas concluídas.
+5. Visualização do extrato financeiro e valor de mesada calculado.
+6. Aprovação de saques solicitados pelos filhos.
+
+### Fluxo Principal — Filho(a)
+
+1. Acesso ao portal web com código fornecido pelo pai/mãe.
+2. Visualização das tarefas pendentes.
+3. Marcação de tarefas como concluídas via portal web.
+4. Acompanhamento do saldo acumulado.
+5. Solicitação de saque do saldo.
+
+## Restrições Técnicas de Alto Nível
+
+- **Autenticação**: JWT com Refresh Tokens; secrets gerenciados via GCP Secret Manager.
+- **Pagamentos**: Integração exclusiva com **Asaas** (cartão de crédito, boleto e PIX).
+- **Banco de Dados**: Firestore (NoSQL) como única camada de persistência.
+- **IA**: Gemini via Vertex AI; quotas diárias por tier (Free/Premium) para controle de custos.
+- **Proteção**: Rate limiting por IP/usuário e reCAPTCHA v3 em endpoints sensíveis.
+
+## Fora de Escopo (MVP)
+
+As seguintes funcionalidades estão **explicitamente fora do escopo** do MVP atual:
+
+- **Loja de Gift Cards**: Resgate de saldo por gift cards (Roblox, iFood, etc.) não está disponível.
+- **Notificações via WhatsApp**: Todas as notificações e interações ocorrem exclusivamente pelo portal web.
+- **Envio de Foto como Prova**: A validação de conclusão de tarefas é feita por declaração, sem upload de imagem como evidência.
+- **Reembolso proporcional** em cancelamentos de assinatura.
+- **Pausar assinatura** temporariamente.
+- **Ofertas de retenção** personalizadas no fluxo de cancelamento.
+- **Reativação automática** de assinatura cancelada.
+- **Coach Financeiro** para crianças *(planejado para Fase 2)*.
+- **"Modo Aventura"** para tarefas gamificadas *(planejado para Fase 2)*.
 
 ## AI Roadmap & Funcionalidades Futuras
 
@@ -97,15 +120,12 @@ Para aprofundar nosso diferencial como uma plataforma nativa de IA, as seguintes
 
 ## Plano de Lançamento em Fases (Revisado)
 
-- **MVP (Estado Atual)**: Funcionalidades essenciais completas, incluindo Portal da Criança e Aprovação dos Pais.
+- **MVP (Estado Atual)**: Funcionalidades essenciais completas via portal web — tarefas, aprovações, mesada e assinatura.
 - **Próximos Passos (Fase 2)**:
     1. Implementar **Coach Financeiro** para crianças.
     2. Expandir **Insights de IA** no extrato financeiro.
     3. Lançar a **v1 do Portal da Criança** com o "Modo Aventura" e o "Coach Financeiro".
     4. Implementar a geração de **"Pacotes de Tarefas"**.
-
-## Riscos e Mitigações e Questões em Aberto
-*(Seções mantidas como na versão anterior)*
 
 ---
 
@@ -130,7 +150,7 @@ Para aprofundar nosso diferencial como uma plataforma nativa de IA, as seguintes
 #### FR-3: Tela de Confirmação com Impacto
 * **Descrição**: Exibe resumo das perdas decorrentes do cancelamento antes da confirmação final.
 * **Requisitos**:
-  1. Exibir recursos a serem perdidos (limite de filhos: ilimitado → 1, tarefas recorrentes: ilimitado → 5, acesso à IA perdido, loja de Gift Cards perdida).
+  1. Exibir recursos a serem perdidos (limite de filhos: ilimitado → 1, tarefas recorrentes: ilimitado → 5, acesso à IA perdido).
   2. Exibir a data até quando o acesso Premium será mantido.
   3. Botões de "Confirmar Cancelamento" e de cancelamento da ação (voltar).
 
@@ -142,12 +162,6 @@ Para aprofundar nosso diferencial como uma plataforma nativa de IA, as seguintes
   3. Registrar data e motivo no Firestore.
   4. Tratar erros de API com feedback amigável ao usuário.
 
-#### FR-5: Notificação de Confirmação
-* **Descrição**: Envia notificação via WhatsApp confirmando o cancelamento.
-* **Requisitos**:
-  1. Enviar mensagem para o número cadastrado do pai/mãe.
-  2. Mensagem com confirmação e data até quando o acesso Premium será mantido.
-
 ### Experiência do Usuário (UX)
 * **Fluxo**: Settings → Botão "Cancelar Assinatura" → Modal: Motivo → Modal: Confirmação → Sucesso.
 * **Estilo**: Modal de motivo neutro; modal de confirmação com aviso de warning (laranja/amarelo) e botão final em vermelho.
@@ -155,13 +169,5 @@ Para aprofundar nosso diferencial como uma plataforma nativa de IA, as seguintes
 
 ### Restrições Técnicas
 * **API Asaas**: DELETE na rota `/v3/subscriptions/{id}`.
-* **Notificação**: Twilio WhatsApp (infraestrutura existente).
 * **Persistência**: Firestore para armazenar campos `cancellationDate` e `cancellationReason` na coleção de usuários.
 * **Webhook**: Sincronização via webhook Asaas para atualizar status de cancelamento efetivo.
-
-### Non-Goals (Fora de Escopo)
-* Reembolso proporcional do período não utilizado.
-* Opção de pausar assinatura temporariamente.
-* Ofertas de retenção personalizadas no fluxo.
-* Cancelamento via interface do WhatsApp.
-* Reativação automática da assinatura cancelada.

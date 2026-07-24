@@ -19,7 +19,7 @@ export interface ChildLoginResponse {
     refreshToken?: string;
 }
 
-const CHILD_STORAGE_KEY = 'fazquepaga_child';
+const CHILD_STORAGE_KEY = 'user';
 
 export const childAuthService = {
     login: async (code: string, recaptchaToken?: string): Promise<ChildLoginResponse> => {
@@ -27,7 +27,8 @@ export const childAuthService = {
         const data = response.data;
 
         // Store child data and token
-        localStorage.setItem(CHILD_STORAGE_KEY, JSON.stringify(data.child));
+        const childWithRole = { ...data.child, role: 'CHILD' };
+        localStorage.setItem(CHILD_STORAGE_KEY, JSON.stringify(childWithRole));
         if (data.token) {
             localStorage.setItem('token', data.token);
         }
@@ -39,17 +40,23 @@ export const childAuthService = {
     },
 
     getCurrentChild: () => {
-        const childData = localStorage.getItem(CHILD_STORAGE_KEY);
-        return childData ? JSON.parse(childData) : null;
+        const userData = localStorage.getItem('user');
+        if (!userData) return null;
+        const user = JSON.parse(userData);
+        return user.role === 'CHILD' ? user : null;
     },
 
     logout: () => {
-        localStorage.removeItem(CHILD_STORAGE_KEY);
+        localStorage.removeItem('user');
         localStorage.removeItem('token');
         localStorage.removeItem('refreshToken');
+        localStorage.removeItem('fazquepaga_child'); // Cleanup legacy
     },
 
     isAuthenticated: (): boolean => {
-        return localStorage.getItem(CHILD_STORAGE_KEY) !== null;
+        const userData = localStorage.getItem('user');
+        if (!userData) return false;
+        const user = JSON.parse(userData);
+        return user.role === 'CHILD';
     }
 };

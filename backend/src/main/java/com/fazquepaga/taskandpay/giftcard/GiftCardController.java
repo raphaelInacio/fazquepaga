@@ -61,30 +61,8 @@ public class GiftCardController {
                     "Gift Card store is only available for Premium users. Upgrade to access!");
         }
 
-        // Mock curated catalog approved for families (e.g. Roblox, iFood, PlayStation Store)
-        List<GiftCard> giftCards =
-                Arrays.asList(
-                        GiftCard.builder()
-                                .id("1")
-                                .name("Roblox R$50")
-                                .brand("Roblox")
-                                .value(new BigDecimal("50.00"))
-                                .description("50 Robux para usar no Roblox")
-                                .build(),
-                        GiftCard.builder()
-                                .id("2")
-                                .name("iFood R$30")
-                                .brand("iFood")
-                                .value(new BigDecimal("30.00"))
-                                .description("Vale de R$30 para pedir comida")
-                                .build(),
-                        GiftCard.builder()
-                                .id("3")
-                                .name("PlayStation Store R$100")
-                                .brand("PlayStation")
-                                .value(new BigDecimal("100.00"))
-                                .description("Crédito de R$100 para a PlayStation Store")
-                                .build());
+        // Fetch real curated catalog from service (consults RVHub API)
+        List<GiftCard> giftCards = giftCardService.getAvailableGiftCards();
 
         return ResponseEntity.ok(giftCards);
     }

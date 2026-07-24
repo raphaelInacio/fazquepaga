@@ -34,3 +34,18 @@ This rule applies whenever you are working on tasks related to payment, subscrip
 
 *   **createCustomer**: Check if `user.asaasCustomerId` exists before creating a new one.
 *   **subscribe**: Return a URL (`checkoutUrl`) to the frontend, not a success message alone.
+
+## Tagging & Metadata (Required)
+
+When generating payment objects (like Subscriptions or Charges), you MUST include a standard metadata block. This ensures webhooks can link the payment back to the user and feature:
+```json
+"externalReference": "user_id_here",
+"description": "TaskAndPay Subscription - Standard"
+```
+
+## Local Webhook Testing
+
+When working on webhook listeners in local development:
+1. Do not use generic fake data. 
+2. Use **Ngrok** (`ngrok http 8080`) to expose the local Spring Boot server.
+3. Configure the Ngrok URL in the Asaas Sandbox Webhook settings to simulate real callbacks.
