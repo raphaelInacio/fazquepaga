@@ -39,7 +39,7 @@ export default function ChildLogin() {
             }
 
             toast.success(t("childLogin.welcome"));
-            // The useEffect above will handle the navigation once the AuthContext state updates.
+            navigate("/child-portal");
         } catch (error) {
             toast.error(t("childLogin.invalidCode"));
             console.error(error);
