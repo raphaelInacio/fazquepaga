@@ -21,7 +21,7 @@ import { useSubscription } from "@/contexts/SubscriptionContext";
 import { TrialBadge } from "@/components/TrialBadge";
 import { TrialExpiredModal } from "@/components/TrialExpiredModal";
 import { giftCardService } from "@/services/giftCardService";
-import { GiftCardApprovalDialog } from "@/components/GiftCardApprovalDialog";
+import { GiftCardApprovalDialog } from "@/components/gift-card-approval-dialog.tsx";
 import { useAuth } from "@/context/AuthContext";
 
 export default function Dashboard() {

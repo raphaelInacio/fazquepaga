@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { GiftCardApprovalDialog } from './GiftCardApprovalDialog';
+import { GiftCardApprovalDialog } from './gift-card-approval-dialog';
 import { GiftCardTransaction } from '@/types';
 
 // Mock translation
